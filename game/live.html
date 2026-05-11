@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상세중계 - 크보피드</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .live-container {
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Flat & Compact Master Scoreboard Card */
+        .master-scoreboard-card {
+            margin: 12px;
+            background: #2C5DBE;
+            border-radius: 8px; /* Less rounded */
+            color: #fff;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+            box-shadow: none;
+        }
+
+        /* Top Part: Slimmer Score */
+        .ms-top {
+            padding: 12px 12px; /* Minimal padding for edge alignment */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .ms-team-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 40%; /* More space for edge push */
+        }
+
+        .ms-team-section.away { justify-content: flex-end; text-align: right; }
+        .ms-team-section.home { justify-content: flex-end; text-align: right; flex-direction: row-reverse; }
+
+        .ms-team-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .ms-team-name {
+            font-size: 18px; /* Smaller */
+            font-weight: 800; /* Less Bold */
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.15);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+
+        .ms-pitcher-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+
+        .ms-logo {
+            width: 45px; /* Smaller Logo */
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .ms-score-large {
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            min-width: 45px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .ms-center-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 110px;
+        }
+
+        .ms-status-capsule {
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .ms-datetime {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .ms-stadium {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 400;
+        }
+
+        /* Divider */
+        .ms-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 0 15px;
+        }
+
+        /* Bottom Part: Compact Inning Table */
+        .ms-bottom {
+            padding: 8px 12px; /* Very Compact */
+            overflow-x: auto;
+        }
+
+        .ms-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px; /* Even smaller */
+            text-align: center;
+        }
+
+        .ms-table th {
+            color: rgba(255,255,255,0.4);
+            font-weight: 500;
+            padding-bottom: 4px; /* Much closer */
+        }
+
+        .ms-table td {
+            padding: 2px 0; /* Extremely close */
+            font-weight: 500;
+        }
+
+        .ms-table-team {
+            text-align: left;
+            font-weight: 800;
+            font-size: 13px;
+            padding-left: 5px !important;
+            width: 70px;
+        }
+
+        .ms-table-score { width: 28px; }
+        .ms-table-total { 
+            width: 35px; 
+            font-size: 14px; 
+            font-weight: 900; 
+            color: #fff;
+        }
+        .ms-table-summary { width: 28px; color: rgba(255,255,255,0.6); }
+
+        @media (max-width: 600px) {
+            .master-scoreboard-card { 
+                margin: 0; 
+                border-radius: 0; 
+                width: 100%;
+            }
+            .ms-top { padding: 10px 10px; gap: 6px; } /* Slightly more padding */
+            .ms-team-section { gap: 6px; width: 42%; }
+            .ms-team-name { font-size: 13px; gap: 4px; } /* Slightly larger */
+            .ms-pitcher-label { font-size: 10px; transform: none; }
+            .ms-logo { width: 30px; height: 30px; } /* Slightly larger Logo */
+            .ms-score-large { font-size: 22px; margin: 0 4px; min-width: 28px; }
+            .ms-center-info { min-width: 75px; gap: 3px; transform: scale(0.9); }
+            .ms-datetime { font-size: 11px; }
+            .ms-stadium { font-size: 10px; }
+            .ms-status-capsule { font-size: 9px; padding: 1px 8px; }
+            .ms-bottom { padding: 8px 10px; }
+            .ms-table { font-size: 10px; }
+            .ms-table-team { width: 45px; font-size: 11px; padding-left: 4px !important; }
+            .ms-table-score { width: 18px; }
+            .ms-table-total { font-size: 12px; width: 28px; }
+            .ms-table-summary { width: 20px; }
+        }
+
+        /* Diamond Section */
+        /* Main Tabs Bar */
+        .live-tabs-nav {
+            background: #fff;
+            display: flex;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 50px;
+            z-index: 100;
+            height: 48px; /* Explicit height */
+        }
+
+        .tab-item {
+            flex: 1;
+            padding: 14px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tab-item.active { color: #2C5DBE; }
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: #2C5DBE;
+            border-radius: 2px;
+        }
+
+        /* Relay Sub-Tabs */
+        .relay-sub-tabs {
+            background: #f8f9fa;
+            display: flex;
+            overflow-x: auto;
+            padding: 12px 15px;
+            gap: 10px;
+            scrollbar-width: none;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 98px; /* 50px + 48px exactly */
+            z-index: 99;
+            margin-top: 0; /* Ensure no margin */
+        }
+
+        @media (max-width: 600px) {
+            .live-tabs-nav { 
+                background: #1a1a1a; 
+                border-bottom: 1px solid #333;
+                top: 56px; /* Adjusted for typical mobile header height to prevent overlap */
+                height: 48px;
+                transition: top 0.3s ease, background 0.3s ease;
+            }
+            /* Gradient applied when sticky pinned */
+            body.is-header-hidden .live-tabs-nav,
+            .live-tabs-nav.is-stuck {
+                background: linear-gradient(135deg, #2C5DBE, #85A5FF);
+                border-bottom: none;
+            }
+            .relay-sub-tabs {
+                background: #f8f9fa;
+                color: #222;
+                border-bottom: 1px solid #eee;
+                top: 104px; /* 56px + 48px */
+                transition: top 0.3s ease;
+            }
+            body.is-header-hidden .live-tabs-nav { top: 0; }
+            body.is-header-hidden .relay-sub-tabs { top: 48px; }
+
+            .tab-item { color: rgba(255,255,255,0.7); }
+            .tab-item.active { color: #fff; }
+            .tab-item.active::after { background: #fff; }
+            .sub-tab-item { background: #fff; border-color: #ddd; color: #666; }
+        }
+
+        .sub-tab-item {
+            flex-shrink: 0;
+            padding: 6px 16px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .sub-tab-item.active {
+            background: #2C5DBE;
+            border-color: #2C5DBE;
+            color: #fff;
+        }
+
+        /* Relay List - Common Divider Style */
+        .relay-list-container {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .relay-item {
+            border-bottom: 1px solid #eee;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rc-top {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rc-player-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rc-profile-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #eee;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        .rc-player-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .rc-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rc-name {
+            font-size: 16px;
+            font-weight: 900;
+            color: #000;
+        }
+
+        .rc-result-tag {
+            padding: 2px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #fff;
+        }
+
+        .rc-player-sub {
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rc-score-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .rc-score-text {
+            font-size: 18px;
+            font-weight: 900;
+            color: #333;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .rc-bottom {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rc-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rc-label {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 900;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .rc-label.hit { background: #FF7B00; }
+        .rc-label.pitch { background: #A30B24; }
+
+        .rc-detail-text {
+            font-size: 13px;
+            color: #222;
+            font-weight: 700;
+        }
+
+        .rc-pitch-info {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .rc-runners {
+            margin-top: 2px;
+            padding-left: 34px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .rc-runner-item {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Strike Zone */
+        .visual-container {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sz-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #666;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .strike-zone-wrapper {
+            width: 160px;
+            height: 200px;
+            background: #eee;
+            border: 1px solid #ddd;
+            position: relative;
+            padding: 20px;
+        }
+
+        .strike-zone-box {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #444;
+            position: relative;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .sz-ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            color: #fff;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sz-ball.strike { background: #ff4444; }
+        .sz-ball.ball { background: #00ba7c; }
+
+        /* Player Info Dashboard */
+        .player-info-dashboard {
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .info-card {
+            flex: 1;
+            background: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .info-label {
+            font-size: 10px;
+            color: #999;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .info-name {
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 2px;
+        }
+
+
+        .info-stats {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .count-info {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .count-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .count-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ddd;
+        }
+
+        .dot.b { background-color: #00ba7c; }
+        .dot.s { background-color: #ffcc00; }
+        .dot.o { background-color: #ff4444; }
+
+        /* Text Relay */
+        .relay-item.bat-start {
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Field Visualization */
+        .field-section {
+            padding: 10px;
+            background: #fff;
+            border-bottom: 8px solid var(--divider-color);
+        }
+
+        .field-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            aspect-ratio: 600 / 400;
+            background-image: url('/images/field.jpeg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .player-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .player-label::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color);
+            border-radius: 50%;
+        }
+
+        /* Scoreboard Table */
+        .scoreboard-section {
+            padding: 20px;
+            overflow-x: auto;
+            border-bottom: 8px solid var(--divider-color);
+        }
+
+        .sb-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .sb-table th, .sb-table td {
+            padding: 10px 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sb-table th {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .sb-team-name {
+            text-align: left;
+            font-weight: 900;
+            width: 80px;
+            padding-left: 10px !important;
+        }
+
+        .sb-score-cell {
+            width: 25px;
+            font-weight: 500;
+        }
+
+        .sb-total-cell {
+            width: 35px;
+            font-weight: 900;
+            color: var(--primary-color);
+            background: #fcfcfc;
+        }
+
+        .sb-header-row {
+            background: #f8f9fa;
+        }
+
+        /* Match Meta Info */
+        .match-meta-info {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            background: #f1f3f5;
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .meta-item i { margin-right: 5px; color: #999; }
+
+        /* Detail Pitcher Info */
+        .pitcher-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pitcher-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .pg-title {
+            font-size: 11px;
+            color: #999;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .pg-name {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 600px) {
+            .cast-flex-container { flex-direction: column; }
+            .summary-team img { width: 60px; height: 60px; }
+            .summary-score { font-size: 36px; }
+            .sb-team-name { font-size: 12px; width: 60px; }
+        }
+    </style>
+    <!-- Supabase & API -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="live">
+    <div class="app-container">
+        <!-- Main Content -->
+        <main class="main-feed">
+            <div class="live-container">
+                <!-- Unified Master Scoreboard Card -->
+                <section class="master-scoreboard-card" id="master-scoreboard">
+                    <div style="padding:40px; text-align:center;">데이터를 불러오는 중...</div>
+                </section>
+
+                <!-- Main Navigation Tabs -->
+                <nav class="live-tabs-nav">
+                    <div class="tab-item active" data-tab="relay">중계</div>
+                    <div class="tab-item" data-tab="cheer">응원</div>
+                    <div class="tab-item" data-tab="lineup">라인업</div>
+                    <div class="tab-item" data-tab="analysis">분석</div>
+                </nav>
+
+                <!-- Panel: Relay (Main) -->
+                <div class="tab-panel active" id="panel-relay">
+                    <!-- Relay Sub-Tabs (Inning Filter) -->
+                    <div class="relay-sub-tabs" id="inning-tabs">
+                        <div class="sub-tab-item active" data-inning="all">전체</div>
+                        <div class="sub-tab-item" data-inning="score">득점</div>
+                        <!-- Innings will be injected -->
+                    </div>
+
+                    <section class="field-section">
+                        <div class="field-wrapper" id="field-view">
+                            <div class="player-label" style="left: 13.3%; top: 33.2%;" id="pos-lf">좌익수</div>
+                            <div class="player-label" style="left: 48.3%; top: 19.2%;" id="pos-cf">중견수</div>
+                            <div class="player-label" style="left: 85.3%; top: 35.2%;" id="pos-rf">우익수</div>
+                            <div class="player-label" style="left: 22.1%; top: 69.2%;" id="pos-3b">3루수</div>
+                            <div class="player-label" style="left: 49.3%; top: 49.5%;" id="pos-2b">2루수</div>
+                            <div class="player-label" style="left: 76.3%; top: 69.5%;" id="pos-1b">1루수</div>
+                            <div class="player-label" style="left: 49.3%; top: 70.0%;" id="pos-p">투수</div>
+                            <div class="player-label" style="left: 46.1%; top: 92.0%; display:none;" id="pos-lb">좌타</div>
+                            <div class="player-label" style="left: 52.3%; top: 92.2%; display:none;" id="pos-rb">우타</div>
+                        </div>
+                    </section>
+
+                <!-- Diamond & Counts & Strike Zone (Minimized) -->
+                    <!-- Game Cast Section -->
+                    <section class="game-cast-section" style="background:#fff; border-bottom:1px solid #eee;">
+                        <div class="cast-flex-container">
+                            <div class="visual-container">
+                                <div class="count-info">
+                                    <div class="count-item"><span>B</span><div class="count-dots" id="count-b"></div></div>
+                                    <div class="count-item"><span>S</span><div class="count-dots" id="count-s"></div></div>
+                                    <div class="count-item"><span>O</span><div class="count-dots" id="count-o"></div></div>
+                                </div>
+                            </div>
+                            <div class="visual-container">
+                                <div class="sz-title">STRIKE ZONE</div>
+                                <div class="strike-zone-wrapper" style="background:#f9f9f9;">
+                                    <div class="strike-zone-box" id="strike-zone"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player-info-dashboard" id="player-info" style="margin-bottom:20px;"></div>
+                    </section>
+
+                    <!-- Text Relay List -->
+                    <section class="relay-list-container" id="relay-list">
+                        <div class="loading-state">중계 정보를 불러오는 중...</div>
+                    </section>
+                </div>
+
+                <!-- Panel: Cheer -->
+                <div class="tab-panel" id="panel-cheer">
+                    <div style="padding:100px 20px; text-align:center; color:#666;">
+                        <i class="fas fa-comments" style="font-size:40px; margin-bottom:15px; display:block;"></i>
+                        응원톡 기능 준비 중입니다.
+                    </div>
+                </div>
+
+                <!-- Panel: Lineup -->
+                <div class="tab-panel" id="panel-lineup">
+                    <div style="padding:100px 20px; text-align:center; color:#666;">
+                        <i class="fas fa-users" style="font-size:40px; margin-bottom:15px; display:block;"></i>
+                        라인업 정보 준비 중입니다.
+                    </div>
+                </div>
+
+                <!-- Panel: Analysis -->
+                <div class="tab-panel" id="panel-analysis">
+                    <div style="padding:100px 20px; text-align:center; color:#666;">
+                        <i class="fas fa-chart-bar" style="font-size:40px; margin-bottom:15px; display:block;"></i>
+                        데이터 분석 준비 중입니다.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/ui.js" defer></script>
+    <script src="/js/live.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+name = "kbo-feed"
+compatibility_date = "2024-04-03"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "1260b258c2f64482a4b193c1957bd27f"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kbo-feed-db"
+database_id = "d8483595-b836-483b-a48b-31f10608be80"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "kbo-feed-images"

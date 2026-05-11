@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가입하기 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <!-- Supabase & Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body class="auth-page" data-page="signup">
+    <div class="auth-container">
+        <div class="auth-header">
+            <img src="images/logo.png" alt="크보피드" class="auth-logo">
+            <h1>계정을 생성하세요</h1>
+        </div>
+
+        <div class="auth-box">
+            <form class="auth-form" id="signup-form">
+                <div class="form-group">
+                    <input type="text" class="auth-input" id="signup-displayname" placeholder="닉네임" required autocomplete="nickname">
+                </div>
+                <div class="form-group">
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 17px;">@</span>
+                        <input type="text" class="auth-input" id="signup-username" style="padding-left: 36px;" placeholder="핸들 (아이디)" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="auth-input" id="signup-email" placeholder="이메일 주소" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="auth-input" id="signup-password" placeholder="비밀번호 (6자 이상)" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="auth-input" id="signup-password-confirm" placeholder="비밀번호 확인" required minlength="6" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <p style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">나의 응원팀 선택</p>
+                    <div class="team-carousel-container">
+                        <button type="button" class="carousel-nav" onclick="scrollCarousel(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <div class="team-carousel" id="teamCarousel">
+                            <label class="team-option">
+                                <input type="radio" name="team" value="lg" required>
+                                <div class="team-card"><img src="images/LG트윈스.svg" alt="LG"><span>LG</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="kia">
+                                <div class="team-card"><img src="images/KIA타이거즈.svg" alt="KIA"><span>KIA</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="ssg">
+                                <div class="team-card"><img src="images/SSG랜더스.svg" alt="SSG"><span>SSG</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="nc">
+                                <div class="team-card"><img src="images/NC다이노스.svg" alt="NC"><span>NC</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="doosan">
+                                <div class="team-card"><img src="images/두산베어스.svg" alt="두산"><span>두산</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="lotte">
+                                <div class="team-card"><img src="images/롯데자이언츠.svg" alt="롯데"><span>롯데</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="samsung">
+                                <div class="team-card"><img src="images/삼성라이온즈.svg" alt="삼성"><span>삼성</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="hanwha">
+                                <div class="team-card"><img src="images/한화이글스.svg" alt="한화"><span>한화</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="kt">
+                                <div class="team-card"><img src="images/KTWIZ.svg" alt="KT"><span>KT</span></div>
+                            </label>
+                            <label class="team-option">
+                                <input type="radio" name="team" value="kiwoom">
+                                <div class="team-card"><img src="images/키움히어로즈.svg" alt="키움"><span>키움</span></div>
+                            </label>
+                        </div>
+                        <button type="button" class="carousel-nav" onclick="scrollCarousel(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="auth-agreement">
+                    <label class="checkbox-container">
+                        <input type="checkbox" required>
+                        <span class="checkmark"></span>
+                        <span class="agreement-text">이용약관 동의 (필수)</span>
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" required>
+                        <span class="checkmark"></span>
+                        <span class="agreement-text">개인정보 처리방침 동의 (필수)</span>
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" required>
+                        <span class="checkmark"></span>
+                        <span class="agreement-text">만 14세 이상입니다 (필수)</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit-btn" id="signup-submit-btn">가입하기</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>이미 계정이 있으신가요? <a href="login.html">로그인</a></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById('teamCarousel');
+            const scrollAmount = 150; // Width of card + gap
+            carousel.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>

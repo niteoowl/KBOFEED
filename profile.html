@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <!-- Supabase & API -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="profile">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header placeholder -->
+
+            <section class="profile-container">
+                <div class="profile-header-new">
+                    <div class="profile-main-info">
+                        <!-- Action Row removed (moved to header) -->
+
+                        <!-- Intro Row (Avatar + Name/Handle on Right) -->
+                        <div class="profile-intro-row">
+                            <div class="profile-avatar-new" style="background-image: url('https://i.pravatar.cc/150?u=current');"></div>
+                            <div class="profile-info-main">
+                                <h1 class="profile-name-large">내 야구 계정</h1>
+                                <p class="profile-handle-large">@my_kbo_life</p>
+                                
+                                <!-- Team Badge -->
+                                <div class="team-badge">
+                                    <img src="/images/LG트윈스.svg" alt="LG">
+                                    <span>LG 트윈스 팬</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-meta-new">
+                            <p class="profile-bio-new">
+                                KBO 리그 10년차 팬 | LG 트윈스 응원 중 ⚾️ | 잠실 야구장 출석 체크! 야구 소식 공유합니다.
+                            </p>
+
+                            <div class="profile-stats-row">
+                                <div class="stat-group"><b>128</b> 팔로잉</div>
+                                <div class="stat-group"><b>256</b> 팔로워</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-nav-tabs">
+                    <div class="profile-nav-tab active">게시물</div>
+                    <div class="profile-nav-tab">답글</div>
+                    <div class="profile-nav-tab">미디어</div>
+                    <div class="profile-nav-tab">좋아요</div>
+                </div>
+
+                <!-- Profile Feed Content (Dynamic) -->
+                <div id="profile-feed-container">
+                    <!-- Dynamic posts will be rendered here by Supabase -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <section class="trends-container">
+                <h3 class="section-title">팔로우 추천</h3>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar" style="background-image: url('https://i.pravatar.cc/150?u=5'); background-size: cover;"></div>
+                        <div class="follow-text">
+                            <div class="follow-name">한화이글스</div>
+                            <div class="follow-username">@hanwhaeagles</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/feed.js" defer></script>
+    <script src="js/profile_manager.js" defer></script>
+    <script src="js/app.js" defer></script>
+</body>
+</html>

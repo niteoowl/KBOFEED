@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경기 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <!-- Supabase & API -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="game">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header placeholder -->
+
+            <!-- Horizontal Game Bar (Mini Scores) -->
+            <section class="game-day-bar" id="mini-game-bar">
+                <!-- Injected by js/game.js -->
+                <div class="loading-state" style="padding: 20px; text-align: center; width: 100%; color: var(--text-secondary);">경기 정보를 불러오는 중...</div>
+            </section>
+
+            <!-- Game Section with Sticky Nav -->
+            <div class="game-section-wrapper">
+                <!-- Date Navigation Selector -->
+                <section class="date-selector">
+                    <button id="prev-date" class="date-nav-btn"><i class="fas fa-chevron-left"></i></button>
+                    <div class="current-date-display" id="current-date-text">2026.05.09 (토)</div>
+                    <button id="next-date" class="date-nav-btn"><i class="fas fa-chevron-right"></i></button>
+                </section>
+
+                <!-- Main Scoreboard (Wide Cards) -->
+                <section id="game-list-container">
+                    <!-- Injected by js/game.js -->
+                    <div class="loading-state" style="padding: 20px; text-align: center; width: 100%; color: var(--text-secondary);">경기 정보를 불러오는 중...</div>
+                </section>
+            </div>
+
+            <!-- Standings Section -->
+            <section class="standings-section">
+                <h3 class="section-title">정규리그 순위</h3>
+                <div style="overflow-x: auto;">
+                    <table class="standings-table">
+                        <thead>
+                            <tr>
+                                <th>순위</th>
+                                <th>팀명</th>
+                                <th>승</th>
+                                <th>패</th>
+                                <th>무</th>
+                                <th>승률</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-body">
+                            <!-- Injected by js/game.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Baseball News Section -->
+            <section class="news-section">
+                <h3 class="section-title">주요 야구 뉴스</h3>
+                <div class="news-item">
+                    <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?q=80&w=200&auto=format&fit=crop" class="news-thumb" alt="뉴스">
+                    <div class="news-info">
+                        <div class="news-title">'괴물투수' 류현진, 마침내 KBO 통산 100승 금자탑</div>
+                        <div class="trend-category">스포츠서울 · 1시간 전</div>
+                    </div>
+                </div>
+                <div class="news-item">
+                    <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=200&auto=format&fit=crop" class="news-thumb" alt="뉴스">
+                    <div class="news-info">
+                        <div class="news-title">잠실 더비 예매 전쟁... 5분 만에 전석 매진</div>
+                        <div class="trend-category">KBO 뉴스 · 3시간 전</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <section class="trends-container">
+                <h3 class="section-title">실시간 화제</h3>
+                <div class="trend-item">
+                    <div class="trend-name">잠실더비</div>
+                    <div class="trend-count">12.4K 게시물</div>
+                </div>
+                <div class="trend-item">
+                    <div class="trend-name">고척돔_매진</div>
+                    <div class="trend-count">3,102 게시물</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/app.js" defer></script>
+    <script src="js/game.js" defer></script>
+</body>
+</html>

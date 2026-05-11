@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    
+    <!-- Supabase & API -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="search-results">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header and Search Bar injected by ui.js -->
+
+            <!-- Search Results Tabs -->
+            <div class="feed-tabs search-tabs">
+                <div class="feed-tab active" data-tab="all">전체</div>
+                <div class="feed-tab" data-tab="top">인기</div>
+                <div class="feed-tab" data-tab="latest">최신</div>
+                <div class="feed-tab" data-tab="users">사용자</div>
+                <div class="feed-tab" data-tab="media">미디어</div>
+            </div>
+
+            <!-- All results will now be rendered in this unified container for stability -->
+            <div id="search-results-container" class="active" style="min-height: 400px;">
+                <!-- Dynamic search results will be injected here -->
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <section class="trends-container">
+                <h3 class="section-title">나를 위한 트렌드</h3>
+                <div class="trend-item">
+                    <div class="trend-category">트렌드 중</div>
+                    <div class="trend-name">잠실더비</div>
+                    <div class="trend-count">12.4K 게시물</div>
+                </div>
+                <div class="trend-item">
+                    <div class="trend-category">트렌드 중</div>
+                    <div class="trend-name">9회말 역전승</div>
+                    <div class="trend-count">8,203 게시물</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/feed.js" defer></script>
+    <script src="js/search.js" defer></script>
+    <script src="js/app.js" defer></script>
+    <script>
+        // Set search query in the input field
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            const searchInput = document.getElementById('mobile-search-input');
+            if (searchInput && query) {
+                searchInput.value = query;
+            }
+        });
+    </script>
+</body>
+</html>

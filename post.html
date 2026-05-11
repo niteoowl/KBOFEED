@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시물 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="post">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header placeholder -->
+
+            <section class="post-detail-container" id="main-post-container">
+                <!-- Dynamic main post will be injected here by Supabase -->
+                <div style="padding: 20px; text-align: center; color: #888;">게시물을 불러오는 중입니다...</div>
+            </section>
+
+            <!-- Replies -->
+            <div class="replies-list" id="replies-container">
+                <!-- Dynamic replies will be injected here by Supabase -->
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <section class="trends-container">
+                <h3 class="section-title">추천 트렌드</h3>
+                <div class="trend-item">
+                    <div class="trend-name">잠실 라이벌전</div>
+                    <div class="trend-count">실시간 화제 중</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/feed.js" defer></script>
+    <script src="js/post_detail.js" defer></script>
+    <script src="js/app.js" defer></script>
+</body>
+</html>

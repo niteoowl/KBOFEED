@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탐색 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+<body data-page="explore">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header and Search Bar injected by ui.js -->
+
+            <!-- Explore Content -->
+
+            <!-- Explore Content -->
+            <section class="explore-section">
+                <!-- Highlight Banner -->
+                <div class="explore-banner">
+                    <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?q=80&w=1000&auto=format&fit=crop" alt="야구 경기장">
+                    <div class="banner-text">
+                        <h3>실시간 KBO 화제</h3>
+                        <p>지금 가장 뜨거운 야구 소식을 확인하세요</p>
+                    </div>
+                </div>
+
+                <!-- Trending Photos Grid -->
+                <div class="trends-list">
+                    <h3 class="section-title">오늘의 베스트 컷</h3>
+                    <div class="explore-media-grid">
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1516731415730-0c607149933a?auto=format&fit=crop&w=300');"><i class="fas fa-play"></i></div>
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=300');"></div>
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1533038590840-1cde6b66b721?auto=format&fit=crop&w=300');"><i class="far fa-image"></i></div>
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1510531704581-5b2870972060?auto=format&fit=crop&w=300');"></div>
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=300');"></div>
+                        <div class="media-cell" style="background-image: url('https://images.unsplash.com/photo-1471295253337-3ceaaedca401?auto=format&fit=crop&w=300');"></div>
+                    </div>
+                </div>
+
+                <!-- Categorized Trends -->
+                <div class="trends-list">
+                    <h3 class="section-title">구장별 핫이슈</h3>
+                    <div class="trend-item">
+                        <div class="trend-category">수원 · 뉴스</div>
+                        <div class="trend-name">KT 위즈파크 오늘 전좌석 매진</div>
+                        <div class="trend-count">3,102 게시물</div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-category">잠실 · 날씨</div>
+                        <div class="trend-name">잠실 더비, 우천 취소 가능성?</div>
+                        <div class="trend-count">1,822 게시물</div>
+                    </div>
+                </div>
+
+                <div class="trends-list">
+                    <h3 class="section-title">주목받는 선수</h3>
+                    <div class="trend-item">
+                        <div class="trend-category">한화 · 화제</div>
+                        <div class="trend-name">김서현 160km 광속구 폭발</div>
+                        <div class="trend-count">12.4K 게시물</div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-category">KIA · 기록</div>
+                        <div class="trend-name">김도영 30-30 달성 초읽기</div>
+                        <div class="trend-count">8,203 게시물</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Sidebar (Consistent with Home) -->
+        <aside class="right-sidebar">
+            <section class="trends-container">
+                <h3 class="section-title">추천 팔로우</h3>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar" style="background-image: url('https://i.pravatar.cc/150?u=15'); background-size: cover; width: 40px; height: 40px;"></div>
+                        <div class="follow-text">
+                            <div class="follow-name">LG 트윈스 공식</div>
+                            <div class="follow-username">@lgtwins_official</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar" style="background-image: url('https://i.pravatar.cc/150?u=16'); background-size: cover; width: 40px; height: 40px;"></div>
+                        <div class="follow-text">
+                            <div class="follow-name">두산 베어스 공식</div>
+                            <div class="follow-username">@doosanbears</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/app.js" defer></script>
+</body>
+</html>

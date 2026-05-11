@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 도구 - 크보피드</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+</head>
+<body data-page="admin">
+    <div class="app-container" style="max-width: 800px; padding: 40px 20px;">
+        <header style="margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+            <h1 style="font-size: 28px; font-weight: 800;">🛠️ Admin Dashboard</h1>
+            <p style="color: var(--text-secondary);">사용자 인증 및 광고 관리 시스템</p>
+        </header>
+
+        <!-- User Verification Section -->
+        <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">✅ 사용자 공식 인증 배지 부여</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="user-search-input" placeholder="사용자 핸들(@username) 검색" style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <button id="search-user-btn" style="background: var(--primary-color); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">검색</button>
+            </div>
+            <div id="user-result-area" style="background: #f8f9fa; border-radius: 12px; padding: 20px; display: none;">
+                <!-- User result will appear here -->
+            </div>
+        </section>
+
+        <!-- Ad Management Section -->
+        <section>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">📢 피드 광고 관리</h2>
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px;">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">광고 문구</label>
+                    <textarea id="ad-content" placeholder="광고 내용을 입력하세요" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; resize: none;"></textarea>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">이미지 URL (ImgBB 등)</label>
+                    <input type="text" id="ad-image-url" placeholder="https://..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">랜딩 페이지 링크</label>
+                    <input type="text" id="ad-link-url" placeholder="https://..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                </div>
+                <button id="create-ad-btn" style="width: 100%; background: #000; color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer;">광고 등록하기</button>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="font-size: 16px; margin-bottom: 16px;">현재 활성화된 광고</h3>
+                <div id="active-ads-list">
+                    <!-- Ads will be listed here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

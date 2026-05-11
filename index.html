@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>크보피드 - 야구팬들의 SNS</title>
+    <meta name="description" content="KBO 야구팬들을 위한 소셜 네트워크 서비스, 크보피드입니다. 좋아하는 구단의 소식을 확인하세요.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/all.min.css">
+
+    <!-- Supabase & API -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+    <script src="/js/constants.js"></script>
+    <script src="/js/supabase-config.js"></script>
+    <script src="/js/auth.js" defer></script>
+</head>
+
+<body data-page="home">
+    <div class="app-container">
+        <!-- Sidebar, Header, and Bottom Nav injected by js/ui.js -->
+
+        <!-- Main Feed -->
+        <main class="main-feed">
+            <!-- Header placeholder -->
+
+            <!-- Modern Compose Trigger -->
+            <section class="compose-trigger-section">
+                <div class="compose-trigger" id="open-modal-trigger">
+                    <div class="trigger-static-content">
+                        <div class="user-avatar small"
+                            style="background-image: url('https://i.pravatar.cc/150?u=current'); background-size: cover;">
+                        </div>
+                        <div class="trigger-placeholder">오늘의 야구 소식은?</div>
+                        <div class="trigger-icon"><i class="far fa-image"></i></div>
+                    </div>
+                    <div class="expanded-content">
+                        <div class="compose-input-area">
+                            <textarea placeholder="무슨 일이 일어나고 있나요?" maxlength="280"></textarea>
+                            <div id="image-preview-container"
+                                style="display: none; margin-top: 10px; position: relative;">
+                                <img id="compose-image-preview" src=""
+                                    style="width: 100%; border-radius: 16px; border: 1px solid var(--border-color);">
+                                <button id="remove-image-btn"
+                                    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;"><i
+                                        class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="compose-actions">
+                            <div class="action-icons">
+                                <label for="image-upload-input"
+                                    style="cursor: pointer; color: var(--primary-color); font-size: 20px;">
+                                    <i class="far fa-image"></i>
+                                </label>
+                                <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                                <i class="far fa-smile"></i>
+                                <i class="far fa-calendar-alt"></i>
+                            </div>
+                            <button class="inline-post-btn">게시하기</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feed Content (Tabs) -->
+            <div id="tab-all" class="tab-content active">
+                <div id="feed-all-container">
+                    <!-- Dynamic posts will be rendered here by Supabase -->
+                    <div style="padding: 20px; text-align: center; color: #888;">데이터를 불러오는 중입니다...</div>
+                </div>
+            </div>
+
+            <div id="tab-myteam" class="tab-content">
+                <!-- My Team Info Bar -->
+                <div class="myteam-info-bar">
+                    <div class="myteam-current">
+                        <img src="/images/logo.png" alt="Team" id="current-team-logo">
+                        <span class="myteam-name" id="current-team-name">팀을 선택하세요</span>
+                    </div>
+                    <button class="change-team-btn" id="open-team-picker">변경</button>
+                </div>
+
+                <!-- 10 Teams Picker -->
+                <div id="inline-team-picker" class="inline-team-picker">
+                    <div class="picker-scroll-container">
+                        <div class="team-mini-card" data-team="LG 트윈스" data-id="LG"><img src="/images/LG트윈스.svg"
+                                alt="LG"><span>LG</span></div>
+                        <div class="team-mini-card" data-team="KIA 타이거즈" data-id="KIA"><img src="/images/KIA타이거즈.svg"
+                                alt="KIA"><span>KIA</span></div>
+                        <div class="team-mini-card" data-team="삼성 라이온즈" data-id="삼성"><img src="/images/삼성라이온즈.svg"
+                                alt="삼성"><span>삼성</span></div>
+                        <div class="team-mini-card" data-team="SSG 랜더스" data-id="SSG"><img src="/images/SSG랜더스.svg"
+                                alt="SSG"><span>SSG</span></div>
+                        <div class="team-mini-card" data-team="두산 베어스" data-id="두산"><img src="/images/두산베어스.svg"
+                                alt="두산"><span>두산</span></div>
+                        <div class="team-mini-card" data-team="NC 다이노스" data-id="NC"><img src="/images/NC다이노스.svg"
+                                alt="NC"><span>NC</span></div>
+                        <div class="team-mini-card" data-team="한화 이글스" data-id="한화"><img src="/images/한화이글스.svg"
+                                alt="한화"><span>한화</span></div>
+                        <div class="team-mini-card" data-team="롯데 자이언츠" data-id="롯데"><img src="/images/롯데자이언츠.svg"
+                                alt="롯데"><span>롯데</span></div>
+                        <div class="team-mini-card" data-team="KT 위즈" data-id="KT"><img src="/images/KTWIZ.svg"
+                                alt="KT"><span>KT</span></div>
+                        <div class="team-mini-card" data-team="키움 히어로즈" data-id="키움"><img src="/images/키움히어로즈.svg"
+                                alt="키움"><span>키움</span></div>
+                    </div>
+                </div>
+
+                <!-- My Team Sub-Tabs -->
+                <div class="myteam-sub-nav">
+                    <div class="sub-tab active" data-subtab="collection">내팀 모아보기</div>
+                    <div class="sub-tab" data-subtab="feed">내팀 피드</div>
+                </div>
+
+                <div id="feed-myteam-container">
+                    <div style="padding: 40px; text-align: center; color: var(--text-secondary);">응원하는 팀의 소식을 확인해보세요!
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar (Trends) -->
+        <aside class="right-sidebar">
+            <div class="search-container">
+                <div class="search-bar-sticky-wrapper">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="검색" id="pc-search-input">
+                    </div>
+                </div>
+                <!-- Search Suggestions (Inline Expansion) -->
+                <div class="search-suggestions" id="pc-search-suggestions">
+                    <div class="suggestion-item">
+                        <span class="suggestion-category">트렌드 중</span>
+                        <span class="suggestion-name">#잠실더비</span>
+                        <span class="suggestion-count">12,402 게시물</span>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-category">실시간 화제</span>
+                        <span class="suggestion-name">끝내기 홈런 실황</span>
+                        <span class="suggestion-count">5,201 게시물</span>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-category">인기 해시태그</span>
+                        <span class="suggestion-name">#오늘의라커룸</span>
+                        <span class="suggestion-count">2,402 게시물</span>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-category">커뮤니티</span>
+                        <span class="suggestion-name">직관 인증샷 릴레이</span>
+                        <span class="suggestion-count">8,203 게시물</span>
+                    </div>
+                    <div class="suggestion-item">
+                        <span class="suggestion-category">트렌드 중</span>
+                        <span class="suggestion-name">고척돔 전좌석 매진</span>
+                        <span class="suggestion-count">3,102 게시물</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Section -->
+            <section class="trends-container">
+                <h3 class="section-title">최신 야구 뉴스</h3>
+                <div class="trend-item">
+                    <div class="trend-category">뉴스 · 실시간</div>
+                    <div class="trend-name">'홈런 공동 선두' 강백호, 올시즌 홈런왕 가나</div>
+                    <div class="trend-count">2,402명이 읽음</div>
+                </div>
+                <div class="trend-item">
+                    <div class="trend-category">뉴스 · 실시간</div>
+                    <div class="trend-name">한화, 류현진 복귀 후 관중 수 30% 증가</div>
+                    <div class="trend-count">5,102명이 읽음</div>
+                </div>
+            </section>
+
+            <!-- Trends Section -->
+            <section class="trends-container">
+                <h3 class="section-title">나를 위한 트렌드</h3>
+                <div class="trend-item">
+                    <div class="trend-category">트렌드 중</div>
+                    <div class="trend-name">잠실더비</div>
+                    <div class="trend-count">12.4K 게시물</div>
+                </div>
+                <div class="trend-item">
+                    <div class="trend-category">트렌드 중</div>
+                    <div class="trend-name">9회말 역전패</div>
+                    <div class="trend-count">8,203 게시물</div>
+                </div>
+                <div class="trend-item">
+                    <div class="trend-category">트렌드 중</div>
+                    <div class="trend-name">고척돔 매진</div>
+                    <div class="trend-count">4,112 게시물</div>
+                </div>
+            </section>
+
+            <!-- Who to follow -->
+            <section class="trends-container">
+                <h3 class="section-title">추천 팔로우</h3>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar"
+                            style="background-image: url('https://i.pravatar.cc/150?u=5'); background-size: cover; width: 40px; height: 40px;">
+                        </div>
+                        <div class="follow-text">
+                            <div class="follow-name">KIA 타이거즈</div>
+                            <div class="follow-username">@kiatigers</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar"
+                            style="background-image: url('https://i.pravatar.cc/150?u=6'); background-size: cover; width: 40px; height: 40px;">
+                        </div>
+                        <div class="follow-text">
+                            <div class="follow-name">삼성 라이온즈</div>
+                            <div class="follow-username">@samsunglions</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+                <div class="follow-item">
+                    <div class="follow-info">
+                        <div class="user-avatar"
+                            style="background-image: url('https://i.pravatar.cc/150?u=7'); background-size: cover; width: 40px; height: 40px;">
+                        </div>
+                        <div class="follow-text">
+                            <div class="follow-name">KBO 공식</div>
+                            <div class="follow-username">@kbo_official</div>
+                        </div>
+                    </div>
+                    <button class="follow-btn">팔로우</button>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <!-- Modal for Posting -->
+    <div id="post-modal" class="modal-overlay">
+        <div class="bottom-modal">
+            <div class="modal-header">
+                <button id="close-modal-btn" class="close-btn"><i class="fas fa-times"></i></button>
+                <button class="modal-post-btn">게시하기</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-avatar"
+                    style="background-image: url('https://i.pravatar.cc/150?u=current'); background-size: cover;"></div>
+                <textarea class="modal-input" placeholder="무슨 일이 일어나고 있나요?" autofocus></textarea>
+            </div>
+            <div class="modal-footer">
+                <div class="action-icons">
+                    <div class="action-icon"><i class="far fa-image"></i></div>
+                    <div class="action-icon"><i class="fas fa-poll-h"></i></div>
+                    <div class="action-icon"><i class="far fa-smile"></i></div>
+                    <div class="action-icon"><i class="fas fa-map-marker-alt"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="js/ui.js" defer></script>
+    <script src="js/feed.js" defer></script>
+    <script src="js/app.js" defer></script>
+</body>
+
+</html>
