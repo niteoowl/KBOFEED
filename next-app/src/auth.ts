@@ -5,7 +5,6 @@ import { getDb } from "./db/db";
 import Google from "next-auth/providers/google";
 
 import { profiles } from "./db/schema";
-import { eq } from "drizzle-orm";
 
 export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
   const { env } = getRequestContext();

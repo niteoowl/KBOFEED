@@ -1,6 +1,42 @@
--- ==========================================
 -- KBO Feed Cloudflare D1 Schema (SQLite)
 -- ==========================================
+
+-- NextAuth Required Tables
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    email TEXT NOT NULL,
+    email_verified INTEGER,
+    image TEXT
+);
+
+CREATE TABLE IF NOT EXISTS accounts (
+    userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    providerAccountId TEXT NOT NULL,
+    refresh_token TEXT,
+    access_token TEXT,
+    expires_at INTEGER,
+    token_type TEXT,
+    scope TEXT,
+    id_token TEXT,
+    session_state TEXT,
+    PRIMARY KEY (provider, providerAccountId)
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    sessionToken TEXT PRIMARY KEY,
+    userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS verificationTokens (
+    identifier TEXT NOT NULL,
+    token TEXT NOT NULL,
+    expires INTEGER NOT NULL,
+    PRIMARY KEY (identifier, token)
+);
 
 -- 1. Profiles Table
 CREATE TABLE IF NOT EXISTS profiles (
