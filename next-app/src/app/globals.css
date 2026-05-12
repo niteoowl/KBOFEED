@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./kbofeed.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
 
 /* Next.js specific overrides to the original style.css */
 :root {
@@ -13,6 +14,42 @@
   --color-primary: var(--primary-color);
 }
 
-/* Ensure FontAwesome is available if not in style.css */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+/* Tailwind preflight + FA: 아이콘 글리프가 보이도록 */
+.tweet-actions i[class^="fa"],
+.tweet-actions i[class*=" fa-"],
+.compose-trigger-section i[class*="fa-"],
+.feed-header i[class*="fa-"],
+.sidebar i[class*="fa-"],
+.mobile-nav i[class*="fa-"],
+.post-detail-container i[class*="fa-"] {
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 탭·팀 카드를 button으로 쓸 때 바닐라(div)와 동일하게 */
+.feed-tabs button.feed-tab {
+    border: none;
+    background: transparent;
+    margin: 0;
+    font: inherit;
+    width: 100%;
+}
+
+.myteam-sub-nav button.sub-tab {
+    border: none;
+    background: transparent;
+    margin: 0;
+    font: inherit;
+    flex: 1;
+}
+
+button.team-mini-card {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+}
 

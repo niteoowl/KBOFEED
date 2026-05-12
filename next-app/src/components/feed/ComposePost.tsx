@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { createPost } from '@/app/actions/post';
 
-const ComposePost = () => {
+type ComposePostProps = {
+  /** 게시 후 홈 피드 등에서 목록 갱신 */
+  onPosted?: () => void | Promise<void>;
+};
+
+const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { data: session } = useSession();
   const [content, setContent] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -20,6 +25,7 @@ const ComposePost = () => {
       await createPost(content);
       setContent('');
       setIsExpanded(false);
+      await onPosted?.();
     } catch (e) {
       alert('게시글 작성 중 오류가 발생했습니다.');
     } finally {

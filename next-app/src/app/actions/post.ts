@@ -50,6 +50,45 @@ export async function getPosts() {
   return (allPosts || []).map(post => ({ ...post, isLiked: false, isRetweeted: false }));
 }
 
+/** 내팀 탭: 모아보기(본문에 팀 키워드) / 피드(team_tag 일치) */
+export async function getTeamPosts(
+  teamTag: string,
+  mode: 'collection' | 'feed'
+) {
+  const session = await auth();
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const safeTag = teamTag.replace(/%/g, '').slice(0, 32);
+  const whereClause =
+    mode === 'feed'
+      ? eq(posts.teamTag, safeTag)
+      : like(posts.content, `%${safeTag}%`);
+
+  const rows = await db.query.posts.findMany({
+    where: whereClause,
+    with: {
+      profiles: true,
+    },
+    orderBy: [desc(posts.createdAt)],
+    limit: 50,
+  });
+
+  if (session?.user?.id && rows.length) {
+    const userLikes = await db.select().from(likes).where(eq(likes.userId, session.user.id));
+    const userRetweets = await db.select().from(retweets).where(eq(retweets.userId, session.user.id));
+    const likeSet = new Set(userLikes.map((l) => l.postId));
+    const rtSet = new Set(userRetweets.map((r) => r.postId));
+    return rows.map((post) => ({
+      ...post,
+      isLiked: likeSet.has(post.id),
+      isRetweeted: rtSet.has(post.id),
+    }));
+  }
+
+  return rows.map((post) => ({ ...post, isLiked: false, isRetweeted: false }));
+}
+
 export async function createPost(content: string, imageUrl?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');

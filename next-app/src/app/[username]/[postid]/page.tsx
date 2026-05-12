@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import PostCard from '@/components/feed/PostCard';
 import Link from 'next/link';
 import { normalizeHandleSegment, postPermalink } from '@/lib/post-url';
+import { normalizePostForCard } from '@/lib/normalize-post';
 
 export const runtime = 'edge';
 
@@ -49,13 +50,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!post) return { title: 'Post Not Found - KBO Feed' };
 
+    const meta = normalizePostForCard(post as Record<string, unknown>);
+    if (!meta) return { title: 'Post Not Found - KBO Feed' };
+
+    const img = meta.imageUrl || '/images/logo.png';
+
     return {
-      title: `${post.content?.substring(0, 20)}... - ${decodedUsername}님의 게시글`,
-      description: post.content?.substring(0, 150),
+      title: `${String(meta.content ?? '').substring(0, 20)}... - ${decodedUsername}님의 게시글`,
+      description: String(meta.content ?? '').substring(0, 150),
       openGraph: {
         title: `${decodedUsername}님의 야구 소식`,
-        description: post.content?.substring(0, 150),
-        images: [post.imageUrl || '/images/logo.png'],
+        description: String(meta.content ?? '').substring(0, 150),
+        images: [img],
       },
     };
   } catch (e) {
@@ -95,8 +101,11 @@ export default async function PostPage({ params }: Props) {
 
   if (!post) notFound();
 
+  const cardPost = normalizePostForCard(post);
+  if (!cardPost) notFound();
+
   const authorHandle =
-    post.profiles?.username ?? post.username ?? '';
+    cardPost.profiles?.username ?? '';
   if (
     authorHandle &&
     authorHandle.toLowerCase() !== handleFromUrl.toLowerCase()
@@ -105,22 +114,36 @@ export default async function PostPage({ params }: Props) {
   }
 
   return (
-    <div className="flex flex-col">
-      <header className="feed-header px-4 py-3 border-b border-zinc-100 sticky top-0 bg-white/80 backdrop-blur-md z-10 flex items-center gap-4">
-        <Link href="/"><i className="fas fa-arrow-left" /></Link>
-        <h2 className="text-xl font-extrabold">게시물</h2>
-      </header>
-      
-      <div className="feed-content">
-        <PostCard post={post} suppressNavigation />
+    <>
+      <div className="feed-header-group">
+        <div className="feed-header">
+          <div className="header-left">
+            <Link href="/" className="header-back-btn" aria-label="뒤로">
+              <i className="fas fa-arrow-left" />
+            </Link>
+          </div>
+          <div className="mobile-logo-container">
+            <Link href="/">
+              <img src="/images/logo.png" alt="" className="mobile-logo" />
+            </Link>
+          </div>
+          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>
+            게시물
+          </h2>
+          <div className="header-right" />
+        </div>
       </div>
 
-      <div className="p-4 border-t border-zinc-100 mt-4">
-        <h3 className="font-bold mb-4">답글</h3>
-        <div className="text-zinc-500 text-center py-10">
+      <div className="post-detail-container">
+        <PostCard post={cardPost} suppressNavigation />
+      </div>
+
+      <div className="replies-list" style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)' }}>
+        <h3 style={{ fontWeight: 800, marginBottom: 16, fontSize: 18 }}>답글</h3>
+        <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px 0' }}>
           아직 답글이 없습니다.
         </div>
       </div>
-    </div>
+    </>
   );
 }

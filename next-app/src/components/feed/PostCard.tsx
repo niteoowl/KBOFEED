@@ -105,30 +105,30 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
           </div>
         )}
 
-        <div className="tweet-actions" style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '425px', marginTop: '12px', color: 'var(--text-secondary)' }}>
-          <div className="action-item action-comment" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <i className="far fa-comment" style={{ fontSize: '16px' }} /> 
-            <span style={{ fontSize: '13px' }}>{post.commentsCount || 0}</span>
+        <div className="tweet-actions">
+          <div className="action-item action-comment" onClick={(e) => e.stopPropagation()}>
+            <i className="far fa-comment" />
+            <span>{post.commentsCount || 0}</span>
           </div>
-          <div 
+          <div
             onClick={handleRetweet}
-            className="action-item action-retweet" 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isRetweeted ? '#00ba7c' : '' }}
+            className="action-item action-retweet"
+            style={{ color: isRetweeted ? '#00ba7c' : undefined }}
           >
-            <i className="fas fa-retweet" style={{ fontSize: '16px' }} /> 
-            <span style={{ fontSize: '13px' }}>{retweetsCount}</span>
+            <i className="fas fa-retweet" />
+            <span>{retweetsCount}</span>
           </div>
-          <div 
+          <div
             onClick={handleLike}
             className="action-item action-like"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isLiked ? '#f91880' : '' }}
+            style={{ color: isLiked ? '#f91880' : undefined }}
           >
-            <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} style={{ fontSize: '16px' }} /> 
-            <span style={{ fontSize: '13px' }}>{likesCount}</span>
+            <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
+            <span>{likesCount}</span>
           </div>
-          <div className="action-item action-views" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <i className="far fa-chart-bar" style={{ fontSize: '16px' }} /> 
-            <span style={{ fontSize: '13px' }}>0</span>
+          <div className="action-item action-views">
+            <i className="far fa-chart-bar" />
+            <span>0</span>
           </div>
         </div>
       </div>

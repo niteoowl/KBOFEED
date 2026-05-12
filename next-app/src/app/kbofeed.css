@@ -466,6 +466,34 @@ ul {
     display: block;
 }
 
+/* 피드 카드 하단 액션 (바닐라 UI.tweet 인라인과 동일) */
+.tweet-actions {
+    display: flex;
+    justify-content: space-between;
+    max-width: 425px;
+    margin-top: 12px;
+    color: var(--text-secondary);
+}
+
+.tweet-actions .action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.tweet-actions .action-item i {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-block;
+    width: 1.25em;
+    text-align: center;
+}
+
+.tweet-actions .action-item span {
+    font-size: 13px;
+}
+
 .tweet-footer {
     display: flex;
     justify-content: space-between;
