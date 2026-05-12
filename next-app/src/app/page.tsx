@@ -1,46 +1,59 @@
-import { getPosts } from '@/app/actions/post';
-import PostCard from '@/components/feed/PostCard';
 import ComposePost from '@/components/feed/ComposePost';
+import PostList from '@/components/feed/PostList';
 
 export const runtime = 'edge';
 
-export default async function Home() {
-  const allPosts: any[] = await getPosts();
-
+export default function Home() {
   return (
-    <div className="flex flex-col">
-      {/* Header */}
-      <header className="feed-header-group sticky top-0 z-50">
-        <div className="feed-header px-4 py-3 flex justify-between items-center bg-white/80 backdrop-blur-md">
-          <h2 className="text-xl font-extrabold text-zinc-900">홈</h2>
+    <>
+      <div className="feed-header-group">
+        <div className="feed-header">
+          <div className="header-left"></div>
+          <h2 className="desktop-title">홈</h2>
+          <div className="header-right"></div>
         </div>
-        <div className="feed-tabs flex border-b border-zinc-100">
-          <div className="feed-tab active flex-1 text-center py-4 font-bold relative cursor-pointer">
-            전체글
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-primary rounded-full" />
-          </div>
-          <div className="feed-tab flex-1 text-center py-4 font-bold text-zinc-500 cursor-pointer hover:bg-zinc-50">
-            내팀
-          </div>
+        <div className="feed-tabs">
+          <div className="feed-tab active">추천</div>
+          <div className="feed-tab">팔로잉</div>
+          <div className="feed-tab">내팀</div>
         </div>
-      </header>
-
-      {/* Compose */}
-      <ComposePost />
-
-      {/* Feed Content */}
-      <div className="feed-content">
-        {allPosts.length > 0 ? (
-          allPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))
-        ) : (
-          <div className="py-20 text-center text-zinc-500">
-            <i className="fas fa-baseball-ball text-4xl mb-4 opacity-20" />
-            <p>아직 게시글이 없습니다.<br />첫 소식을 전해보세요!</p>
-          </div>
-        )}
       </div>
-    </div>
+
+      {/* My Team Info Bar (Visible when logged in/team selected, for now matching index.html) */}
+      <div className="myteam-info-bar">
+          <div className="myteam-current">
+              <img src="/images/LG트윈스.svg" alt="LG" />
+              <span className="myteam-name">LG 트윈스</span>
+          </div>
+          <button className="change-team-btn" id="toggle-team-picker">팀 변경</button>
+      </div>
+
+      {/* Inline Team Picker (Simplified for now) */}
+      <div className="inline-team-picker" id="team-picker">
+          <div className="picker-scroll-container">
+              {[
+                { name: 'LG', file: 'LG트윈스' },
+                { name: 'KT', file: 'KTWIZ' },
+                { name: 'SSG', file: 'SSG랜더스' },
+                { name: 'NC', file: 'NC다이노스' },
+                { name: '두산', file: '두산베어스' },
+                { name: 'KIA', file: 'KIA타이거즈' },
+                { name: '롯데', file: '롯데자이언츠' },
+                { name: '삼성', file: '삼성라이온즈' },
+                { name: '한화', file: '한화이글스' },
+                { name: '키움', file: '키움히어로즈' }
+              ].map(team => (
+                <div key={team.name} className="team-mini-card">
+                    <img src={`/images/${team.file}.svg`} alt={team.name} />
+                    <span>{team.name}</span>
+                </div>
+              ))}
+          </div>
+      </div>
+
+      
+      <ComposePost />
+      <PostList />
+    </>
   );
 }

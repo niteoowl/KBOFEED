@@ -6,7 +6,7 @@ const Sidebar = () => {
     <aside className="sidebar">
       <div className="logo-container">
         <Link href="/">
-          <img src="/images/logo.png" alt="크보피드 로고" className="logo" />
+          <img src="/images/logo.png" alt="크보피드" className="logo" />
         </Link>
       </div>
       <nav className="nav-links">
@@ -19,11 +19,7 @@ const Sidebar = () => {
           <span>탐색하기</span>
         </Link>
         <Link href="/game" className="nav-item">
-          <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}>
-            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M7 4.5c3 3 3 12 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M17 4.5c-3 3-3 12 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <i className="fas fa-baseball-ball"></i>
           <span>경기</span>
         </Link>
         <div className="nav-item">

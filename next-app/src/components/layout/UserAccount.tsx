@@ -1,6 +1,7 @@
 'use client';
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 
 const UserAccount = () => {
   const { data: session, status } = useSession();
@@ -25,12 +26,9 @@ const UserAccount = () => {
   }
 
   return (
-    <button 
-      onClick={() => signIn('google')}
-      className="mt-auto w-full py-3 bg-zinc-900 text-white rounded-full font-bold hover:bg-zinc-800 transition-colors"
-    >
+    <Link href="/login" className="post-btn" style={{ width: '100%', marginTop: 'auto', display: 'block', textDecoration: 'none' }}>
       로그인
-    </button>
+    </Link>
   );
 };
 

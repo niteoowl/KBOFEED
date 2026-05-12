@@ -28,42 +28,41 @@ const ComposePost = () => {
   };
 
   return (
-    <section className="compose-trigger-section border-b-8 border-zinc-50 p-3">
-      <div className={`compose-trigger bg-zinc-50 p-3 rounded-3xl transition-all ${isExpanded ? 'expanded' : ''}`} onClick={() => !isExpanded && setIsExpanded(true)}>
-        <div className="trigger-static-content flex items-center mb-0">
+    <section className="compose-trigger-section">
+      <div className={`compose-trigger ${isExpanded ? 'expanded' : ''}`} onClick={() => !isExpanded && setIsExpanded(true)}>
+        <div className="trigger-static-content">
           <div 
-            className="user-avatar small w-8 h-8 rounded-xl bg-zinc-200 mr-3 bg-cover"
+            className="user-avatar small"
             style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined }}
           />
-          {!isExpanded && <div className="trigger-placeholder text-zinc-500 text-sm font-medium">오늘의 야구 소식은?</div>}
-          {!isExpanded && <div className="trigger-icon ml-auto text-primary opacity-70"><i className="far fa-image" /></div>}
+          {!isExpanded && <div className="trigger-placeholder">오늘의 야구 소식은?</div>}
+          {!isExpanded && <div className="trigger-icon"><i className="far fa-image" /></div>}
         </div>
 
         {isExpanded && (
-          <div className="expanded-content mt-3 pl-11">
+          <div className="expanded-content">
             <textarea 
-              className="w-full bg-transparent border-none outline-none text-lg resize-none min-h-[100px]"
               placeholder="무슨 일이 일어나고 있나요?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               autoFocus
             />
-            <div className="compose-actions flex justify-between items-center mt-3 pt-3 border-t border-zinc-100">
-              <div className="action-icons flex gap-4 text-primary text-xl">
-                <i className="far fa-image cursor-pointer hover:opacity-70" />
-                <i className="far fa-smile cursor-pointer hover:opacity-70" />
+            <div className="inline-actions">
+              <div className="action-icons">
+                <i className="far fa-image action-icon" />
+                <i className="far fa-smile action-icon" />
               </div>
-              <div className="flex gap-2">
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
-                  className="px-4 py-2 text-zinc-500 font-bold text-sm"
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   취소
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
                   disabled={!content.trim() || isPending}
-                  className="px-5 py-2 bg-primary text-white rounded-full font-bold text-sm disabled:opacity-50"
+                  className="inline-post-btn"
                 >
                   {isPending ? '게시 중...' : '게시하기'}
                 </button>
@@ -73,6 +72,7 @@ const ComposePost = () => {
         )}
       </div>
     </section>
+
   );
 };
 
