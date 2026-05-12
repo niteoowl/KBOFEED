@@ -19,11 +19,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
         clientSecret: env.GOOGLE_CLIENT_SECRET,
       }),
     ],
+    // 1. 커스텀 로그인 페이지 연결
+    pages: {
+      signIn: '/login',
+    },
+    // 2. Edge 환경 필수 설정
+    trustHost: true,
+    secret: env.AUTH_SECRET,
     events: {
       createUser: async ({ user }) => {
         if (!user.id) return;
         
-        // 유저 생성 시 기본 프로필 자동 생성
         await db.insert(profiles).values({
           id: user.id,
           username: `user_${user.id.substring(0, 8)}`,
