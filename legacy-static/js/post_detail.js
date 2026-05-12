@@ -5,16 +5,23 @@
 const PostDetailManager = {
     async init() {
         console.log('[KBO Feed] Initializing PostDetail');
-        const urlParams = new URLSearchParams(window.location.search);
-        const rawId = urlParams.get('id');
-        
-        if (!rawId) {
+        let parsed = window.KBO_POST_URL?.parseFromLocation?.();
+        if (!parsed?.postId) {
+            const q = new URLSearchParams(window.location.search);
+            const qid = q.get('id');
+            parsed = qid ? { handle: '', postId: qid } : null;
+        }
+
+        if (!parsed?.postId) {
             alert('게시물을 찾을 수 없습니다.');
-            window.location.href = '/index.html';
+            window.location.href = 'index.html';
             return;
         }
 
-        const postId = parseInt(rawId);
+        const postId = parsed.postId;
+        const openedViaPostHtmlQuery =
+            window.location.pathname.includes('post.html') &&
+            new URLSearchParams(window.location.search).has('id');
 
         try {
             // UI가 초기화될 때까지 잠시 대기
@@ -45,7 +52,7 @@ const PostDetailManager = {
                         )
                     )
                 `)
-                .eq('id', postId)
+                .eq('id', /^\d+$/.test(String(postId)) ? parseInt(String(postId), 10) : postId)
                 .maybeSingle(); // single() 대신 maybeSingle()로 에러 방지
 
             if (error) {
@@ -60,8 +67,21 @@ const PostDetailManager = {
                 return;
             }
 
+            const authorHandle = post.profiles?.username;
+            if (
+                window.KBO_POST_URL &&
+                authorHandle &&
+                !openedViaPostHtmlQuery
+            ) {
+                const canon = window.KBO_POST_URL.permalinkHere(authorHandle, post.id);
+                const norm = (p) => (p || '').replace(/\/+$/, '') || '/';
+                if (norm(window.location.pathname) !== norm(canon)) {
+                    history.replaceState(null, '', canon);
+                }
+            }
+
             this.renderMainPost(post);
-            this.fetchComments(postId);
+            this.fetchComments(post.id);
 
         } catch (error) {
             console.error('Post Detail Error:', error);

@@ -1,0 +1,6 @@
+# Apache: /@핸들/글ID → post.html (정적 호스트에서 새로고침 가능하게)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # 서브폴더에 두었다면: RewriteBase /kbofeed/
+  RewriteRule ^@([^/]+)/([^/]+)/?$ post.html [L]
+</IfModule>

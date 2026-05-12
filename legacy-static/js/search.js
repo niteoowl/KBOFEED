@@ -6,6 +6,19 @@ const SearchManager = {
     query: '',
     isSearching: false,
 
+    bindTweetNavigation(container) {
+        if (window.KBO_POST_URL) {
+            window.KBO_POST_URL.attachTweetClickHandlers(container);
+            return;
+        }
+        container.querySelectorAll('.tweet').forEach((tweet) => {
+            tweet.onclick = () => {
+                const id = tweet.getAttribute('data-id');
+                if (id) window.location.href = `post.html?id=${encodeURIComponent(id)}`;
+            };
+        });
+    },
+
     async init() {
         const urlParams = new URLSearchParams(window.location.search);
         const rawQuery = urlParams.get('q') || '';
@@ -95,6 +108,7 @@ const SearchManager = {
                         html += '<div style="padding: 8px 32px; font-size: 13px; color: var(--text-secondary); background: #f8f9fa;">작성한 최신 게시물</div>';
                         html += userPosts.map(post => UI.tweet({
                             id: post.id,
+                            handle: post.profiles?.username || 'user',
                             displayName: post.profiles?.display_name,
                             username: `@${post.profiles?.username}`,
                             avatar: post.profiles?.avatar_url,
@@ -115,6 +129,7 @@ const SearchManager = {
                 html += '<div style="padding: 12px 16px; font-weight: 800; border-bottom: 1px solid var(--border-color);">인기 게시물</div>';
                 html += postsRes.data.map(post => UI.tweet({
                     id: post.id,
+                    handle: post.profiles?.username || 'user',
                     displayName: post.profiles?.display_name,
                     username: `@${post.profiles?.username}`,
                     avatar: post.profiles?.avatar_url,
@@ -131,6 +146,7 @@ const SearchManager = {
                 container.innerHTML = `<div style="padding: 60px 20px; text-align: center; color: var(--text-secondary);">"${this.query}"에 대한 결과가 없습니다.</div>`;
             } else {
                 container.innerHTML = html;
+                this.bindTweetNavigation(container);
             }
 
         } catch (error) {
@@ -143,7 +159,7 @@ const SearchManager = {
     renderUserCard(user) {
         const isVerified = user.is_verified === true;
         return `
-            <div class="user-result-card" onclick="window.location.href='/profile.html?u=${user.id}'" style="cursor: pointer; padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; background: #fff;">
+            <div class="user-result-card" onclick="window.location.href='profile.html?u=${user.id}'" style="cursor: pointer; padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; background: #fff;">
                 <div class="user-avatar" style="background-image: url('${user.avatar_url || '/images/logo.png'}'); width: 52px; height: 52px; background-size: cover; border-radius: 50%; border: 1px solid var(--border-color);"></div>
                 <div class="user-info" style="flex: 1; min-width: 0;">
                     <div class="user-main" style="display: flex; align-items: center; gap: 4px;">
@@ -197,6 +213,7 @@ const SearchManager = {
             container.innerHTML = posts.map(post => {
                 return UI.tweet({
                     id: post.id,
+                    handle: post.profiles?.username || 'user',
                     displayName: post.profiles?.display_name || '알 수 없는 유저',
                     username: `@${post.profiles?.username || 'user'}`,
                     avatar: post.profiles?.avatar_url || '/images/logo.png',
@@ -212,12 +229,7 @@ const SearchManager = {
             }).join('');
 
             // 클릭 이벤트
-            container.querySelectorAll('.tweet').forEach(tweet => {
-                tweet.onclick = () => {
-                    const id = tweet.getAttribute('data-id');
-                    if (id) window.location.href = `/post.html?id=${id}`;
-                };
-            });
+            this.bindTweetNavigation(container);
 
         } catch (error) {
             console.error('Search Posts Error:', error);

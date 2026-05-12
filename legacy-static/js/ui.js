@@ -17,10 +17,10 @@ const UI = {
                         <span>홈</span>
                     </div>
                 </a>
-                <a href="/explore.html" class="nav-item-link">
+                <a href="search.html" class="nav-item-link">
                     <div class="nav-item" id="nav-search">
-                        <i class="fas fa-hashtag"></i>
-                        <span>탐색하기</span>
+                        <i class="fas fa-search"></i>
+                        <span>검색</span>
                     </div>
                 </a>
                 <a href="/game.html" class="nav-item-link">
@@ -128,7 +128,7 @@ const UI = {
                 <a href="/index.html" class="nav-item ${activePage === 'home' ? 'active' : ''}">
                     <svg viewBox="0 0 24 24"><path d="M12 2.5c-1.5 0-2.5.8-3.5 1.5L3.5 8.2c-.8.7-1.5 1.8-1.5 3v8.3c0 1.1.9 2 2 2h4.5c.3 0 .5-.2.5-.5v-4.5c0-1.7 1.3-3 3-3s3 1.3 3 3v4.5c0 .3.2.5.5.5h4.5c1.1 0 2-.9 2-2v-8.3c0-1.2-.7-2.3-1.5-3l-5-4.2c-1-.7-2-1.5-3.5-1.5z"></path></svg>
                 </a>
-                <a href="/explore.html" class="nav-item ${activePage === 'explore' || activePage === 'search-results' ? 'active' : ''}">
+                <a href="search.html" class="nav-item ${activePage === 'search-results' || activePage === 'explore' ? 'active' : ''}">
                     <svg viewBox="0 0 24 24"><path d="M11 2a9 9 0 1 0 5.6 16.05l4.1 4.1a1.5 1.5 0 1 0 2.12-2.12l-4.1-4.1A9 9 0 0 0 11 2zm0 3a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"></path></svg>
                 </a>
                 <a href="/game.html" class="nav-item ${activePage === 'game' || activePage === 'live' ? 'active' : ''}">
@@ -145,9 +145,15 @@ const UI = {
         </nav>
     `,
 
-    // Standardized Tweet Component
-    tweet: (data) => `
-        <article class="tweet" data-id="${data.id || ''}">
+    // Standardized Tweet Component (data-handle: /@핸들/글ID 용, XSS 방지 이스케이프)
+    tweet: (data) => {
+        const esc = (s) => String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;');
+        const handleRaw = data.handle != null ? String(data.handle) : '';
+        return `
+        <article class="tweet" data-id="${data.id || ''}" data-handle="${esc(handleRaw)}">
             <div class="user-avatar" style="background-image: url('${data.avatar}'); background-size: cover;"></div>
             <div class="tweet-content">
                 <div class="tweet-header" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
@@ -179,7 +185,8 @@ const UI = {
                 </div>
             </div>
         </article>
-    `,
+    `;
+    },
 
     init() {
         const appContainer = document.querySelector('.app-container');
@@ -203,7 +210,7 @@ const UI = {
         appContainer.prepend(sidebarPlaceholder.firstElementChild);
 
         // 2. Set active state for sidebar
-        const navPage = page === 'search-results' ? 'explore' : page;
+        const navPage = page === 'search-results' || page === 'explore' ? 'search' : page;
         const navItem = document.getElementById(`nav-${navPage}`);
         if (navItem) navItem.classList.add('active');
 
@@ -229,13 +236,13 @@ const UI = {
 
         // 7. 검색바 엔터키 연동
         setTimeout(() => {
-            const searchInputs = document.querySelectorAll('#mobile-search-input, .search-bar input');
+            const searchInputs = document.querySelectorAll('#mobile-search-input, #pc-search-input, .search-bar input');
             searchInputs.forEach(input => {
-                input.onkeypress = (e) => {
+                input.onkeydown = (e) => {
                     if (e.key === 'Enter') {
                         const query = input.value.trim();
                         if (query) {
-                            window.location.href = `/search.html?q=${encodeURIComponent(query)}`;
+                            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
                         }
                     }
                 };

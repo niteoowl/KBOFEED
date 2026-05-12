@@ -1,8 +1,9 @@
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import PostCard from '@/components/feed/PostCard';
 import Link from 'next/link';
+import { normalizeHandleSegment, postPermalink } from '@/lib/post-url';
 
 export const runtime = 'edge';
 
@@ -14,7 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { env } = getRequestContext();
   const { username, postid } = await params;
-  const decodedUsername = decodeURIComponent(username);
+  const decodedUsername = normalizeHandleSegment(username);
 
   try {
     // 에지 캐시(KV) 먼저 확인
@@ -64,7 +65,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { env } = getRequestContext();
-  const { postid } = await params;
+  const { username, postid } = await params;
+  const handleFromUrl = normalizeHandleSegment(username);
+  const postIdNum = parseInt(String(postid), 10);
+  if (Number.isNaN(postIdNum)) notFound();
 
   let post: any = await env.KV.get(`post:${postid}`, 'json');
   
@@ -91,6 +95,15 @@ export default async function PostPage({ params }: Props) {
 
   if (!post) notFound();
 
+  const authorHandle =
+    post.profiles?.username ?? post.username ?? '';
+  if (
+    authorHandle &&
+    authorHandle.toLowerCase() !== handleFromUrl.toLowerCase()
+  ) {
+    permanentRedirect(postPermalink(authorHandle, postIdNum));
+  }
+
   return (
     <div className="flex flex-col">
       <header className="feed-header px-4 py-3 border-b border-zinc-100 sticky top-0 bg-white/80 backdrop-blur-md z-10 flex items-center gap-4">
@@ -99,7 +112,7 @@ export default async function PostPage({ params }: Props) {
       </header>
       
       <div className="feed-content">
-        <PostCard post={post} />
+        <PostCard post={post} suppressNavigation />
       </div>
 
       <div className="p-4 border-t border-zinc-100 mt-4">

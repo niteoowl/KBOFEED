@@ -1,6 +1,11 @@
 {
-  "dependencies": {
-    "@fortawesome/fontawesome-free": "^7.2.0",
-    "pretendard": "^1.3.9"
+  "name": "kbofeed",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix next-app",
+    "build": "npm run build --prefix next-app",
+    "start": "npm run start --prefix next-app",
+    "lint": "npm run lint --prefix next-app",
+    "pages:build": "npm run pages:build --prefix next-app"
   }
 }

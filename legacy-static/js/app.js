@@ -10,9 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         const target = e.target;
 
-        // Tab Switching Logic
+        // Tab Switching Logic (홈·프로필 등 — 검색 결과 상단 탭은 search.js 전용)
         if (target.closest('.feed-tab') || target.closest('.profile-nav-tab')) {
             const tab = target.closest('.feed-tab') || target.closest('.profile-nav-tab');
+            if (tab.classList.contains('feed-tab') && tab.closest('.search-tabs')) {
+                return;
+            }
+
             const tabContainer = tab.parentElement;
             const targetId = tab.dataset.tab;
 
@@ -20,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tabContainer.querySelectorAll('.feed-tab, .profile-nav-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
 
-            // Toggle Content
+            // Toggle Content — 홈의 전체글/내팀 등 #tab-* 만 해당
             if (targetId) {
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
@@ -30,38 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Team Picker Toggle (Inline)
+        // Team Picker Toggle (Inline) — 구단 선택은 feed.js에서 처리
         if (target.closest('#open-team-picker')) {
             const picker = document.getElementById('inline-team-picker');
             if (picker) {
                 picker.classList.toggle('active');
                 const btn = target.closest('#open-team-picker');
-                btn.textContent = picker.classList.contains('active') ? '접기' : '바꾸기';
+                btn.textContent = picker.classList.contains('active') ? '접기' : '변경';
             }
-        }
-
-        // Team Selection Logic
-        if (target.closest('.team-mini-card')) {
-            const card = target.closest('.team-mini-card');
-            const teamName = card.dataset.team;
-            const teamLogo = card.dataset.logo;
-
-            // Update Header/Current Team
-            const currentLogo = document.getElementById('current-team-logo');
-            const currentName = document.getElementById('current-team-name');
-            
-            if (currentLogo) currentLogo.src = `/images/${teamLogo}`;
-            if (currentName) currentName.textContent = teamName;
-
-            // Close Picker
-            const picker = document.getElementById('inline-team-picker');
-            if (picker) {
-                picker.classList.remove('active');
-                const btn = document.getElementById('open-team-picker');
-                if (btn) btn.textContent = '바꾸기';
-            }
-            
-            console.log(`Team changed to: ${teamName}`);
         }
 
         // Post Modal Logic
@@ -138,8 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         if (searchJustOpened) return;
 
-        // Hide suggestions when clicking outside the container
-        if (!e.target.closest('.mobile-search-container') && !e.target.closest('.search-suggestions')) {
+        // Hide suggestions when clicking outside (PC 우측 .search-container 포함)
+        const inSearchUi = e.target.closest('.mobile-search-container')
+            || e.target.closest('.search-container')
+            || e.target.closest('.search-suggestions');
+        if (!inSearchUi) {
             document.querySelectorAll('.search-suggestions').forEach(s => s.classList.remove('active'));
             document.body.classList.remove('search-open');
         }
@@ -165,13 +148,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Close search when clicking a suggestion
+        // Close search when clicking a suggestion → 검색 결과로 이동
         if (e.target.closest('.suggestion-item')) {
             document.querySelectorAll('.search-suggestions').forEach(s => s.classList.remove('active'));
             document.body.classList.remove('search-open');
-            // Normally you would navigate here
-            const name = e.target.closest('.suggestion-item').querySelector('.suggestion-name').textContent;
-            console.log(`Searching for: ${name}`);
+            const nameEl = e.target.closest('.suggestion-item').querySelector('.suggestion-name');
+            const raw = nameEl ? nameEl.textContent.trim() : '';
+            const q = raw.replace(/^#/, '').trim();
+            if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
         }
     });
 

@@ -107,6 +107,7 @@ const FeedManager = {
                 // 게시물 렌더링
                 html += UI.tweet({
                     id: post.id,
+                    handle: post.profiles?.username || 'user',
                     displayName: post.profiles?.display_name || '알 수 없는 유저',
                     username: `@${post.profiles?.username || 'user'}`,
                     avatar: post.profiles?.avatar_url || '/images/logo.png',
@@ -145,12 +146,16 @@ const FeedManager = {
             container.innerHTML = html;
 
             // 게시물 클릭 시 상세 페이지 이동 이벤트 등록
-            container.querySelectorAll('.tweet').forEach(tweet => {
-                tweet.onclick = () => {
-                    const id = tweet.getAttribute('data-id');
-                    if (id) window.location.href = `/post.html?id=${id}`;
-                };
-            });
+            if (window.KBO_POST_URL) {
+                window.KBO_POST_URL.attachTweetClickHandlers(container);
+            } else {
+                container.querySelectorAll('.tweet').forEach((tweet) => {
+                    tweet.onclick = () => {
+                        const id = tweet.getAttribute('data-id');
+                        if (id) window.location.href = `post.html?id=${encodeURIComponent(id)}`;
+                    };
+                });
+            }
 
         } catch (error) {
             console.error('Feed Fetch Error:', error);
@@ -254,7 +259,10 @@ const FeedManager = {
                 }
 
                 this.fetchMyTeamData(teamId);
-                document.getElementById('inline-team-picker').classList.remove('active');
+                const pickerEl = document.getElementById('inline-team-picker');
+                if (pickerEl) pickerEl.classList.remove('active');
+                const teamBtn = document.getElementById('open-team-picker');
+                if (teamBtn) teamBtn.textContent = '변경';
             };
         });
 
@@ -297,6 +305,12 @@ const FeedManager = {
     updateMyTeamUI(teamId, teamName) {
         const nameEl = document.getElementById('current-team-name');
         const logoEl = document.getElementById('current-team-logo');
+
+        if (logoEl && teamId && typeof KBO_CONSTANTS !== 'undefined') {
+            const logoFile = KBO_CONSTANTS.TEAM_LOGO_MAP[teamId]
+                || KBO_CONSTANTS.TEAM_LOGO_MAP[String(teamId).toUpperCase()];
+            if (logoFile) logoEl.src = `images/${logoFile}`;
+        }
         
         // 아이디를 기반으로 공식 명칭 찾기
         const upperId = teamId ? teamId.toUpperCase() : '';

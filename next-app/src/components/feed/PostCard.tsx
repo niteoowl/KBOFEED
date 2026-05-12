@@ -3,9 +3,13 @@
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { toggleLike, toggleRetweet } from '@/app/actions/post';
+import { postPermalink } from '@/lib/post-url';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 interface PostProps {
+  /** 게시물 단일 페이지 등에서는 카드 클릭 네비게이션 끔 */
+  suppressNavigation?: boolean;
   post: {
     id: number;
     content: string | null;
@@ -25,7 +29,8 @@ interface PostProps {
   };
 }
 
-const PostCard = ({ post }: PostProps) => {
+const PostCard = ({ post, suppressNavigation }: PostProps) => {
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
   const [isRetweeted, setIsRetweeted] = useState(post.isRetweeted);
@@ -51,8 +56,26 @@ const PostCard = ({ post }: PostProps) => {
     ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })
     : '';
 
+  const detailHref = postPermalink(post.profiles.username, post.id);
+
+  const openPostDetail = () => {
+    if (!suppressNavigation) router.push(detailHref);
+  };
+
   return (
-    <article className="tweet">
+    <article
+      className="tweet"
+      role={suppressNavigation ? undefined : 'link'}
+      tabIndex={suppressNavigation ? undefined : 0}
+      onClick={suppressNavigation ? undefined : openPostDetail}
+      onKeyDown={suppressNavigation ? undefined : (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openPostDetail();
+        }
+      }}
+      style={suppressNavigation ? { cursor: 'default' } : undefined}
+    >
       <div 
         className="user-avatar"
         style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover' }}
@@ -83,7 +106,7 @@ const PostCard = ({ post }: PostProps) => {
         )}
 
         <div className="tweet-actions" style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '425px', marginTop: '12px', color: 'var(--text-secondary)' }}>
-          <div className="action-item action-comment" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <div className="action-item action-comment" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <i className="far fa-comment" style={{ fontSize: '16px' }} /> 
             <span style={{ fontSize: '13px' }}>{post.commentsCount || 0}</span>
           </div>
