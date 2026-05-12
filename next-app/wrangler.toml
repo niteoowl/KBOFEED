@@ -12,6 +12,6 @@ binding = "DB"
 database_name = "kbo-feed-db"
 database_id = "d8483595-b836-483b-a48b-31f10608be80"
 
-[[r2_buckets]]
-binding = "R2"
-bucket_name = "kbo-feed-images"
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "kbo-feed-images"
