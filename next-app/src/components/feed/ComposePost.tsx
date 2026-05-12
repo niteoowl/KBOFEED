@@ -33,29 +33,32 @@ const ComposePost = () => {
         <div className="trigger-static-content">
           <div 
             className="user-avatar small"
-            style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined }}
+            style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover' }}
           />
-          {!isExpanded && <div className="trigger-placeholder">오늘의 야구 소식은?</div>}
-          {!isExpanded && <div className="trigger-icon"><i className="far fa-image" /></div>}
+          <div className="trigger-placeholder">오늘의 야구 소식은?</div>
+          <div className="trigger-icon"><i className="far fa-image"></i></div>
         </div>
 
-        {isExpanded && (
-          <div className="expanded-content">
+        <div className="expanded-content">
+          <div className="compose-input-area">
             <textarea 
               placeholder="무슨 일이 일어나고 있나요?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               autoFocus
+              maxLength={280}
             />
-            <div className="inline-actions">
-              <div className="action-icons">
-                <i className="far fa-image action-icon" />
-                <i className="far fa-smile action-icon" />
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+          </div>
+          <div className="compose-actions">
+            <div className="action-icons">
+              <i className="far fa-image" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
+              <i className="far fa-smile" />
+              <i className="far fa-calendar-alt" />
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
                 >
                   취소
                 </button>
@@ -66,13 +69,11 @@ const ComposePost = () => {
                 >
                   {isPending ? '게시 중...' : '게시하기'}
                 </button>
-              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </section>
-
   );
 };
 

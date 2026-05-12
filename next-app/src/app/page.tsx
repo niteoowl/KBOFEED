@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import ComposePost from '@/components/feed/ComposePost';
 import PostList from '@/components/feed/PostList';
 
@@ -9,15 +10,18 @@ export default function Home() {
       <div className="feed-header-group">
         <div className="feed-header">
           <div className="header-left"></div>
-          <h2 className="desktop-title">홈</h2>
+          <div className="mobile-logo-container">
+            <Link href="/"><img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" /></Link>
+          </div>
+          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>홈</h2>
           <div className="header-right"></div>
         </div>
         <div className="feed-tabs">
-          <div className="feed-tab active">추천</div>
-          <div className="feed-tab">팔로잉</div>
+          <div className="feed-tab active">전체글</div>
           <div className="feed-tab">내팀</div>
         </div>
       </div>
+
 
       {/* My Team Info Bar (Visible when logged in/team selected, for now matching index.html) */}
       <div className="myteam-info-bar">

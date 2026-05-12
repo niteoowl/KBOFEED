@@ -55,21 +55,21 @@ const PostCard = ({ post }: PostProps) => {
     <article className="tweet">
       <div 
         className="user-avatar"
-        style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined }}
+        style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover' }}
       />
       <div className="tweet-content">
-        <div className="tweet-header">
-          <span className="display-name">
+        <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+          <span className="display-name" style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
             {post.profiles.displayName || '탐험가'}
           </span>
           {post.profiles.isVerified && (
-            <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginLeft: '4px' }} />
+            <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginRight: '2px' }} />
           )}
-          <span className="username">
+          <span className="username" style={{ color: 'var(--text-secondary)', marginLeft: '2px' }}>
             @{post.profiles.username}
           </span>
-          <span className="dot">·</span>
-          <span className="time">{timeAgo}</span>
+          <span className="dot" style={{ color: 'var(--text-secondary)' }}>·</span>
+          <span className="time" style={{ color: 'var(--text-secondary)' }}>{timeAgo}</span>
         </div>
         
         <div className="tweet-text">
@@ -78,37 +78,38 @@ const PostCard = ({ post }: PostProps) => {
 
         {post.imageUrl && (
           <div className="tweet-media">
-            <img src={post.imageUrl} alt="Post media" />
+            <img src={post.imageUrl} alt="게시물 이미지" />
           </div>
         )}
 
-        <div className="tweet-footer">
-          <div className="nav-item">
-            <i className="far fa-comment" />
-            <span className="label">{post.commentsCount || 0}</span>
+        <div className="tweet-actions" style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '425px', marginTop: '12px', color: 'var(--text-secondary)' }}>
+          <div className="action-item action-comment" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <i className="far fa-comment" style={{ fontSize: '16px' }} /> 
+            <span style={{ fontSize: '13px' }}>{post.commentsCount || 0}</span>
           </div>
           <div 
             onClick={handleRetweet}
-            className={`nav-item rt ${isRetweeted ? 'active' : ''}`}
+            className="action-item action-retweet" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isRetweeted ? '#00ba7c' : '' }}
           >
-            <i className="fas fa-retweet" />
-            <span className="label">{retweetsCount}</span>
+            <i className="fas fa-retweet" style={{ fontSize: '16px' }} /> 
+            <span style={{ fontSize: '13px' }}>{retweetsCount}</span>
           </div>
           <div 
             onClick={handleLike}
-            className={`nav-item like ${isLiked ? 'active' : ''}`}
+            className="action-item action-like"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isLiked ? '#f91880' : '' }}
           >
-            <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
-            <span className="label">{likesCount}</span>
+            <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} style={{ fontSize: '16px' }} /> 
+            <span style={{ fontSize: '13px' }}>{likesCount}</span>
           </div>
-          <div className="nav-item">
-            <i className="far fa-chart-bar" />
-            <span className="label">0</span>
+          <div className="action-item action-views" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="far fa-chart-bar" style={{ fontSize: '16px' }} /> 
+            <span style={{ fontSize: '13px' }}>0</span>
           </div>
         </div>
       </div>
     </article>
-
   );
 };
 

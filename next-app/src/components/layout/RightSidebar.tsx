@@ -15,18 +15,34 @@ const RightSidebar = () => {
   };
 
   return (
-    <aside className="right-sidebar">
-      <form onSubmit={handleSearch} className="search-container">
-        <div className="search-bar">
-          <i className="fas fa-search"></i>
-          <input 
-            type="text" 
-            placeholder="검색" 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+<aside className="right-sidebar">
+      <div className="search-container">
+        <div className="search-bar-sticky-wrapper">
+          <form onSubmit={handleSearch} className="search-bar">
+            <i className="fas fa-search"></i>
+            <input 
+              type="text" 
+              placeholder="검색" 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              id="pc-search-input"
+            />
+          </form>
         </div>
-      </form>
+        {/* Search Suggestions */}
+        <div className="search-suggestions" id="pc-search-suggestions">
+            <div className="suggestion-item">
+                <span className="suggestion-category">트렌드 중</span>
+                <span className="suggestion-name">#잠실더비</span>
+                <span className="suggestion-count">12,402 게시물</span>
+            </div>
+            <div className="suggestion-item">
+                <span className="suggestion-category">실시간 화제</span>
+                <span className="suggestion-name">끝내기 홈런 실황</span>
+                <span className="suggestion-count">5,201 게시물</span>
+            </div>
+        </div>
+      </div>
 
       <section className="trends-container">
         <h3 className="section-title">최신 야구 뉴스</h3>
@@ -58,8 +74,25 @@ const RightSidebar = () => {
 
       <section className="trends-container">
         <h3 className="section-title">추천 팔로우</h3>
-        <div className="p-4 text-center text-sm text-zinc-500">
-          로그인 후 추천 팔로우를 확인하세요.
+        <div className="follow-item">
+            <div className="follow-info">
+                <div className="user-avatar" style={{ backgroundImage: "url('https://i.pravatar.cc/150?u=5')", backgroundSize: 'cover', width: '40px', height: '40px' }}></div>
+                <div className="follow-text">
+                    <div className="follow-name">KIA 타이거즈</div>
+                    <div className="follow-username">@kiatigers</div>
+                </div>
+            </div>
+            <button className="follow-btn">팔로우</button>
+        </div>
+        <div className="follow-item">
+            <div className="follow-info">
+                <div className="user-avatar" style={{ backgroundImage: "url('https://i.pravatar.cc/150?u=6')", backgroundSize: 'cover', width: '40px', height: '40px' }}></div>
+                <div className="follow-text">
+                    <div className="follow-name">삼성 라이온즈</div>
+                    <div className="follow-username">@samsunglions</div>
+                </div>
+            </div>
+            <button className="follow-btn">팔로우</button>
         </div>
       </section>
     </aside>
