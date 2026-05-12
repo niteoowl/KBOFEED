@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, uniqueIndex, primaryKey } from 'drizzle-orm/sqlite-core';
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 export const users = sqliteTable('users', {
   id: text('id').notNull().primaryKey(),
   name: text('name'),
@@ -121,3 +121,99 @@ export const notifications = sqliteTable('notifications', {
   isRead: integer('is_read', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ one, many }) => ({
+  profiles: one(profiles, {
+    fields: [users.id],
+    references: [profiles.id],
+  }),
+  accounts: many(accounts),
+  sessions: many(sessions),
+}));
+
+export const profilesRelations = relations(profiles, ({ many }) => ({
+  posts: many(posts),
+  likes: many(likes),
+  retweets: many(retweets),
+  comments: many(comments),
+  follows: many(follows, { relationName: 'follower' }),
+  following: many(follows, { relationName: 'following' }),
+  notifications: many(notifications, { relationName: 'receiver' }),
+  sentNotifications: many(notifications, { relationName: 'sender' }),
+}));
+
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  profiles: one(profiles, {
+    fields: [posts.userId],
+    references: [profiles.id],
+  }),
+  likes: many(likes),
+  retweets: many(retweets),
+  comments: many(comments),
+  notifications: many(notifications),
+}));
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  profiles: one(profiles, {
+    fields: [likes.userId],
+    references: [profiles.id],
+  }),
+  post: one(posts, {
+    fields: [likes.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const retweetsRelations = relations(retweets, ({ one }) => ({
+  profiles: one(profiles, {
+    fields: [retweets.userId],
+    references: [profiles.id],
+  }),
+  post: one(posts, {
+    fields: [retweets.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  profiles: one(profiles, {
+    fields: [comments.userId],
+    references: [profiles.id],
+  }),
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const followsRelations = relations(follows, ({ one }) => ({
+  follower: one(profiles, {
+    fields: [follows.followerId],
+    references: [profiles.id],
+    relationName: 'follower',
+  }),
+  following: one(profiles, {
+    fields: [follows.followingId],
+    references: [profiles.id],
+    relationName: 'following',
+  }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  receiver: one(profiles, {
+    fields: [notifications.receiverId],
+    references: [profiles.id],
+    relationName: 'receiver',
+  }),
+  sender: one(profiles, {
+    fields: [notifications.senderId],
+    references: [profiles.id],
+    relationName: 'sender',
+  }),
+  post: one(posts, {
+    fields: [notifications.postId],
+    references: [posts.id],
+  }),
+}));
+
