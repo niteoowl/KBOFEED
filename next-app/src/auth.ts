@@ -62,7 +62,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
             .join('');
 
           if (hashedPassword === user.password) {
-            return { id: user.id, name: user.name, email: user.email };
+            // Fetch profile to get username
+            const profile = await db.query.profiles.findFirst({
+              where: (profiles, { eq }) => eq(profiles.id, user.id)
+            });
+
+            return { 
+              id: user.id, 
+              name: user.name, 
+              email: user.email,
+              username: profile?.username // Include username
+            };
           }
           return null;
         }
@@ -79,13 +89,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
     // Cloudflare Pages에서 도메인 인식이 안 될 경우를 대비해 명시적 설정
     basePath: "/api/auth",
     callbacks: {
-      session: ({ session, user }) => ({
-        ...session,
-        user: {
-          ...session.user,
-          id: user.id,
-        },
-      }),
+      jwt: async ({ token, user, trigger }) => {
+        // On initial sign-in or session update, fetch profile
+        if (user || trigger === 'update') {
+          const userId = user?.id || token.id as string;
+          if (userId) {
+            token.id = userId;
+            try {
+              const profile = await db.query.profiles.findFirst({
+                where: (profiles, { eq }) => eq(profiles.id, userId)
+              });
+              if (profile) {
+                token.username = profile.username;
+                // 자동생성 핸들(user_xxxxxxxx) → 온보딩 필요
+                token.needsOnboarding = /^user_[a-f0-9]{8}$/.test(profile.username);
+              } else {
+                token.needsOnboarding = true;
+              }
+            } catch (e) {
+              console.error('Failed to fetch profile in jwt callback:', e);
+              if (user) {
+                token.username = (user as any).username;
+                token.needsOnboarding = false;
+              }
+            }
+          }
+        }
+        return token;
+      },
+      session: async ({ session, token }) => {
+        if (session.user) {
+          session.user.id = token.id as string;
+          (session.user as any).username = token.username;
+          (session.user as any).needsOnboarding = token.needsOnboarding || false;
+        }
+        return session;
+      },
     },
     events: {
       createUser: async ({ user }) => {

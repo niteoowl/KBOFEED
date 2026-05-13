@@ -4,6 +4,8 @@ import type { NextRequest } from 'next/server';
 /** 단일 세그먼트 라우트 (예: /login)와 충돌하지 않도록 보류 */
 const RESERVED_FIRST_SEGMENTS = new Set([
   'login',
+  'signup',
+  'onboarding',
   'explore',
   'search',
   'game',
