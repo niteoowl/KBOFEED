@@ -1,5 +1,6 @@
-import { getPostDetail } from '@/app/actions/post';
+import { getPostDetail, getComments } from '@/app/actions/post';
 import PostCard from '@/components/feed/PostCard';
+import CommentSection from '@/components/feed/CommentSection';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
@@ -15,10 +16,13 @@ interface PostDetailPageProps {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { username, postid } = await params;
   
-  const post = await getPostDetail(parseInt(postid));
+  // ★ ShortID는 문자열이므로 parseInt 불필요
+  const post = await getPostDetail(postid);
   if (!post) {
     notFound();
   }
+
+  const commentsData = await getComments(postid);
 
   return (
     <main className="main-feed">
@@ -37,12 +41,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       <section className="post-detail-container">
         <PostCard post={post} suppressNavigation={true} />
         
-        {/* Reply section placeholder */}
-        <div className="replies-list" style={{ borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            아직 답글이 없습니다.
-          </div>
-        </div>
+        {/* 댓글 작성 + 목록 */}
+        <CommentSection postId={postid} initialComments={commentsData} />
       </section>
     </main>
   );

@@ -11,7 +11,7 @@ interface PostProps {
   /** 게시물 단일 페이지 등에서는 카드 클릭 네비게이션 끔 */
   suppressNavigation?: boolean;
   post: {
-    id: number;
+    id: string;
     content: string | null;
     imageUrl: string | null;
     createdAt: string | null;
@@ -50,6 +50,12 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
     setIsRetweeted(newRetweeted);
     setRetweetsCount(prev => newRetweeted ? prev + 1 : Math.max(0, prev - 1));
     await toggleRetweet(post.id);
+  };
+
+  const handleComment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // 댓글 클릭 시 게시물 상세 페이지로 이동 (댓글 작성 가능)
+    router.push(detailHref);
   };
 
   const parseDate = (dateStr: string) => {
@@ -132,7 +138,7 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
         )}
 
         <div className="tweet-actions">
-          <div className="action-item action-comment" onClick={(e) => e.stopPropagation()}>
+          <div className="action-item action-comment" onClick={handleComment}>
             <i className="far fa-comment" />
             <span>{post.commentsCount || 0}</span>
           </div>

@@ -56,13 +56,14 @@ export const profiles = sqliteTable('profiles', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
+// ★ posts.id: 8자리 62진수 ShortID (TEXT)
 export const posts = sqliteTable('posts', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
   content: text('content'),
   imageUrl: text('image_url'),
   teamTag: text('team_tag'),
-  retweetId: integer('retweet_id').references((): any => posts.id, { onDelete: 'set null' }),
+  retweetId: text('retweet_id').references((): any => posts.id, { onDelete: 'set null' }),
   likesCount: integer('likes_count').default(0),
   retweetsCount: integer('retweets_count').default(0),
   commentsCount: integer('comments_count').default(0),
@@ -72,7 +73,7 @@ export const posts = sqliteTable('posts', {
 export const likes = sqliteTable('likes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-  postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   userPostUnique: uniqueIndex('likes_user_post_unique').on(table.userId, table.postId),
@@ -81,7 +82,7 @@ export const likes = sqliteTable('likes', {
 export const retweets = sqliteTable('retweets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-  postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   userPostUnique: uniqueIndex('retweets_user_post_unique').on(table.userId, table.postId),
@@ -90,7 +91,7 @@ export const retweets = sqliteTable('retweets', {
 export const comments = sqliteTable('comments', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-  postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
@@ -118,7 +119,7 @@ export const notifications = sqliteTable('notifications', {
   receiverId: text('receiver_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
   senderId: text('sender_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
   type: text('type').notNull(), // 'like', 'retweet', 'comment', 'follow'
-  postId: integer('post_id').references(() => posts.id, { onDelete: 'cascade' }),
+  postId: text('post_id').references(() => posts.id, { onDelete: 'cascade' }),
   isRead: integer('is_read', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
@@ -217,4 +218,3 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     references: [posts.id],
   }),
 }));
-

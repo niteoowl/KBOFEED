@@ -7,7 +7,7 @@ export function normalizePostForCard(
   const profilesRaw = r.profiles as Record<string, unknown> | undefined;
 
   return {
-    id: r.id as number,
+    id: String(r.id),
     content: (r.content ?? null) as string | null,
     imageUrl: (r.imageUrl ?? r.image_url ?? null) as string | null,
     createdAt: (r.createdAt ?? r.created_at ?? null) as string | null,

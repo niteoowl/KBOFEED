@@ -125,7 +125,7 @@ export default function HomeFeed() {
           if (content && session?.user) {
             // 1. 낙관적 업데이트: 서버 응답 전 UI에 즉시 반영
             const optimisticPost = {
-              id: Date.now(), // 임시 ID
+              id: 'tmp_' + Date.now(), // 임시 ID (ShortID는 서버에서 생성)
               content,
               createdAt: new Date().toISOString(),
               likesCount: 0,

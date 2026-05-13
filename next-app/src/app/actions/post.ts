@@ -2,10 +2,11 @@
 
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getDb } from '@/db/db';
-import { posts, profiles, likes, retweets, notifications } from '@/db/schema';
+import { posts, profiles, likes, retweets, comments, notifications } from '@/db/schema';
 import { desc, eq, and, sql, like, or, count } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { generateShortId } from '@/lib/short-id';
 
 export async function getPosts() {
   const session = await auth();
@@ -96,7 +97,10 @@ export async function createPost(content: string, imageUrl?: string) {
   const { env } = getRequestContext();
   const db = getDb(env.DB);
 
+  const shortId = generateShortId();
+
   await db.insert(posts).values({
+    id: shortId,
     userId: session.user.id,
     content,
     imageUrl,
@@ -106,9 +110,10 @@ export async function createPost(content: string, imageUrl?: string) {
   await env.KV.delete('main_feed_posts');
 
   revalidatePath('/');
+  return shortId;
 }
 
-export async function toggleLike(postId: number) {
+export async function toggleLike(postId: string) {
   const session = await auth();
   if (!session?.user?.id) return;
 
@@ -144,7 +149,7 @@ export async function toggleLike(postId: number) {
   revalidatePath('/');
 }
 
-export async function toggleRetweet(postId: number) {
+export async function toggleRetweet(postId: string) {
   const session = await auth();
   if (!session?.user?.id) return;
 
@@ -164,7 +169,9 @@ export async function toggleRetweet(postId: number) {
     await db.insert(retweets).values({ postId, userId: session.user.id });
     await db.update(posts).set({ retweetsCount: sql`retweets_count + 1` }).where(eq(posts.id, postId));
     // 리트윗 게시글 생성
+    const rtShortId = generateShortId();
     await db.insert(posts).values({
+      id: rtShortId,
       userId: session.user.id,
       retweetId: postId,
       content: null,
@@ -212,7 +219,7 @@ export async function searchPosts(query: string) {
   return results.map(post => ({ ...post, isLiked: false }));
 }
 
-export async function getPostDetail(postId: number) {
+export async function getPostDetail(postId: string) {
   const session = await auth();
   const { env } = getRequestContext();
   const db = getDb(env.DB);
@@ -254,4 +261,127 @@ export async function searchUsers(query: string) {
       like(profiles.displayName, `%${query}%`)
     ))
     .limit(10);
+}
+
+// ========================
+// 댓글 (Comments) 기능
+// ========================
+
+/** 특정 게시물의 댓글 목록 조회 */
+export async function getComments(postId: string) {
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  return await db.query.comments.findMany({
+    where: eq(comments.postId, postId),
+    with: {
+      profiles: true,
+    },
+    orderBy: [desc(comments.createdAt)],
+    limit: 100,
+  });
+}
+
+/** 댓글 작성 */
+export async function createComment(postId: string, content: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Unauthorized');
+  if (!content.trim()) throw new Error('Content is empty');
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  await db.insert(comments).values({
+    postId,
+    userId: session.user.id,
+    content: content.trim(),
+  });
+
+  // comments_count 는 DB 트리거가 있지만, 혹시 없을 경우 수동으로도 증가
+  // (트리거가 있으면 중복 증가되므로 트리거가 확실하면 이 줄 제거)
+  // await db.update(posts).set({ commentsCount: sql`comments_count + 1` }).where(eq(posts.id, postId));
+
+  // 알림 생성 (글 작성자가 자기 글에 댓글 달 때 제외)
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+  if (post && post.userId !== session.user.id) {
+    await db.insert(notifications).values({
+      receiverId: post.userId,
+      senderId: session.user.id,
+      type: 'comment',
+      postId,
+    });
+  }
+
+  // 캐시 무효화
+  await env.KV.delete('main_feed_posts');
+
+  revalidatePath('/');
+}
+
+// ========================
+// 프로필 탭: 좋아요한 게시물
+// ========================
+
+/** 특정 유저가 좋아요한 게시물 목록 */
+export async function getUserLikedPosts(userId: string) {
+  const session = await auth();
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  // likes 테이블에서 해당 유저의 좋아요를 찾고, 연결된 post 조회
+  const userLikeRows = await db.select().from(likes)
+    .where(eq(likes.userId, userId))
+    .orderBy(desc(likes.createdAt))
+    .limit(50);
+
+  if (userLikeRows.length === 0) return [];
+
+  const postIds = userLikeRows.map(l => l.postId);
+  
+  // 각 postId에 대해 post+profile 조회
+  const likedPosts = [];
+  for (const pid of postIds) {
+    const post = await db.query.posts.findFirst({
+      where: eq(posts.id, pid),
+      with: { profiles: true },
+    });
+    if (post) likedPosts.push(post);
+  }
+
+  // 현재 로그인 사용자의 좋아요/리트윗 상태
+  if (session?.user?.id && likedPosts.length) {
+    const myLikes = await db.select().from(likes).where(eq(likes.userId, session.user.id));
+    const myRetweets = await db.select().from(retweets).where(eq(retweets.userId, session.user.id));
+    const likeSet = new Set(myLikes.map(l => l.postId));
+    const rtSet = new Set(myRetweets.map(r => r.postId));
+    return likedPosts.map(post => ({
+      ...post,
+      isLiked: likeSet.has(post.id),
+      isRetweeted: rtSet.has(post.id),
+    }));
+  }
+
+  return likedPosts.map(post => ({ ...post, isLiked: false, isRetweeted: false }));
+}
+
+/** 특정 유저가 작성한 댓글(답글) 목록 + 연결된 원본 게시물 */
+export async function getUserComments(userId: string) {
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const userComments = await db.query.comments.findMany({
+    where: eq(comments.userId, userId),
+    with: {
+      profiles: true,
+      post: {
+        with: {
+          profiles: true,
+        },
+      },
+    },
+    orderBy: [desc(comments.createdAt)],
+    limit: 50,
+  });
+
+  return userComments;
 }

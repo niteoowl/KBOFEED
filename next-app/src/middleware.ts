@@ -15,7 +15,8 @@ const RESERVED_FIRST_SEGMENTS = new Set([
 ]);
 
 /**
- * 레거시 /username/123 → /@username/123 (표준 canonical)
+ * 레거시 /username/shortid → /@username/shortid (표준 canonical)
+ * ShortID: 8자리 base-62 (0-9, a-z, A-Z)
  */
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -24,7 +25,8 @@ export function middleware(request: NextRequest) {
 
   const [first, second] = segments;
   if (first.startsWith('@')) return NextResponse.next();
-  if (!/^\d+$/.test(second)) return NextResponse.next();
+  // 8자리 base-62 ShortID 패턴 매칭
+  if (!/^[0-9a-zA-Z]{8}$/.test(second)) return NextResponse.next();
   if (RESERVED_FIRST_SEGMENTS.has(first.toLowerCase())) return NextResponse.next();
 
   url.pathname = `/@${encodeURIComponent(first)}/${second}`;

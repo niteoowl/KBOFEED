@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { completeOnboarding } from '@/app/actions/auth';
 import { KBO_TEAMS, getTeamLogo } from '@/lib/constants';
@@ -13,7 +12,6 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const scrollCarousel = (direction: number) => {
     if (carouselRef.current) {
@@ -31,9 +29,11 @@ export default function OnboardingPage() {
         setError(result.error);
         setLoading(false);
       } else {
-        // Refresh session to pick up new username
+        // ★ 세션 갱신 후 하드 리다이렉트로 완전히 새로운 세션을 로드
+        // router.push('/')는 클라이언트 캐시된 세션이 needsOnboarding=true를 유지해
+        // OnboardingGuard가 다시 온보딩으로 보내는 문제가 있음
         await update();
-        router.push('/');
+        window.location.href = '/';
       }
     } catch (err) {
       setError('프로필 설정 중 오류가 발생했습니다.');

@@ -1,5 +1,6 @@
 -- KBO Feed Cloudflare D1 Schema (SQLite)
 -- ==========================================
+-- ★ posts.id: 8자리 62진수 ShortID (TEXT)
 
 -- NextAuth Required Tables
 CREATE TABLE IF NOT EXISTS users (
@@ -52,14 +53,14 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Posts Table
+-- 2. Posts Table (★ id: 8자리 62진수 ShortID TEXT)
 CREATE TABLE IF NOT EXISTS posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     content TEXT,
     image_url TEXT,
     team_tag TEXT,
-    retweet_id INTEGER,
+    retweet_id TEXT,
     likes_count INTEGER DEFAULT 0,
     retweets_count INTEGER DEFAULT 0,
     comments_count INTEGER DEFAULT 0,
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS posts (
 CREATE TABLE IF NOT EXISTS likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
-    post_id INTEGER NOT NULL,
+    post_id TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, post_id),
     FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
@@ -83,7 +84,7 @@ CREATE TABLE IF NOT EXISTS likes (
 CREATE TABLE IF NOT EXISTS retweets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
-    post_id INTEGER NOT NULL,
+    post_id TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, post_id),
     FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
@@ -94,7 +95,7 @@ CREATE TABLE IF NOT EXISTS retweets (
 CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
-    post_id INTEGER NOT NULL,
+    post_id TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
@@ -128,7 +129,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     receiver_id TEXT NOT NULL,
     sender_id TEXT NOT NULL,
     type TEXT NOT NULL, -- 'like', 'retweet', 'comment', 'follow'
-    post_id INTEGER,
+    post_id TEXT,
     is_read INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (receiver_id) REFERENCES profiles(id) ON DELETE CASCADE,
@@ -137,8 +138,6 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- 9. Triggers (댓글 수 자동 업데이트)
--- SQLite에서는 INSERT/DELETE 시 별도의 트리거를 작성해야 합니다.
-
 CREATE TRIGGER IF NOT EXISTS increment_comment_count
 AFTER INSERT ON comments
 BEGIN

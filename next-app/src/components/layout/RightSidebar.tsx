@@ -1,17 +1,51 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { searchUsers } from '@/app/actions/post';
 
 const RightSidebar = () => {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [userResults, setUserResults] = useState<any[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 실시간 유저 검색 (디바운스)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    
+    if (!query.trim()) {
+      setUserResults([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const results = await searchUsers(query.trim());
+        setUserResults(results);
+      } catch {
+        setUserResults([]);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      setIsFocused(false);
     }
+  };
+
+  const goToUser = (username: string) => {
+    setIsFocused(false);
+    setQuery('');
+    router.push(`/@${username}`);
   };
 
   return (
@@ -25,22 +59,65 @@ const RightSidebar = () => {
               placeholder="검색" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               id="pc-search-input"
+              autoComplete="off"
             />
           </form>
         </div>
-        {/* Search Suggestions */}
-        <div className="search-suggestions" id="pc-search-suggestions">
-            <div className="suggestion-item">
+        {/* Search Suggestions with live user search */}
+        <div
+          className="search-suggestions"
+          id="pc-search-suggestions"
+          style={{ display: isFocused && (userResults.length > 0 || query.trim()) ? 'block' : undefined }}
+        >
+          {userResults.length > 0 ? (
+            userResults.slice(0, 5).map((user: any) => (
+              <div
+                key={user.id}
+                className="suggestion-item"
+                onClick={() => goToUser(user.username)}
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+              >
+                <div
+                  style={{
+                    backgroundImage: user.avatarUrl
+                      ? `url(${user.avatarUrl})`
+                      : `url(https://i.pravatar.cc/150?u=${user.username})`,
+                    backgroundSize: 'cover',
+                    width: '32px',
+                    height: '32px',
+                    minWidth: '32px',
+                    borderRadius: '50%',
+                  }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>
+                    {user.displayName || user.username}
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>@{user.username}</div>
+                </div>
+              </div>
+            ))
+          ) : query.trim() ? (
+            <div className="suggestion-item" style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+              '{query}'에 대한 사용자 결과 없음
+            </div>
+          ) : (
+            <>
+              <div className="suggestion-item">
                 <span className="suggestion-category">트렌드 중</span>
                 <span className="suggestion-name">#잠실더비</span>
                 <span className="suggestion-count">12,402 게시물</span>
-            </div>
-            <div className="suggestion-item">
+              </div>
+              <div className="suggestion-item">
                 <span className="suggestion-category">실시간 화제</span>
                 <span className="suggestion-name">끝내기 홈런 실황</span>
                 <span className="suggestion-count">5,201 게시물</span>
-            </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
