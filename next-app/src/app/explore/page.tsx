@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import SearchHeader from '@/components/search/SearchHeader';
 
+export const runtime = 'edge';
+
 export default function ExplorePage() {
   return (
     <>

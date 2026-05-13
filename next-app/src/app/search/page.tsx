@@ -3,6 +3,8 @@ import PostList from '@/components/feed/PostList';
 import SearchHeader from '@/components/search/SearchHeader';
 import { Suspense } from 'react';
 
+export const runtime = 'edge';
+
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams.q || '';
