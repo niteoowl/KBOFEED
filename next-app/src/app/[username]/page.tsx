@@ -6,9 +6,9 @@ import Link from 'next/link';
 export const runtime = 'edge';
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
@@ -16,7 +16,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // Wait! In Next.js, if the folder is [username], and URL is /@kimkbo, username is "@kimkbo".
   // If the folder is @[username], and URL is /@kimkbo, username is "kimkbo".
   
-  const { username } = params;
+  const { username } = await params;
   const decodedUsername = decodeURIComponent(username).replace(/^@/, '');
   
   const profile = await getProfile(decodedUsername);

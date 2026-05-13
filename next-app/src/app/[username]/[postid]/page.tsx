@@ -6,14 +6,14 @@ import Link from 'next/link';
 export const runtime = 'edge';
 
 interface PostDetailPageProps {
-  params: {
+  params: Promise<{
     username: string;
     postId: string;
-  };
+  }>;
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { postId } = params;
+  const { postId } = await params;
   
   const post = await getPostDetail(parseInt(postId));
   if (!post) {
