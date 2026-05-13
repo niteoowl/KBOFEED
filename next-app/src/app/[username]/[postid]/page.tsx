@@ -8,14 +8,14 @@ export const runtime = 'edge';
 interface PostDetailPageProps {
   params: Promise<{
     username: string;
-    postId: string;
+    postid: string;
   }>;
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { username, postId } = await params;
+  const { username, postid } = await params;
   
-  const post = await getPostDetail(parseInt(postId));
+  const post = await getPostDetail(parseInt(postid));
   if (!post) {
     notFound();
   }

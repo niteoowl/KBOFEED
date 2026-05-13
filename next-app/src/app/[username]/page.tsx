@@ -2,6 +2,7 @@ import { getProfile, getUserPosts } from '@/app/actions/user';
 import PostCard from '@/components/feed/PostCard';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { getTeamLogo } from '@/lib/constants';
 
 export const runtime = 'edge';
 
@@ -56,7 +57,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 
                 {profile.favoriteTeam && (
                   <div className="team-badge">
-                    <img src={encodeURI(`/images/${profile.favoriteTeam}트윈스.svg`)} alt={profile.favoriteTeam} />
+                    <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} />
                     <span>{profile.favoriteTeam} 팬</span>
                   </div>
                 )}
