@@ -74,21 +74,39 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
           openPostDetail();
         }
       }}
-      style={suppressNavigation ? { cursor: 'default' } : undefined}
+      style={suppressNavigation ? { cursor: 'default' } : { cursor: 'pointer' }}
     >
       <div 
         className="user-avatar"
         style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover' }}
+        onClick={(e) => {
+          e.stopPropagation();
+          router.push(`/@${post.profiles.username}`);
+        }}
       />
       <div className="tweet-content">
         <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-          <span className="display-name" style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+          <span 
+            className="display-name" 
+            style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/@${post.profiles.username}`);
+            }}
+          >
             {post.profiles.displayName || '탐험가'}
           </span>
           {post.profiles.isVerified && (
             <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginRight: '2px' }} />
           )}
-          <span className="username" style={{ color: 'var(--text-secondary)', marginLeft: '2px' }}>
+          <span 
+            className="username" 
+            style={{ color: 'var(--text-secondary)', marginLeft: '2px' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/@${post.profiles.username}`);
+            }}
+          >
             @{post.profiles.username}
           </span>
           <span className="dot" style={{ color: 'var(--text-secondary)' }}>·</span>
@@ -126,7 +144,7 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
             <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
             <span>{likesCount}</span>
           </div>
-          <div className="action-item action-views">
+          <div className="action-item action-views" onClick={(e) => e.stopPropagation()}>
             <i className="far fa-chart-bar" />
             <span>0</span>
           </div>
@@ -135,5 +153,6 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
     </article>
   );
 };
+
 
 export default PostCard;

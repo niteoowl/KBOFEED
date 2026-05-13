@@ -18,8 +18,8 @@ const Sidebar = () => {
         </Link>
         <Link href="/explore" className="nav-item-link">
           <div className="nav-item" id="nav-search">
-            <i className="fas fa-hashtag"></i>
-            <span>탐색하기</span>
+            <i className="fas fa-search"></i>
+            <span>검색</span>
           </div>
         </Link>
         <Link href="/game" className="nav-item-link">

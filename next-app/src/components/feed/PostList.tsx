@@ -1,14 +1,18 @@
-import { getPosts } from '@/app/actions/post';
+import { getPosts, searchPosts } from '@/app/actions/post';
 import PostCard from './PostCard';
 
-export default async function PostList() {
-  const posts = await getPosts();
+interface PostListProps {
+  query?: string;
+}
+
+export default async function PostList({ query }: PostListProps) {
+  const posts = query ? await searchPosts(query) : await getPosts();
 
   if (!posts || posts.length === 0) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
         <i className="fas fa-baseball-ball" style={{ fontSize: '48px', opacity: 0.1, marginBottom: '16px', display: 'block' }}></i>
-        <p>아직 게시글이 없습니다.<br />첫 소식을 전해보세요!</p>
+        <p>{query ? `'${query}'에 대한 검색 결과가 없습니다.` : '아직 게시글이 없습니다. 첫 소식을 전해보세요!'}</p>
       </div>
     );
   }
@@ -21,3 +25,4 @@ export default async function PostList() {
     </div>
   );
 }
+

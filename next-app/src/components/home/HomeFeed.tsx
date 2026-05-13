@@ -145,137 +145,144 @@ export default function HomeFeed() {
       />
 
       <div id="tab-all" className={`tab-content ${mainTab === 'all' ? 'active' : ''}`}>
-        <div id="feed-all-container">
-          {loadingAll ? (
-            <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
-              데이터를 불러오는 중입니다...
-            </div>
-          ) : allPosts.length === 0 ? (
-            <div
-              style={{
-                padding: '40px',
-                textAlign: 'center',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <i
-                className="fas fa-baseball-ball"
+        {mainTab === 'all' && (
+          <div id="feed-all-container">
+            {loadingAll ? (
+              <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
+                데이터를 불러오는 중입니다...
+              </div>
+            ) : allPosts.length === 0 ? (
+              <div
                 style={{
-                  fontSize: 48,
-                  opacity: 0.1,
-                  marginBottom: 16,
-                  display: 'block',
+                  padding: '40px',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)',
                 }}
-              />
-              <p>
-                아직 게시글이 없습니다.
-                <br />
-                첫 소식을 전해보세요!
-              </p>
-            </div>
-          ) : (
-            <div className="feed-content">
-              {allPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </div>
+              >
+                <i
+                  className="fas fa-baseball-ball"
+                  style={{
+                    fontSize: 48,
+                    opacity: 0.1,
+                    marginBottom: 16,
+                    display: 'block',
+                  }}
+                />
+                <p>
+                  아직 게시글이 없습니다.
+                  <br />
+                  첫 소식을 전해보세요!
+                </p>
+              </div>
+            ) : (
+              <div className="feed-content">
+                {allPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div id="tab-myteam" className={`tab-content ${mainTab === 'myteam' ? 'active' : ''}`}>
-        <div className="myteam-info-bar">
-          <div className="myteam-current">
-            <img
-              src={currentTeam ? `/images/${currentTeam.file}.svg` : '/images/logo.png'}
-              alt="Team"
-            />
-            <span className="myteam-name">
-              {currentTeam ? currentTeam.fullName : '팀을 선택하세요'}
-            </span>
-          </div>
-          <button
-            type="button"
-            className="change-team-btn"
-            id="open-team-picker"
-            onClick={() => setPickerOpen((v) => !v)}
-          >
-            {pickerOpen ? '접기' : '변경'}
-          </button>
-        </div>
-
-        <div
-          className={`inline-team-picker ${pickerOpen ? 'active' : ''}`}
-          id="inline-team-picker"
-        >
-          <div className="picker-scroll-container">
-            {KBO_TEAMS.map((team) => (
+        {mainTab === 'myteam' && (
+          <>
+            <div className="myteam-info-bar">
+              <div className="myteam-current">
+                <img
+                  src={currentTeam ? `/images/${currentTeam.file}.svg` : '/images/logo.png'}
+                  alt="Team"
+                />
+                <span className="myteam-name">
+                  {currentTeam ? currentTeam.fullName : '팀을 선택하세요'}
+                </span>
+              </div>
               <button
-                key={team.id}
                 type="button"
-                className="team-mini-card"
-                data-team={team.fullName}
-                data-id={team.id}
-                onClick={() => selectTeam(team.id)}
+                className="change-team-btn"
+                id="open-team-picker"
+                onClick={() => setPickerOpen((v) => !v)}
               >
-                <img src={`/images/${team.file}.svg`} alt={team.shortLabel} />
-                <span>{team.shortLabel}</span>
+                {pickerOpen ? '접기' : '변경'}
               </button>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="myteam-sub-nav">
-          <button
-            type="button"
-            className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
-            onClick={() => setSubtab('collection')}
-          >
-            내팀 모아보기
-          </button>
-          <button
-            type="button"
-            className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
-            onClick={() => setSubtab('feed')}
-          >
-            내팀 피드
-          </button>
-        </div>
+            <div
+              className={`inline-team-picker ${pickerOpen ? 'active' : ''}`}
+              id="inline-team-picker"
+            >
+              <div className="picker-scroll-container">
+                {KBO_TEAMS.map((team) => (
+                  <button
+                    key={team.id}
+                    type="button"
+                    className="team-mini-card"
+                    data-team={team.fullName}
+                    data-id={team.id}
+                    onClick={() => selectTeam(team.id)}
+                  >
+                    <img src={`/images/${team.file}.svg`} alt={team.shortLabel} />
+                    <span>{team.shortLabel}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div id="feed-myteam-container">
-          {loadingTeam ? (
-            <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
-              데이터를 불러오는 중입니다...
+            <div className="myteam-sub-nav">
+              <button
+                type="button"
+                className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
+                onClick={() => setSubtab('collection')}
+              >
+                내팀 모아보기
+              </button>
+              <button
+                type="button"
+                className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
+                onClick={() => setSubtab('feed')}
+              >
+                내팀 피드
+              </button>
             </div>
-          ) : !teamId ? (
-            <div
-              style={{
-                padding: 40,
-                textAlign: 'center',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              응원하는 팀의 소식을 확인해보세요!
+
+            <div id="feed-myteam-container">
+              {loadingTeam ? (
+                <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
+                  데이터를 불러오는 중입니다...
+                </div>
+              ) : !teamId ? (
+                <div
+                  style={{
+                    padding: 40,
+                    textAlign: 'center',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  응원하는 팀의 소식을 확인해보세요!
+                </div>
+              ) : teamPosts.length === 0 ? (
+                <div
+                  style={{
+                    padding: 40,
+                    textAlign: 'center',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  관련 게시물이 없습니다.
+                </div>
+              ) : (
+                <div className="feed-content">
+                  {teamPosts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : teamPosts.length === 0 ? (
-            <div
-              style={{
-                padding: 40,
-                textAlign: 'center',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              관련 게시물이 없습니다.
-            </div>
-          ) : (
-            <div className="feed-content">
-              {teamPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
+
     </>
   );
 }

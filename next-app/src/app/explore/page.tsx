@@ -1,33 +1,13 @@
 import Link from 'next/link';
-
-export const runtime = 'edge';
+import SearchHeader from '@/components/search/SearchHeader';
 
 export default function ExplorePage() {
   return (
     <>
-      <header className="feed-header-group">
-        <div className="feed-header">
-          <div className="header-left"></div>
-          <div className="mobile-logo-container">
-            <Link href="/"><img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" /></Link>
-          </div>
-          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>탐색</h2>
-          <div className="header-right"></div>
-        </div>
-        
-        {/* Mobile Search Bar (matches ui.js) */}
-        <div className="mobile-search-container">
-            <div className="search-input-wrapper">
-                <i className="fas fa-arrow-left search-back-btn"></i>
-                <div className="search-bar">
-                    <i className="fas fa-search"></i>
-                    <input type="text" placeholder="크보피드 검색" id="mobile-search-input" />
-                </div>
-            </div>
-        </div>
-      </header>
+      <SearchHeader title="탐색" />
 
       <section className="explore-section">
+
         {/* Highlight Banner */}
         <div className="explore-banner">
             <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?q=80&w=1000&auto=format&fit=crop" alt="야구 경기장" />
