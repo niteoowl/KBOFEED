@@ -112,23 +112,10 @@ export default function HomeFeed() {
           </button>
           <button
             type="button"
-            className={`feed-tab ${mainTab === 'myteam' && subtab === 'collection' ? 'active' : ''}`}
-            onClick={() => {
-              setMainTab('myteam');
-              setSubtab('collection');
-            }}
+            className={`feed-tab ${mainTab === 'myteam' ? 'active' : ''}`}
+            onClick={() => setMainTab('myteam')}
           >
-            내팀 모아보기
-          </button>
-          <button
-            type="button"
-            className={`feed-tab ${mainTab === 'myteam' && subtab === 'feed' ? 'active' : ''}`}
-            onClick={() => {
-              setMainTab('myteam');
-              setSubtab('feed');
-            }}
-          >
-            내팀 피드
+            내팀
           </button>
         </div>
       </div>
@@ -249,6 +236,21 @@ export default function HomeFeed() {
                     <span>{team.shortLabel}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="myteam-sub-nav">
+              <div
+                className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
+                onClick={() => setSubtab('collection')}
+              >
+                내팀 모아보기
+              </div>
+              <div
+                className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
+                onClick={() => setSubtab('feed')}
+              >
+                내팀 피드
               </div>
             </div>
 

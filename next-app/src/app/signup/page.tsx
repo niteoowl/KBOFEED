@@ -48,11 +48,18 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-header">
-        <img src="/images/logo.png" alt="크보피드" className="auth-logo" />
-        <h1>계정을 생성하세요</h1>
-      </div>
+    <>
+      <style>{`
+        .sidebar, .right-sidebar, .mobile-nav { display: none !important; }
+        .main-feed { max-width: 100% !important; border: none !important; }
+        .app-container { display: block !important; }
+      `}</style>
+      <div className="auth-page">
+        <div className="auth-container">
+          <div className="auth-header">
+            <img src="/images/logo.png" alt="크보피드" className="auth-logo" />
+            <h1>계정을 생성하세요</h1>
+          </div>
 
       <div className="auth-box">
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -127,6 +134,8 @@ export default function SignupPage() {
           <p>이미 계정이 있으신가요? <Link href="/login">로그인</Link></p>
         </div>
       </div>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
