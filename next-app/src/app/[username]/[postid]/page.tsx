@@ -13,15 +13,12 @@ interface PostDetailPageProps {
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { postId } = await params;
+  const { username, postId } = await params;
   
   const post = await getPostDetail(parseInt(postId));
   if (!post) {
     notFound();
   }
-
-  // Handle username mismatch if needed, but for now we follow the social media convention
-  // where the ID is the primary source of truth.
 
   return (
     <main className="main-feed">

@@ -17,6 +17,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // If the folder is @[username], and URL is /@kimkbo, username is "kimkbo".
   
   const { username } = await params;
+  if (username === '_not-found') notFound();
+
   const decodedUsername = decodeURIComponent(username).replace(/^@/, '');
   
   const profile = await getProfile(decodedUsername);
