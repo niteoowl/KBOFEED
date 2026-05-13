@@ -100,9 +100,6 @@ export default function HomeFeed() {
               <img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" />
             </Link>
           </div>
-          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>
-            홈
-          </h2>
           <div className="header-right" />
         </div>
         <div className="feed-tabs">
@@ -115,10 +112,23 @@ export default function HomeFeed() {
           </button>
           <button
             type="button"
-            className={`feed-tab ${mainTab === 'myteam' ? 'active' : ''}`}
-            onClick={() => setMainTab('myteam')}
+            className={`feed-tab ${mainTab === 'myteam' && subtab === 'collection' ? 'active' : ''}`}
+            onClick={() => {
+              setMainTab('myteam');
+              setSubtab('collection');
+            }}
           >
-            내팀
+            내팀 모아보기
+          </button>
+          <button
+            type="button"
+            className={`feed-tab ${mainTab === 'myteam' && subtab === 'feed' ? 'active' : ''}`}
+            onClick={() => {
+              setMainTab('myteam');
+              setSubtab('feed');
+            }}
+          >
+            내팀 피드
           </button>
         </div>
       </div>
@@ -242,21 +252,6 @@ export default function HomeFeed() {
               </div>
             </div>
 
-            <div className="myteam-sub-nav">
-              <div
-                className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
-                onClick={() => setSubtab('collection')}
-              >
-                내팀 모아보기
-              </div>
-              <div
-                className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
-                onClick={() => setSubtab('feed')}
-              >
-                내팀 피드
-              </div>
-            </div>
-
             <div id="feed-myteam-container">
               {loadingTeam ? (
                 <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
@@ -293,7 +288,6 @@ export default function HomeFeed() {
           </>
         )}
       </div>
-
     </>
   );
 }

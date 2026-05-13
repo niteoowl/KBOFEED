@@ -6,6 +6,7 @@ export const users = sqliteTable('users', {
   email: text('email').notNull(),
   emailVerified: integer('email_verified', { mode: 'timestamp_ms' }),
   image: text('image'),
+  password: text('password'),
 });
 
 export const accounts = sqliteTable('accounts', {

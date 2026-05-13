@@ -35,7 +35,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
       }),
+      {
+        id: "credentials",
+        name: "Credentials",
+        type: "credentials",
+        credentials: {
+          email: { label: "Email", type: "email" },
+          password: { label: "Password", type: "password" }
+        },
+        async authorize(credentials) {
+          if (!credentials?.email || !credentials?.password) return null;
+          
+          const db = getDb(env.DB);
+          const user = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.email, credentials.email as string)
+          });
+
+          if (!user || !user.password) return null;
+
+          // Hash input for comparison
+          const encoder = new TextEncoder();
+          const data = encoder.encode((credentials.password as string) + 'KBOFEED_SALT');
+          const hash = await crypto.subtle.digest('SHA-256', data);
+          const hashedPassword = Array.from(new Uint8Array(hash))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+          if (hashedPassword === user.password) {
+            return { id: user.id, name: user.name, email: user.email };
+          }
+          return null;
+        }
+      }
     ],
+    session: {
+      strategy: "jwt"
+    },
     pages: {
       signIn: '/login',
     },
