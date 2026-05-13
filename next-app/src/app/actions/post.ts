@@ -3,7 +3,7 @@
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getDb } from '@/db/db';
 import { posts, profiles, likes, retweets, notifications } from '@/db/schema';
-import { desc, eq, and, sql, like, or } from 'drizzle-orm';
+import { desc, eq, and, sql, like, or, count } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -210,6 +210,38 @@ export async function searchPosts(query: string) {
   }
 
   return results.map(post => ({ ...post, isLiked: false }));
+}
+
+export async function getPostDetail(postId: number) {
+  const session = await auth();
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, postId),
+    with: {
+      profiles: true,
+    },
+  });
+
+  if (!post) return null;
+
+  let isLiked = false;
+  let isRetweeted = false;
+
+  if (session?.user?.id) {
+    const likeCount = await db.select({ value: count() }).from(likes)
+      .where(and(eq(likes.postId, postId), eq(likes.userId, session.user.id)))
+      .get();
+    const rtCount = await db.select({ value: count() }).from(retweets)
+      .where(and(eq(retweets.postId, postId), eq(retweets.userId, session.user.id)))
+      .get();
+    
+    isLiked = (likeCount?.value || 0) > 0;
+    isRetweeted = (rtCount?.value || 0) > 0;
+  }
+
+  return { ...post, isLiked, isRetweeted };
 }
 
 export async function searchUsers(query: string) {
