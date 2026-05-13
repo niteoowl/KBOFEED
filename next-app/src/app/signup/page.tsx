@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { signUp } from '@/app/actions/auth';
 import { KBO_TEAMS, getTeamLogo } from '@/lib/constants';
 
+export const runtime = 'edge';
+
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,12 +22,10 @@ export default function SignupPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSignUpAction = async (formData: FormData) => {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
     const password = formData.get('password') as string;
     const confirm = formData.get('password-confirm') as string;
 
@@ -62,7 +62,7 @@ export default function SignupPage() {
           </div>
 
       <div className="auth-box">
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" action={handleSignUpAction}>
           {error && <div style={{ color: '#f4212e', marginBottom: '16px', fontSize: '14px', textAlign: 'center' }}>{error}</div>}
           
           <div className="form-group">
