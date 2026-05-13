@@ -6,7 +6,7 @@ import { createPost } from '@/app/actions/post';
 
 type ComposePostProps = {
   /** 게시 후 홈 피드 등에서 목록 갱신 */
-  onPosted?: () => void | Promise<void>;
+  onPosted?: (newPostContent?: string) => void | Promise<void>;
 };
 
 const ComposePost = ({ onPosted }: ComposePostProps) => {
@@ -20,14 +20,19 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   const handleSubmit = async () => {
     if (!content.trim() || isPending) return;
     
+    const submittedContent = content; // Store for optimistic update
+    setContent('');
+    setIsExpanded(false);
+    
+    // Optimistic update trigger (optional if parent supports it)
+    onPosted?.(submittedContent);
+    
     setIsPending(true);
     try {
-      await createPost(content);
-      setContent('');
-      setIsExpanded(false);
-      await onPosted?.();
+      await createPost(submittedContent);
     } catch (e) {
       alert('게시글 작성 중 오류가 발생했습니다.');
+      // rollback? but for simplicity we'll just alert
     } finally {
       setIsPending(false);
     }

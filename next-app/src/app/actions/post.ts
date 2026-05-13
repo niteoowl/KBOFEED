@@ -102,6 +102,9 @@ export async function createPost(content: string, imageUrl?: string) {
     imageUrl,
   });
 
+  // KV 캐시 무효화: 다음 getPosts 호출 시 신규 데이터를 D1에서 읽도록 함
+  await env.KV.delete('main_feed_posts');
+
   revalidatePath('/');
 }
 
@@ -134,6 +137,9 @@ export async function toggleLike(postId: number) {
       });
     }
   }
+
+  // 캐시 무효화
+  await env.KV.delete('main_feed_posts');
 
   revalidatePath('/');
 }
@@ -176,8 +182,12 @@ export async function toggleRetweet(postId: number) {
     }
   }
 
+  // 캐시 무효화
+  await env.KV.delete('main_feed_posts');
+
   revalidatePath('/');
 }
+
 
 export async function searchPosts(query: string) {
   const session = await auth();

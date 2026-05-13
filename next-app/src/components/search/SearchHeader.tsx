@@ -13,6 +13,8 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
 
+  const [isFocused, setIsFocused] = useState(false);
+
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
@@ -20,7 +22,15 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      setIsFocused(false);
     }
+  };
+
+  const selectSuggestion = (name: string) => {
+    const q = name.startsWith('#') ? name : name;
+    setQuery(q);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+    setIsFocused(false);
   };
 
   return (
@@ -41,7 +51,7 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
       </div>
       
       {/* Mobile Search Bar */}
-      <div className="mobile-search-container">
+      <div className="mobile-search-container" style={{ position: 'relative' }}>
         <div className="search-input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className="search-bar" style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
             <i className="fas fa-search" style={{ marginRight: '8px' }}></i>
@@ -51,12 +61,55 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleSearch}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)} // delay to allow click on suggestions
               id="mobile-search-input"
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none' }}
+              autoComplete="off"
             />
           </div>
         </div>
+
+        {/* Search Suggestions (Matches vanilla JS) */}
+        {isFocused && (
+          <div className="search-suggestions active" style={{ 
+            display: 'block', 
+            position: 'absolute', 
+            top: '100%', 
+            left: 0, 
+            right: 0, 
+            backgroundColor: 'white', 
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            borderBottomLeftRadius: '16px',
+            borderBottomRightRadius: '16px',
+            maxHeight: '400px',
+            overflowY: 'auto'
+          }}>
+            <div className="suggestion-item" onClick={() => selectSuggestion('#잠실더비')}>
+              <span className="suggestion-category">실시간 트렌드</span>
+              <span className="suggestion-name">#잠실더비</span>
+              <span className="suggestion-count">12.4K 게시물</span>
+            </div>
+            <div className="suggestion-item" onClick={() => selectSuggestion('#고척돔_매진')}>
+              <span className="suggestion-category">실시간 화제</span>
+              <span className="suggestion-name">#고척돔_매진</span>
+              <span className="suggestion-count">3,102 게시물</span>
+            </div>
+            <div className="suggestion-item" onClick={() => selectSuggestion('KIA 타이거즈')}>
+              <span className="suggestion-category">커뮤니티</span>
+              <span className="suggestion-name">KIA 타이거즈 원정 응원단</span>
+              <span className="suggestion-count">12.4K 멤버</span>
+            </div>
+            <div className="suggestion-item" onClick={() => selectSuggestion('끝내기 홈런')}>
+              <span className="suggestion-category">인기 키워드</span>
+              <span className="suggestion-name">끝내기 홈런</span>
+              <span className="suggestion-count">8.2K 게시물</span>
+            </div>
+          </div>
+        )}
       </div>
     </header>
+
   );
 }

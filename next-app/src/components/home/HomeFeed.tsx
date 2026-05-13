@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import ComposePost from '@/components/feed/ComposePost';
 import PostCard from '@/components/feed/PostCard';
 import { getPosts, getTeamPosts } from '@/app/actions/post';
@@ -24,6 +25,7 @@ const STORAGE_KEY = 'selected_team';
 type PostRow = Awaited<ReturnType<typeof getPosts>>[number];
 
 export default function HomeFeed() {
+  const { data: session } = useSession();
   const [mainTab, setMainTab] = useState<'all' | 'myteam'>('all');
   const [teamId, setTeamId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -134,13 +136,37 @@ export default function HomeFeed() {
       </div>
 
       <ComposePost
-        onPosted={async () => {
-          try {
-            const p = await getPosts();
-            setAllPosts(p);
-          } catch {
-            /* ignore */
+        onPosted={async (content) => {
+          if (content && session?.user) {
+            // 1. 낙관적 업데이트: 서버 응답 전 UI에 즉시 반영
+            const optimisticPost = {
+              id: Date.now(), // 임시 ID
+              content,
+              createdAt: new Date().toISOString(),
+              likesCount: 0,
+              retweetsCount: 0,
+              commentsCount: 0,
+              profiles: {
+                username: session.user.name || 'user',
+                displayName: session.user.name || '사용자',
+                avatarUrl: session.user.image,
+                isVerified: false
+              },
+              isLiked: false,
+              isRetweeted: false
+            };
+            setAllPosts(prev => [optimisticPost, ...prev]);
           }
+
+          // 2. 실제 데이터 동기화 (KV 무효화 지연 고려)
+          setTimeout(async () => {
+            try {
+              const p = await getPosts();
+              setAllPosts(p);
+            } catch {
+              /* ignore */
+            }
+          }, 1000);
         }}
       />
 
