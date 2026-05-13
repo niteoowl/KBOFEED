@@ -52,8 +52,16 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
     await toggleRetweet(post.id);
   };
 
+  const parseDate = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    // ISO format already has T and Z
+    if (dateStr.includes('T') || dateStr.endsWith('Z')) return new Date(dateStr);
+    // SQLite format: "2024-05-13 11:00:00" -> treat as UTC
+    return new Date(dateStr.replace(' ', 'T') + 'Z');
+  };
+
   const timeAgo = post.createdAt 
-    ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })
+    ? formatDistanceToNow(parseDate(post.createdAt), { addSuffix: true, locale: ko })
     : '';
 
   const detailHref = postPermalink(post.profiles.username, post.id);

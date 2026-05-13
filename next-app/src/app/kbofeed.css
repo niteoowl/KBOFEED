@@ -1,4 +1,4 @@
-﻿@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
@@ -240,6 +240,45 @@ ul {
     width: 24px;
     height: 3px;
     background-color: #0241D3; /* Applied theme color here */
+    border-radius: 9999px;
+}
+
+/* My Team Sub Nav */
+.myteam-sub-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sub-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.sub-tab:hover {
+    background-color: var(--hover-bg);
+}
+
+.sub-tab.active {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.sub-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background-color: var(--primary-color);
     border-radius: 9999px;
 }
 

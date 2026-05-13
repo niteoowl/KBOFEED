@@ -217,7 +217,7 @@ export default function HomeFeed() {
             <div className="myteam-info-bar">
               <div className="myteam-current">
                 <img
-                  src={currentTeam ? `/images/${currentTeam.file}.svg` : '/images/logo.png'}
+                  src={currentTeam ? encodeURI(`/images/${currentTeam.file}.svg`) : '/images/logo.png'}
                   alt="Team"
                 />
                 <span className="myteam-name">
@@ -240,36 +240,33 @@ export default function HomeFeed() {
             >
               <div className="picker-scroll-container">
                 {KBO_TEAMS.map((team) => (
-                  <button
+                  <div
                     key={team.id}
-                    type="button"
                     className="team-mini-card"
                     data-team={team.fullName}
                     data-id={team.id}
                     onClick={() => selectTeam(team.id)}
                   >
-                    <img src={`/images/${team.file}.svg`} alt={team.shortLabel} />
+                    <img src={encodeURI(`/images/${team.file}.svg`)} alt={team.shortLabel} />
                     <span>{team.shortLabel}</span>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="myteam-sub-nav">
-              <button
-                type="button"
+              <div
                 className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
                 onClick={() => setSubtab('collection')}
               >
                 내팀 모아보기
-              </button>
-              <button
-                type="button"
+              </div>
+              <div
                 className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
                 onClick={() => setSubtab('feed')}
               >
                 내팀 피드
-              </button>
+              </div>
             </div>
 
             <div id="feed-myteam-container">
