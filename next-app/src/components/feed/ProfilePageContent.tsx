@@ -197,65 +197,104 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
         <div className="header-right"></div>
       </header>
 
-      <section className="profile-container" style={{ marginTop: 0, borderTop: 'none' }}>
-        {/* Cover Image Placeholder */}
-        <div style={{ width: '100%', height: '140px', backgroundColor: 'var(--border-color)', backgroundImage: 'linear-gradient(45deg, #1d4ed8, #93b3f2)', backgroundSize: 'cover' }} />
+      <section 
+        className="profile-container" 
+        style={{ 
+          fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
+          backgroundColor: '#FFFFFF',
+          maxWidth: '700px',
+          margin: '0 auto',
+          borderLeft: '1px solid #F3F4F6',
+          borderRight: '1px solid #F3F4F6',
+          borderTop: 'none',
+          paddingBottom: '24px'
+        }}
+      >
+        {/* Banner */}
+        <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
 
-        <div className="profile-header-new" style={{ padding: '12px 16px', position: 'relative' }}>
+        {/* Profile Identity */}
+        <div style={{ padding: '32px' }}>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-50px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-80px' }}>
             <div 
-              className="profile-avatar-new" 
-              style={{ 
-                margin: 0,
-                width: '80px', height: '80px', borderRadius: '50%', backgroundSize: 'cover',
-                border: '4px solid #fff',
-                backgroundImage: `url(${profile.avatarUrl || 'https://i.pravatar.cc/150?u=' + profile.username})` 
+              style={{
+                width: '96px', height: '96px', borderRadius: '16px',
+                border: '1px solid #F3F4F6', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                backgroundColor: '#FFFFFF',
+                backgroundImage: `url(${profile.avatarUrl || 'https://i.pravatar.cc/150?u=' + profile.username})`,
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                position: 'relative'
               }}
             />
-            <div className="profile-actions" style={{ marginTop: '50px' }}>
+            <div style={{ marginTop: '48px' }}>
               {(session as any)?.user?.username === profile.username ? (
                 <button 
                   onClick={() => alert('프로필 편집창 기능 추가 예정입니다.')}
                   style={{
-                    padding: '6px 16px',
-                    borderRadius: '9999px',
-                    border: '1px solid var(--border-color)',
-                    background: 'transparent',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontSize: '14px'
+                    padding: '10px 20px', borderRadius: '12px',
+                    backgroundColor: '#111827', color: '#FFFFFF',
+                    fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1F2937'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#111827'}
                 >
                   프로필 수정
                 </button>
               ) : (
-                <button className="follow-btn" style={{ padding: '6px 16px', fontSize: '14px' }}>팔로우</button>
+                <button 
+                  style={{
+                    padding: '10px 20px', borderRadius: '12px',
+                    backgroundColor: '#111827', color: '#FFFFFF',
+                    fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1F2937'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#111827'}
+                >
+                  팔로우
+                </button>
               )}
             </div>
           </div>
 
-          <div className="profile-main-info" style={{ marginTop: '8px' }}>
-            <h1 className="profile-name-large" style={{ fontSize: '20px', margin: 0 }}>{profile.displayName || profile.username}</h1>
-            <p className="profile-handle-large" style={{ margin: '2px 0 8px 0' }}>@{profile.username}</p>
-            
-            {profile.favoriteTeam && (
-              <div className="team-badge" style={{ marginBottom: '12px' }}>
-                <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} />
-                <span>{profile.favoriteTeam} 팬</span>
-              </div>
-            )}
-            
-            <div className="profile-meta-new">
-              {profile.bio && (
-                <p className="profile-bio-new" style={{ marginBottom: '12px' }}>
-                  {profile.bio}
-                </p>
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0 }}>
+                {profile.displayName || profile.username}
+              </h1>
+              {profile.isVerified && (
+                <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '20px' }}></i>
               )}
+            </div>
+            <p style={{ margin: '4px 0 0 0', fontSize: '14px', fontWeight: 500, color: '#6B7280' }}>
+              @{profile.username}
+            </p>
+            
+            {profile.bio && (
+              <p style={{ margin: '16px 0 0 0', fontSize: '16px', lineHeight: 1.625, color: '#374151' }}>
+                {profile.bio}
+              </p>
+            )}
 
-              <div className="profile-stats-row">
-                <div className="stat-group"><b>{profile.followingCount || 0}</b> 팔로잉</div>
-                <div className="stat-group"><b>{profile.followersCount || 0}</b> 팔로워</div>
+            {/* Meta Info */}
+            <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
+              {profile.favoriteTeam && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, color: '#6B7280' }}>
+                  <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} style={{ width: '16px', height: '16px' }} />
+                  <span>{profile.favoriteTeam} 팬</span>
+                </div>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div style={{ display: 'flex', gap: '20px', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #F9FAFB' }}>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{profile.followingCount || 0}</span>
+                <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>팔로잉</span>
+              </div>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{profile.followersCount || 0}</span>
+                <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>팔로워</span>
               </div>
             </div>
           </div>
