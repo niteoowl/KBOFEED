@@ -12,7 +12,6 @@ type ComposePostProps = {
 const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { data: session } = useSession();
   const [content, setContent] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   if (!session) return null;
@@ -22,7 +21,8 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
     
     const submittedContent = content; // Store for optimistic update
     setContent('');
-    setIsExpanded(false);
+    const target = document.getElementById('compose-textarea');
+    if (target) target.style.height = 'auto';
     
     // Optimistic update trigger (optional if parent supports it)
     onPosted?.(submittedContent);
@@ -38,46 +38,56 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
     }
   };
 
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 400)}px`;
+  };
+
   return (
     <section className="compose-trigger-section">
-      <div className={`compose-trigger ${isExpanded ? 'expanded' : ''}`} onClick={() => !isExpanded && setIsExpanded(true)}>
-        <div className="trigger-static-content">
-          <div 
-            className="user-avatar small"
-            style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover' }}
-          />
-          <div className="trigger-placeholder">오늘의 야구 소식은?</div>
-          <div className="trigger-icon"><i className="far fa-image"></i></div>
-        </div>
-
-        <div className="expanded-content">
-          <div className="compose-input-area">
-            <textarea 
-              placeholder="무슨 일이 일어나고 있나요?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              autoFocus
-              maxLength={280}
-              rows={4}
+      <div className="compose-trigger expanded" style={{ cursor: 'default' }}>
+        <div className="expanded-content" style={{ paddingLeft: 0, opacity: 1, display: 'block' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <div 
+              className="user-avatar small"
+              style={{ width: '48px', height: '48px', flexShrink: 0, backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover' }}
             />
+            <div className="compose-input-area" style={{ flex: 1 }}>
+              <textarea 
+                id="compose-textarea"
+                placeholder="무슨 일이 일어나고 있나요?"
+                value={content}
+                onChange={handleInput}
+                maxLength={280}
+                rows={1}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '17px',
+                  resize: 'none',
+                  minHeight: '40px',
+                  fontFamily: 'inherit',
+                  color: 'var(--text-primary)',
+                  padding: '12px 0'
+                }}
+              />
+            </div>
           </div>
-          <div className="compose-actions">
-            <div className="action-icons">
+          <div className="compose-actions" style={{ paddingLeft: '60px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="action-icons" style={{ display: 'flex', gap: '12px' }}>
               <i className="far fa-image" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
-              <i className="far fa-smile" />
-              <i className="far fa-calendar-alt" />
+              <i className="far fa-smile" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
+              <i className="far fa-calendar-alt" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
-                >
-                  취소
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
+                  onClick={handleSubmit}
                   disabled={!content.trim() || isPending}
                   className="inline-post-btn"
+                  style={{ opacity: content.trim() ? 1 : 0.5, cursor: content.trim() ? 'pointer' : 'not-allowed' }}
                 >
                   {isPending ? '게시 중...' : '게시하기'}
                 </button>

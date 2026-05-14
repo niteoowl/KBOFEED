@@ -153,15 +153,7 @@ function SearchResults() {
       <div className="feed-content">
         {activeTab === 'all' && (!loadingUsers && users.length > 0) && (
           <div style={{ borderBottom: '8px solid var(--divider-color)' }}>
-            {users.slice(0, 3).map(renderUser)}
-            {users.length > 3 && (
-              <div 
-                onClick={() => setActiveTab('users')}
-                style={{ padding: '16px', color: 'var(--primary-color)', cursor: 'pointer', textAlign: 'center', fontSize: '14px', fontWeight: 600 }}
-              >
-                더보기
-              </div>
-            )}
+            {users.map(renderUser)}
           </div>
         )}
         {filteredPosts.map((post: any) => (
