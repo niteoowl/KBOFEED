@@ -9,56 +9,28 @@ export default function ExplorePage() {
       <SearchHeader title="탐색" />
 
       <section className="explore-section">
-
-        {/* Highlight Banner */}
-        <div className="explore-banner">
-            <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?q=80&w=1000&auto=format&fit=crop" alt="야구 경기장" />
-            <div className="banner-text">
-                <h3>실시간 KBO 화제</h3>
-                <p>지금 가장 뜨거운 야구 소식을 확인하세요</p>
-            </div>
-        </div>
-
-        {/* Trending Photos Grid */}
+        {/* Categorized Trends - High Density Text */}
         <div className="trends-list">
-            <h3 className="section-title">오늘의 베스트 컷</h3>
-            <div className="explore-media-grid">
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516731415730-0c607149933a?auto=format&fit=crop&w=300')" }}><i className="fas fa-play"></i></div>
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=300')" }}></div>
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1533038590840-1cde6b66b721?auto=format&fit=crop&w=300')" }}><i className="far fa-image"></i></div>
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1510531704581-5b2870972060?auto=format&fit=crop&w=300')" }}></div>
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=300')" }}></div>
-                <div className="media-cell" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1471295253337-3ceaaedca401?auto=format&fit=crop&w=300')" }}></div>
-            </div>
-        </div>
-
-        {/* Categorized Trends */}
-        <div className="trends-list">
-            <h3 className="section-title">구장별 핫이슈</h3>
-            <div className="trend-item">
-                <div className="trend-category">수원 · 뉴스</div>
-                <div className="trend-name">KT 위즈파크 오늘 전좌석 매진</div>
-                <div className="trend-count">3,102 게시물</div>
-            </div>
-            <div className="trend-item">
-                <div className="trend-category">잠실 · 날씨</div>
-                <div className="trend-name">잠실 더비, 우천 취소 가능성?</div>
-                <div className="trend-count">1,822 게시물</div>
-            </div>
-        </div>
-
-        <div className="trends-list">
-            <h3 className="section-title">주목받는 선수</h3>
-            <div className="trend-item">
-                <div className="trend-category">한화 · 화제</div>
-                <div className="trend-name">김서현 160km 광속구 폭발</div>
-                <div className="trend-count">12.4K 게시물</div>
-            </div>
-            <div className="trend-item">
-                <div className="trend-category">KIA · 기록</div>
-                <div className="trend-name">김도영 30-30 달성 초읽기</div>
-                <div className="trend-count">8,203 게시물</div>
-            </div>
+            <h3 className="section-title" style={{ padding: '16px 16px 12px 16px', margin: 0, borderBottom: '1px solid var(--border-color)', fontSize: '20px', fontWeight: 800 }}>실시간 트렌드</h3>
+            {[
+              { category: "1 · 트렌딩", name: "잠실 더비", count: "12,304 게시물" },
+              { category: "2 · 야구/스포츠", name: "김도영 30-30", count: "9,211 게시물" },
+              { category: "3 · 야구/스포츠", name: "고척돔 전좌석 매진", count: "5,410 게시물" },
+              { category: "4 · 트렌딩", name: "우천 취소", count: "4,028 게시물" },
+              { category: "5 · 야구/스포츠", name: "김서현 160km", count: "3,119 게시물" },
+              { category: "6 · 야구/스포츠", name: "비디오 판독", count: "2,980 게시물" },
+              { category: "7 · 트렌딩", name: "역전 만루홈런", count: "2,105 게시물" },
+              { category: "8 · 야구/스포츠", name: "스트라이크 존", count: "1,556 게시물" },
+              { category: "9 · 트렌딩", name: "직관 날씨", count: "1,200 게시물" },
+              { category: "10 · 트렌딩", name: "구단 굿즈", count: "958 게시물" }
+            ].map((trend, idx) => (
+              <div className="trend-item" key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', position: 'relative', cursor: 'pointer' }}>
+                <div className="trend-category" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{trend.category}</div>
+                <div className="trend-name" style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0' }}>{trend.name}</div>
+                <div className="trend-count" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{trend.count}</div>
+                <i className="fas fa-ellipsis-h" style={{ position: 'absolute', right: '16px', top: '16px', color: 'var(--text-secondary)' }}></i>
+              </div>
+            ))}
         </div>
       </section>
     </>

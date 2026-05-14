@@ -48,29 +48,6 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
 
   return (
     <header className="feed-header-group">
-      <div className="feed-header">
-        <div className="header-left">
-          {(title !== '탐색' && title !== '검색 결과') && (
-            <button 
-              onClick={() => {
-                if (isFocused) setIsFocused(false);
-                else router.back();
-              }} 
-              className="header-back-btn" 
-              style={{ background: 'none', border: 'none', padding: 0 }}
-            >
-              <i className="fas fa-arrow-left"></i>
-            </button>
-          )}
-        </div>
-        <div className="mobile-logo-container">
-          <Link href="/">
-            <img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" />
-          </Link>
-        </div>
-        <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>{title}</h2>
-        <div className="header-right"></div>
-      </div>
       
       {/* Mobile Search Bar */}
       <div className="mobile-search-container">

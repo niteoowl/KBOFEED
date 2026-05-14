@@ -10,6 +10,7 @@ import { useState } from 'react';
 interface PostProps {
   /** 게시물 단일 페이지 등에서는 카드 클릭 네비게이션 끔 */
   suppressNavigation?: boolean;
+  isDetailView?: boolean;
   post: {
     id: string;
     content: string | null;
@@ -29,12 +30,13 @@ interface PostProps {
   };
 }
 
-const PostCard = ({ post, suppressNavigation }: PostProps) => {
+const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
   const router = useRouter();
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
   const [isRetweeted, setIsRetweeted] = useState(post.isRetweeted);
   const [retweetsCount, setRetweetsCount] = useState(post.retweetsCount || 0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -74,6 +76,39 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
 
   const openPostDetail = () => {
     if (!suppressNavigation) router.push(detailHref);
+  };
+
+  const rawContent = post.content || '';
+  const shouldTruncate = (suppressNavigation || isDetailView) ? false : rawContent.length > 150 || (rawContent.match(/\n/g) || []).length > 3;
+  
+  let displayContent = rawContent;
+  if (shouldTruncate && !isExpanded) {
+    const lines = rawContent.split('\n');
+    if (lines.length > 4) {
+      displayContent = lines.slice(0, 4).join('\n') + '...';
+    } else {
+      displayContent = rawContent.slice(0, 150) + '...';
+    }
+  }
+
+  const formatContent = (text: string) => {
+    return text.split(/(#[^\s#]+)/g).map((part, i) => {
+      if (part.startsWith('#')) {
+        return (
+          <span 
+            key={i} 
+            style={{ color: 'var(--primary-color)', cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/search?q=${encodeURIComponent(part)}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   return (
@@ -125,10 +160,32 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
           </span>
           <span className="dot" style={{ color: 'var(--text-secondary)' }}>·</span>
           <span className="time" style={{ color: 'var(--text-secondary)' }}>{timeAgo}</span>
+          
+          {/* Detail View Options Menu */}
+          {isDetailView && (
+            <div style={{ marginLeft: 'auto', position: 'relative' }}>
+              <i 
+                className="fas fa-ellipsis-h" 
+                style={{ color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }} 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  alert('게시물 옵션: 수정, 삭제, 신고 등 (기능 개발 중)'); 
+                }}
+              />
+            </div>
+          )}
         </div>
         
         <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
-          {post.content}
+          {formatContent(displayContent)}
+          {!isExpanded && shouldTruncate && (
+            <span 
+              onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
+              style={{ color: 'var(--primary-color)', cursor: 'pointer', marginLeft: '6px', fontWeight: 'bold' }}
+            >
+              더보기
+            </span>
+          )}
         </div>
 
         {post.imageUrl && (

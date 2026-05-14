@@ -111,16 +111,6 @@ export default function HomeFeed() {
   return (
     <>
       <div className="feed-header-group">
-        <div className="feed-header">
-          <div className="header-left" />
-          <div className="mobile-logo-container">
-            <Link href="/">
-              <img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" />
-            </Link>
-          </div>
-          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>홈</h2>
-          <div className="header-right" />
-        </div>
         <div className="feed-tabs">
           <button
             type="button"

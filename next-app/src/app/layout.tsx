@@ -3,6 +3,7 @@ import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import RightSidebar from "@/components/layout/RightSidebar";
 import BottomNav from "@/components/layout/BottomNav";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 
 export const metadata: Metadata = {
   title: "크보피드 - 야구팬들의 SNS",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <div className="app-container">
             <Sidebar />
             <main className="main-feed">
+              <GlobalHeader />
               {children}
             </main>
             <RightSidebar />

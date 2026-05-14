@@ -92,7 +92,7 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                borderBottom: '1px solid var(--border-color)',
+                borderBottom: '8px solid var(--divider-color)',
                 cursor: 'pointer',
               }}
               onClick={() => {
@@ -103,17 +103,8 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             >
               {/* 원본 글 (부모 포스트) */}
               {comment.post && (
-                <div style={{ position: 'relative' }}>
+                <div>
                   <PostCard post={comment.post} suppressNavigation={true} />
-                  <div style={{
-                    position: 'absolute',
-                    left: '37px',
-                    top: '64px',
-                    bottom: '-12px',
-                    width: '2px',
-                    backgroundColor: 'var(--divider-color)',
-                    zIndex: 0
-                  }}></div>
                 </div>
               )}
               {/* 댓글 본문 (답글) */}
@@ -195,102 +186,86 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
           minHeight: '100vh'
         }}
       >
-        <div style={{ position: 'relative' }}>
-          {/* Back Button over banner */}
-          <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10 }}>
-            <div 
-              onClick={() => router.back()}
-              style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', color: 'white', cursor: 'pointer' }}
-            >
-              <i className="fas fa-arrow-left"></i>
-            </div>
-          </div>
-          {/* Banner */}
-          <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
-        </div>
+        <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
 
-        {/* Profile Identity */}
-        <div style={{ padding: '32px' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-80px' }}>
+        {/* Profile Identity - No overlapping */}
+        <div style={{ padding: '24px 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
             <div 
               style={{
-                width: '96px', height: '96px', borderRadius: '16px',
-                border: '1px solid #F3F4F6', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                backgroundColor: '#FFFFFF',
+                width: '80px', height: '80px', borderRadius: '50%',
                 backgroundImage: `url(${profile.avatarUrl || 'https://i.pravatar.cc/150?u=' + profile.username})`,
                 backgroundSize: 'cover', backgroundPosition: 'center',
-                position: 'relative'
+                flexShrink: 0
               }}
             />
-            <div style={{ marginTop: '48px' }}>
-              {(session as any)?.user?.username === profile.username ? (
-                <button 
-                  onClick={() => alert('프로필 편집창 기능 추가 예정입니다.')}
-                  style={{
-                    padding: '10px 20px', borderRadius: '12px',
-                    backgroundColor: '#111827', color: '#FFFFFF',
-                    fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1F2937'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#111827'}
-                >
-                  프로필 수정
-                </button>
-              ) : (
-                <button 
-                  style={{
-                    padding: '10px 20px', borderRadius: '12px',
-                    backgroundColor: '#111827', color: '#FFFFFF',
-                    fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1F2937'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#111827'}
-                >
-                  팔로우
-                </button>
-              )}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0 }}>
+                      {profile.displayName || profile.username}
+                    </h1>
+                    {profile.isVerified && (
+                      <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '20px' }}></i>
+                    )}
+                  </div>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '15px', fontWeight: 500, color: '#6B7280' }}>
+                    @{profile.username}
+                  </p>
+                  {profile.favoriteTeam && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, color: '#6B7280', marginTop: '6px' }}>
+                      <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} style={{ width: '16px', height: '16px' }} />
+                      <span>{profile.favoriteTeam} 팬</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Actions */}
+                <div>
+                  {(session as any)?.user?.username === profile.username ? (
+                    <button 
+                      onClick={() => alert('프로필 편집창 기능 추가 예정입니다.')}
+                      style={{
+                        padding: '10px 20px', borderRadius: '9999px',
+                        backgroundColor: '#111827', color: '#FFFFFF',
+                        fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer'
+                      }}
+                    >
+                      프로필 수정
+                    </button>
+                  ) : (
+                    <button 
+                      style={{
+                        padding: '10px 20px', borderRadius: '9999px',
+                        backgroundColor: '#111827', color: '#FFFFFF',
+                        fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer'
+                      }}
+                    >
+                      팔로우
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
+          
           <div style={{ marginTop: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0 }}>
-                {profile.displayName || profile.username}
-              </h1>
-              {profile.isVerified && (
-                <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '20px' }}></i>
-              )}
-            </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '14px', fontWeight: 500, color: '#6B7280' }}>
-              @{profile.username}
-            </p>
-            
             {profile.bio && (
-              <p style={{ margin: '16px 0 0 0', fontSize: '16px', lineHeight: 1.625, color: '#374151' }}>
+              <p style={{ margin: '0', fontSize: '16px', lineHeight: 1.625, color: '#111827' }}>
                 {profile.bio}
               </p>
             )}
 
-            {/* Meta Info */}
-            <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
-              {profile.favoriteTeam && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, color: '#6B7280' }}>
-                  <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} style={{ width: '16px', height: '16px' }} />
-                  <span>{profile.favoriteTeam} 팬</span>
-                </div>
-              )}
-            </div>
-
             {/* Stats */}
-            <div style={{ display: 'flex', gap: '20px', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #F9FAFB' }}>
+            <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
               <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{profile.followingCount || 0}</span>
-                <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>팔로잉</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111827' }}>{profile.followingCount || 0}</span>
+                <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>팔로잉</span>
               </div>
               <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{profile.followersCount || 0}</span>
-                <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>팔로워</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111827' }}>{profile.followersCount || 0}</span>
+                <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>팔로워</span>
               </div>
             </div>
           </div>

@@ -63,6 +63,12 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
           <div className="compose-actions" style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="action-icons" style={{ display: 'flex', gap: '16px', color: 'var(--primary-color)' }}>
               <i className="far fa-image" style={{ cursor: 'pointer', fontSize: '20px' }} />
+              <i 
+                className="fas fa-hashtag" 
+                title="태그 추가" 
+                style={{ cursor: 'pointer', fontSize: '20px' }} 
+                onClick={() => setContent(prev => prev + (prev.endsWith(' ') || !prev ? '#' : ' #'))} 
+              />
               <i className="far fa-smile" style={{ cursor: 'pointer', fontSize: '20px' }} />
               <i className="far fa-calendar-alt" style={{ cursor: 'pointer', fontSize: '20px' }} />
             </div>
