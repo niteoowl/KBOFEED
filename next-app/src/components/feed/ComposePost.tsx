@@ -58,6 +58,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
               onChange={(e) => setContent(e.target.value)}
               autoFocus
               maxLength={280}
+              rows={4}
             />
           </div>
           <div className="compose-actions">

@@ -54,6 +54,64 @@ function SearchResults() {
       );
     }
 
+    const renderUser = (user: any) => (
+      <div
+        key={user.id}
+        onClick={() => router.push(`/@${user.username}`)}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '14px 16px',
+          borderBottom: '1px solid var(--border-color)',
+          cursor: 'pointer',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hover-bg, rgba(255,255,255,0.03))')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+      >
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1 }}>
+          <div
+            className="user-avatar"
+            style={{
+              backgroundImage: user.avatarUrl
+                ? `url(${user.avatarUrl})`
+                : `url(https://i.pravatar.cc/150?u=${user.username})`,
+              backgroundSize: 'cover',
+              width: '48px',
+              height: '48px',
+              minWidth: '48px',
+              borderRadius: '50%',
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
+                {user.displayName || user.username}
+              </span>
+              {user.isVerified && (
+                <i className="fas fa-check-circle" style={{ color: 'var(--primary-color)', fontSize: '14px' }} />
+              )}
+            </div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>@{user.username}</div>
+            {user.bio && (
+              <p style={{ color: 'var(--text-primary)', fontSize: '14px', margin: '4px 0 0', lineHeight: 1.4 }}>
+                {user.bio.slice(0, 100)}{user.bio.length > 100 ? '...' : ''}
+              </p>
+            )}
+          </div>
+        </div>
+        <button 
+          className="follow-btn"
+          onClick={(e) => { e.stopPropagation(); }}
+          style={{ padding: '6px 16px', fontSize: '13px' }}
+        >
+          팔로우
+        </button>
+      </div>
+    );
+
     if (activeTab === 'users') {
       if (loadingUsers) {
         return <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>검색 중...</div>;
@@ -67,53 +125,7 @@ function SearchResults() {
       }
       return (
         <div>
-          {users.map((user: any) => (
-            <div
-              key={user.id}
-              onClick={() => router.push(`/@${user.username}`)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '14px 16px',
-                borderBottom: '1px solid var(--border-color)',
-                cursor: 'pointer',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hover-bg, rgba(255,255,255,0.03))')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-            >
-              <div
-                className="user-avatar"
-                style={{
-                  backgroundImage: user.avatarUrl
-                    ? `url(${user.avatarUrl})`
-                    : `url(https://i.pravatar.cc/150?u=${user.username})`,
-                  backgroundSize: 'cover',
-                  width: '48px',
-                  height: '48px',
-                  minWidth: '48px',
-                  borderRadius: '50%',
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
-                    {user.displayName || user.username}
-                  </span>
-                  {user.isVerified && (
-                    <i className="fas fa-check-circle" style={{ color: 'var(--primary-color)', fontSize: '14px' }} />
-                  )}
-                </div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>@{user.username}</div>
-                {user.bio && (
-                  <p style={{ color: 'var(--text-primary)', fontSize: '14px', margin: '4px 0 0', lineHeight: 1.4 }}>
-                    {user.bio.slice(0, 100)}{user.bio.length > 100 ? '...' : ''}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
+          {users.map(renderUser)}
         </div>
       );
     }
@@ -139,6 +151,19 @@ function SearchResults() {
 
     return (
       <div className="feed-content">
+        {activeTab === 'all' && (!loadingUsers && users.length > 0) && (
+          <div style={{ borderBottom: '8px solid var(--divider-color)' }}>
+            {users.slice(0, 3).map(renderUser)}
+            {users.length > 3 && (
+              <div 
+                onClick={() => setActiveTab('users')}
+                style={{ padding: '16px', color: 'var(--primary-color)', cursor: 'pointer', textAlign: 'center', fontSize: '14px', fontWeight: 600 }}
+              >
+                더보기
+              </div>
+            )}
+          </div>
+        )}
         {filteredPosts.map((post: any) => (
           <PostCard key={post.id} post={post} />
         ))}

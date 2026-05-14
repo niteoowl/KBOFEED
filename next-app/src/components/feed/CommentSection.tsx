@@ -105,35 +105,25 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
               placeholder="답글을 작성하세요..."
               style={{
                 width: '100%',
-                minHeight: '60px',
-                padding: '10px 12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '12px',
-                backgroundColor: 'var(--bg-primary)',
+                minHeight: '40px',
+                padding: '12px 0 0 0',
+                border: 'none',
+                backgroundColor: 'transparent',
                 color: 'var(--text-primary)',
-                fontSize: '15px',
-                resize: 'vertical',
+                fontSize: '17px',
+                resize: 'none',
                 outline: 'none',
                 fontFamily: 'inherit',
               }}
-              onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
-              onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px' }}>
               <button
                 onClick={handleSubmit}
                 disabled={!text.trim() || submitting}
+                className="inline-post-btn"
                 style={{
-                  padding: '8px 20px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  backgroundColor: text.trim() ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: text.trim() ? 'pointer' : 'not-allowed',
                   opacity: text.trim() ? 1 : 0.5,
-                  transition: 'all 0.2s',
+                  cursor: text.trim() ? 'pointer' : 'not-allowed'
                 }}
               >
                 {submitting ? '전송 중...' : '답글'}

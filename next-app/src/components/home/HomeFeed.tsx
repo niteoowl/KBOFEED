@@ -24,13 +24,31 @@ export default function HomeFeed() {
   const [loadingTeam, setLoadingTeam] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setTeamId(saved);
-    } catch {
-      /* ignore */
-    }
-  }, []);
+    let cancelled = false;
+    const fetchFavoriteTeam = async () => {
+      try {
+        if (session?.user) {
+          const u = session.user as any;
+          if (u.username) {
+            const { getProfile } = await import('@/app/actions/user');
+            const profile = await getProfile(u.username);
+            if (!cancelled && profile?.favoriteTeam) {
+              setTeamId(profile.favoriteTeam);
+              return;
+            }
+          }
+        }
+        if (!cancelled) {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) setTeamId(saved);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    fetchFavoriteTeam();
+    return () => { cancelled = true; };
+  }, [session]);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,6 +118,7 @@ export default function HomeFeed() {
               <img src="/images/logo.png" alt="크보피드 로고" className="mobile-logo" />
             </Link>
           </div>
+          <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center' }}>홈</h2>
           <div className="header-right" />
         </div>
         <div className="feed-tabs">

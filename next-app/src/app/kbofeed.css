@@ -270,18 +270,6 @@ ul {
     font-weight: 700;
 }
 
-.sub-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background-color: var(--primary-color);
-    border-radius: 9999px;
-}
-
 /* Modern Compose Trigger & Inline Expansion */
 .compose-trigger-section {
     padding: 12px 16px;
@@ -340,7 +328,8 @@ ul {
     border: none;
     outline: none;
     font-size: 17px;
-    resize: none;
+    resize: vertical;
+    min-height: 100px;
     font-family: inherit;
     color: var(--text-primary);
     padding: 0;

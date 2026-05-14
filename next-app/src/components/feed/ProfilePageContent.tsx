@@ -30,6 +30,7 @@ interface ProfilePageContentProps {
 
 export default function ProfilePageContent({ profile, initialPosts }: ProfilePageContentProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'media' | 'likes'>('posts');
   const [posts, setPosts] = useState<any[]>(initialPosts);
   const [likedPosts, setLikedPosts] = useState<any[]>([]);
@@ -102,12 +103,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
               {/* 원본 글 미니 프리뷰 */}
               {comment.post && (
                 <div style={{
-                  padding: '10px 14px',
-                  marginBottom: '10px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--bg-secondary, #16181c)',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '13px',
+                  padding: '12px 14px',
+                  marginBottom: '12px',
+                  borderLeft: '4px solid var(--border-color)',
+                  backgroundColor: 'rgba(0,0,0,0.02)',
+                  fontSize: '14px',
                   color: 'var(--text-secondary)',
                 }}>
                   <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -197,9 +197,28 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
         <div className="header-right"></div>
       </header>
 
-      <section className="profile-container">
-        <div className="profile-header-new">
+      <section className="profile-container" style={{ marginTop: 0, borderTop: 'none' }}>
+        <div className="profile-header-new" style={{ position: 'relative' }}>
           <div className="profile-main-info">
+            <div className="profile-actions" style={{ position: 'absolute', top: '20px', right: '20px' }}>
+              {(session as any)?.user?.username === profile.username ? (
+                <button 
+                  onClick={() => alert('프로필 편집창 기능 추가 예정입니다.')}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '9999px',
+                    border: '1px solid var(--border-color)',
+                    background: 'transparent',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  프로필 수정
+                </button>
+              ) : (
+                <button className="follow-btn">팔로우</button>
+              )}
+            </div>
             <div className="profile-intro-row">
               <div 
                 className="profile-avatar-new" 
@@ -219,9 +238,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             </div>
             
             <div className="profile-meta-new">
-              <p className="profile-bio-new">
-                {profile.bio || 'KBO 피드에서 야구 이야기를 나누는 팬입니다.'}
-              </p>
+              {profile.bio && (
+                <p className="profile-bio-new">
+                  {profile.bio}
+                </p>
+              )}
 
               <div className="profile-stats-row">
                 <div className="stat-group"><b>{profile.followingCount || 0}</b> 팔로잉</div>
