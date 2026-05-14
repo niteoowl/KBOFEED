@@ -12,6 +12,7 @@ type ComposePostProps = {
 const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { data: session } = useSession();
   const [content, setContent] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   if (!session) return null;
@@ -21,8 +22,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
     
     const submittedContent = content; // Store for optimistic update
     setContent('');
-    const target = document.getElementById('compose-textarea');
-    if (target) target.style.height = 'auto';
+    setIsExpanded(false);
     
     // Optimistic update trigger (optional if parent supports it)
     onPosted?.(submittedContent);
@@ -38,60 +38,47 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
     }
   };
 
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 400)}px`;
-  };
-
   return (
-    <section className="compose-trigger-section">
-      <div className="compose-trigger expanded" style={{ cursor: 'default' }}>
-        <div className="expanded-content" style={{ paddingLeft: 0, opacity: 1, display: 'block' }}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <div 
-              className="user-avatar small"
-              style={{ width: '48px', height: '48px', flexShrink: 0, backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover' }}
-            />
-            <div className="compose-input-area" style={{ flex: 1 }}>
-              <textarea 
-                id="compose-textarea"
-                placeholder="무슨 일이 일어나고 있나요?"
-                value={content}
-                onChange={handleInput}
-                maxLength={280}
-                rows={1}
-                style={{
-                  width: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: '17px',
-                  resize: 'none',
-                  minHeight: '40px',
-                  fontFamily: 'inherit',
-                  color: 'var(--text-primary)',
-                  padding: '12px 0'
-                }}
-              />
+    <section className="compose-trigger-section" style={{ padding: '16px 20px', borderBottom: '8px solid var(--divider-color)', backgroundColor: '#fff' }}>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <div 
+          className="user-avatar"
+          style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover', width: '44px', height: '44px', minWidth: '44px', borderRadius: '50%' }}
+        />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <textarea 
+            placeholder="무슨 일이 일어나고 있나요?"
+            value={content}
+            onChange={(e) => {
+              setContent(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+            style={{
+              width: '100%', border: 'none', outline: 'none', background: 'transparent',
+              fontSize: '18px', resize: 'none', overflowY: 'auto', maxHeight: '400px', minHeight: '60px',
+              fontFamily: 'inherit', color: 'var(--text-primary)', paddingTop: '8px'
+            }}
+          />
+          <div className="compose-actions" style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="action-icons" style={{ display: 'flex', gap: '16px', color: 'var(--primary-color)' }}>
+              <i className="far fa-image" style={{ cursor: 'pointer', fontSize: '20px' }} />
+              <i className="far fa-smile" style={{ cursor: 'pointer', fontSize: '20px' }} />
+              <i className="far fa-calendar-alt" style={{ cursor: 'pointer', fontSize: '20px' }} />
             </div>
-          </div>
-          <div className="compose-actions" style={{ paddingLeft: '60px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="action-icons" style={{ display: 'flex', gap: '12px' }}>
-              <i className="far fa-image" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
-              <i className="far fa-smile" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
-              <i className="far fa-calendar-alt" style={{ cursor: 'pointer', color: 'var(--primary-color)', fontSize: '20px' }} />
-            </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button 
-                  onClick={handleSubmit}
-                  disabled={!content.trim() || isPending}
-                  className="inline-post-btn"
-                  style={{ opacity: content.trim() ? 1 : 0.5, cursor: content.trim() ? 'pointer' : 'not-allowed' }}
-                >
-                  {isPending ? '게시 중...' : '게시하기'}
-                </button>
-            </div>
+            <button 
+              onClick={handleSubmit}
+              disabled={!content.trim() || isPending}
+              className="inline-post-btn"
+              style={{ 
+                padding: '8px 20px', fontSize: '15px', borderRadius: '9999px', border: 'none', 
+                backgroundColor: content.trim() ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)', 
+                color: '#fff', fontWeight: 'bold', cursor: content.trim() ? 'pointer' : 'default', 
+                opacity: content.trim() ? 1 : 0.5, transition: '0.2s' 
+              }}
+            >
+              {isPending ? '게시 중...' : '게시하기'}
+            </button>
           </div>
         </div>
       </div>

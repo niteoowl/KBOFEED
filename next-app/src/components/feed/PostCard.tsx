@@ -127,7 +127,7 @@ const PostCard = ({ post, suppressNavigation }: PostProps) => {
           <span className="time" style={{ color: 'var(--text-secondary)' }}>{timeAgo}</span>
         </div>
         
-        <div className="tweet-text">
+        <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
           {post.content}
         </div>
 

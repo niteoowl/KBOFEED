@@ -198,85 +198,66 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
       </header>
 
       <section className="profile-container" style={{ marginTop: 0, borderTop: 'none' }}>
-        
-        {/* Cover Image */}
-        <div style={{ height: '192px', backgroundColor: '#f1f5f9', overflow: 'hidden', position: 'relative' }}>
-          <img 
-             src={`https://placehold.co/1200x400/e2e8f0/64748b?text=${profile.favoriteTeam || 'Cover'}`}
-             onError={(e) => { e.currentTarget.src = 'https://placehold.co/1200x400/cccccc/ffffff?text=Banner'; }}
-             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-             alt="Cover"
-          />
-        </div>
+        {/* Cover Image Placeholder */}
+        <div style={{ width: '100%', height: '140px', backgroundColor: 'var(--border-color)', backgroundImage: 'linear-gradient(45deg, #1d4ed8, #93b3f2)', backgroundSize: 'cover' }} />
 
-        <div style={{ padding: '20px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
-              <div 
-                style={{ 
-                  width: '96px', height: '96px', borderRadius: '24px', overflow: 'hidden', 
-                  backgroundColor: '#f3f4f6', flexShrink: 0, marginTop: '-48px',
-                  border: '4px solid white', backgroundImage: `url(${profile.avatarUrl || 'https://i.pravatar.cc/150?u=' + profile.username})`, backgroundSize: 'cover'
-                }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>{profile.displayName || profile.username}</h1>
-                  {profile.isVerified && <i className="fas fa-check-circle" style={{ color: 'var(--primary-color)' }} />}
-                  {profile.favoriteTeam && (
-                     <span style={{ padding: '2px 8px', backgroundColor: 'var(--hover-bg)', color: 'var(--primary-color)', fontSize: '10px', fontWeight: 700, borderRadius: '6px' }}>{profile.favoriteTeam}</span>
-                  )}
-                </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '4px 0 0 0', fontWeight: 500 }}>@{profile.username}</p>
-              </div>
-            </div>
-            
-            <div style={{ marginTop: '8px' }}>
+        <div className="profile-header-new" style={{ padding: '12px 16px', position: 'relative' }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-50px' }}>
+            <div 
+              className="profile-avatar-new" 
+              style={{ 
+                margin: 0,
+                width: '80px', height: '80px', borderRadius: '50%', backgroundSize: 'cover',
+                border: '4px solid #fff',
+                backgroundImage: `url(${profile.avatarUrl || 'https://i.pravatar.cc/150?u=' + profile.username})` 
+              }}
+            />
+            <div className="profile-actions" style={{ marginTop: '50px' }}>
               {(session as any)?.user?.username === profile.username ? (
                 <button 
                   onClick={() => alert('프로필 편집창 기능 추가 예정입니다.')}
                   style={{
-                    padding: '10px 20px', borderRadius: '12px', backgroundColor: '#111827', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer'
+                    padding: '6px 16px',
+                    borderRadius: '9999px',
+                    border: '1px solid var(--border-color)',
+                    background: 'transparent',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '14px'
                   }}
                 >
                   프로필 수정
                 </button>
               ) : (
-                <button 
-                  style={{
-                    padding: '10px 20px', borderRadius: '12px', backgroundColor: '#111827', color: 'white', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer'
-                  }}
-                >
-                  팔로우
-                </button>
+                <button className="follow-btn" style={{ padding: '6px 16px', fontSize: '14px' }}>팔로우</button>
               )}
             </div>
           </div>
-          
-          <div style={{ marginTop: '24px' }}>
-             {profile.bio && (
-                 <p style={{ fontSize: '16px', color: '#374151', lineHeight: 1.6, margin: '0 0 24px 0', maxWidth: '600px' }}>{profile.bio}</p>
-             )}
-             
-             <div style={{ display: 'flex', gap: '20px', color: 'var(--text-secondary)', fontSize: '14px', flexWrap: 'wrap', fontWeight: 500 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                   <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                   서울
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                   <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/></svg>
-                   2024년 5월 가입
-                </span>
-             </div>
-             
-             <div style={{ display: 'flex', gap: '24px', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
-                <div style={{ cursor: 'pointer' }}>
-                   <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{profile.followingCount || 0}</span> <span style={{ color: 'var(--text-secondary)', fontSize: '14px', marginLeft: '4px' }}>팔로잉</span>
-                </div>
-                <div style={{ cursor: 'pointer' }}>
-                   <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{profile.followersCount || 0}</span> <span style={{ color: 'var(--text-secondary)', fontSize: '14px', marginLeft: '4px' }}>팔로워</span>
-                </div>
-             </div>
+
+          <div className="profile-main-info" style={{ marginTop: '8px' }}>
+            <h1 className="profile-name-large" style={{ fontSize: '20px', margin: 0 }}>{profile.displayName || profile.username}</h1>
+            <p className="profile-handle-large" style={{ margin: '2px 0 8px 0' }}>@{profile.username}</p>
+            
+            {profile.favoriteTeam && (
+              <div className="team-badge" style={{ marginBottom: '12px' }}>
+                <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} />
+                <span>{profile.favoriteTeam} 팬</span>
+              </div>
+            )}
+            
+            <div className="profile-meta-new">
+              {profile.bio && (
+                <p className="profile-bio-new" style={{ marginBottom: '12px' }}>
+                  {profile.bio}
+                </p>
+              )}
+
+              <div className="profile-stats-row">
+                <div className="stat-group"><b>{profile.followingCount || 0}</b> 팔로잉</div>
+                <div className="stat-group"><b>{profile.followersCount || 0}</b> 팔로워</div>
+              </div>
+            </div>
           </div>
         </div>
 
