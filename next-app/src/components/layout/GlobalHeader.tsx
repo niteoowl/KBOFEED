@@ -1,38 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function GlobalHeader() {
   const [show, setShow] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    const scrollContainer = document.querySelector('.main-feed') || window;
-    
-    const handleScroll = (e: Event) => {
-      const currentScrollY = scrollContainer === window 
-        ? window.scrollY 
-        : (scrollContainer as Element).scrollTop;
+    const handleScroll = () => {
+      // Find the main scrollable container. In Next.js it's often the window itself.
+      const currentScrollY = window.scrollY;
 
-      // 하향 스크롤이고, 60px 이상 내려왔을 때 숨김
-      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+      if (currentScrollY > lastScrollY.current + 5 && currentScrollY > 60) {
         setShow(false);
-      } else {
-        // 상향 스크롤일 때 다시 표시
+      } else if (currentScrollY < lastScrollY.current - 5 || currentScrollY <= 0) {
         setShow(true);
       }
-      setLastScrollY(currentScrollY);
+      lastScrollY.current = currentScrollY;
     };
 
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, [lastScrollY]);
+  }, []);
 
   // Determine Title and Back button logic
   let title = '홈';

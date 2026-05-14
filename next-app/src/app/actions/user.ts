@@ -53,3 +53,25 @@ export async function getUserPosts(userId: string) {
 
   return rows.map((post) => ({ ...post, isLiked: false, isRetweeted: false }));
 }
+
+export async function updateProfile(data: { displayName?: string; bio?: string; favoriteTeam?: string; avatarUrl?: string }) {
+  const session = await auth();
+  const username = (session?.user as any)?.username;
+  if (!username) {
+    throw new Error('Not authenticated');
+  }
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  await db.update(profiles)
+    .set({
+      displayName: data.displayName !== undefined ? data.displayName : undefined,
+      bio: data.bio !== undefined ? data.bio : undefined,
+      favoriteTeam: data.favoriteTeam !== undefined ? data.favoriteTeam : undefined,
+      avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : undefined,
+    })
+    .where(eq(profiles.username, username as string));
+
+  return true;
+}
