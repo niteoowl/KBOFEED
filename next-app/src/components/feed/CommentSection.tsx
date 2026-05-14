@@ -181,15 +181,25 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
                     @{comment.profiles.username}
                   </span>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>·</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                     {comment.createdAt
                       ? formatDistanceToNow(parseDate(comment.createdAt), { addSuffix: true, locale: ko })
                       : ''}
                   </span>
                 </div>
-                <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0 }}>
+                <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
                   {comment.content}
                 </p>
+                <div className="tweet-actions" style={{ marginTop: '12px', display: 'flex', gap: '32px', color: 'var(--text-secondary)' }}>
+                  <div className="action-item" style={{ cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <i className="far fa-comment"></i>
+                    <span style={{ fontSize: '13px' }}>답글 남기기</span>
+                  </div>
+                  <div className="action-item" style={{ cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <i className="far fa-heart"></i>
+                    <span style={{ fontSize: '13px' }}>좋아요</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))

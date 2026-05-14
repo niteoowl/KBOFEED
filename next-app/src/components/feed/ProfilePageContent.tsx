@@ -90,7 +90,8 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             <div
               key={comment.id}
               style={{
-                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
                 borderBottom: '1px solid var(--border-color)',
                 cursor: 'pointer',
               }}
@@ -100,28 +101,23 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                 }
               }}
             >
-              {/* 원본 글 미니 프리뷰 */}
+              {/* 원본 글 (부모 포스트) */}
               {comment.post && (
-                <div style={{
-                  padding: '12px 14px',
-                  marginBottom: '12px',
-                  borderLeft: '4px solid var(--border-color)',
-                  backgroundColor: 'rgba(0,0,0,0.02)',
-                  fontSize: '14px',
-                  color: 'var(--text-secondary)',
-                }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {comment.post.profiles?.displayName || '탐험가'}
-                  </span>
-                  <span style={{ marginLeft: '6px' }}>@{comment.post.profiles?.username}</span>
-                  <p style={{ margin: '6px 0 0', color: 'var(--text-primary)', fontSize: '14px' }}>
-                    {(comment.post.content || '').slice(0, 80)}
-                    {(comment.post.content || '').length > 80 ? '...' : ''}
-                  </p>
+                <div style={{ position: 'relative' }}>
+                  <PostCard post={comment.post} suppressNavigation={true} />
+                  <div style={{
+                    position: 'absolute',
+                    left: '37px',
+                    top: '64px',
+                    bottom: '-12px',
+                    width: '2px',
+                    backgroundColor: 'var(--divider-color)',
+                    zIndex: 0
+                  }}></div>
                 </div>
               )}
-              {/* 댓글 본문 */}
-              <div style={{ display: 'flex', gap: '12px' }}>
+              {/* 댓글 본문 (답글) */}
+              <div style={{ display: 'flex', gap: '12px', padding: '12px 16px 16px 16px', position: 'relative', zIndex: 1 }}>
                 <div
                   className="user-avatar"
                   style={{
@@ -129,9 +125,9 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                       ? `url(${comment.profiles.avatarUrl})`
                       : `url(https://i.pravatar.cc/150?u=${comment.profiles?.username})`,
                     backgroundSize: 'cover',
-                    width: '36px',
-                    height: '36px',
-                    minWidth: '36px',
+                    width: '44px',
+                    height: '44px',
+                    minWidth: '44px',
                     borderRadius: '50%',
                   }}
                 />
@@ -140,17 +136,17 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                     <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                       {comment.profiles?.displayName || '탐험가'}
                     </span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                       @{comment.profiles?.username}
                     </span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>·</span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>·</span>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                       {comment.createdAt
                         ? formatDistanceToNow(parseDate(comment.createdAt), { addSuffix: true, locale: ko })
                         : ''}
                     </span>
                   </div>
-                  <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0 }}>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
                     {comment.content}
                   </p>
                 </div>
@@ -184,34 +180,34 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
   };
 
   return (
-    <main className="main-feed">
-      <header className="feed-header">
-        <div className="header-left">
-          <Link href="/" className="header-back-btn">
-            <i className="fas fa-arrow-left"></i>
-          </Link>
-        </div>
-        <h2 className="profile-header-title" style={{ flex: 1, textAlign: 'center' }}>
-          {profile.displayName || profile.username}
-        </h2>
-        <div className="header-right"></div>
-      </header>
-
+    <main className="main-feed" style={{ paddingTop: 0 }}>
+      {/* profile-container without feed-header */}
       <section 
         className="profile-container" 
         style={{ 
-          fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
           backgroundColor: '#FFFFFF',
           maxWidth: '700px',
           margin: '0 auto',
           borderLeft: '1px solid #F3F4F6',
           borderRight: '1px solid #F3F4F6',
           borderTop: 'none',
-          paddingBottom: '24px'
+          paddingBottom: '24px',
+          minHeight: '100vh'
         }}
       >
-        {/* Banner */}
-        <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
+        <div style={{ position: 'relative' }}>
+          {/* Back Button over banner */}
+          <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10 }}>
+            <div 
+              onClick={() => router.back()}
+              style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', color: 'white', cursor: 'pointer' }}
+            >
+              <i className="fas fa-arrow-left"></i>
+            </div>
+          </div>
+          {/* Banner */}
+          <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
+        </div>
 
         {/* Profile Identity */}
         <div style={{ padding: '32px' }}>
