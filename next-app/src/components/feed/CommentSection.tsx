@@ -6,6 +6,7 @@ import { createComment } from '@/app/actions/post';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
+import PostCard from '@/components/feed/PostCard';
 
 interface CommentData {
   id: number;
@@ -133,76 +134,27 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
         </div>
       )}
 
-      {/* 댓글 목록 */}
       <div className="replies-list">
         {comments.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
             아직 답글이 없습니다. 첫 답글을 남겨보세요!
           </div>
         ) : (
-          comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="comment-item"
-              style={{
-                display: 'flex',
-                gap: '12px',
-                padding: '16px',
-                borderBottom: '1px solid var(--border-color)',
-              }}
-            >
-              <div
-                className="user-avatar"
-                style={{
-                  backgroundImage: comment.profiles.avatarUrl
-                    ? `url(${comment.profiles.avatarUrl})`
-                    : `url(https://i.pravatar.cc/150?u=${comment.profiles.username})`,
-                  backgroundSize: 'cover',
-                  width: '36px',
-                  height: '36px',
-                  minWidth: '36px',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push(`/@${comment.profiles.username}`)}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                  <span
-                    style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}
-                    onClick={() => router.push(`/@${comment.profiles.username}`)}
-                  >
-                    {comment.profiles.displayName || '탐험가'}
-                  </span>
-                  {comment.profiles.isVerified && (
-                    <i className="fas fa-check-circle" style={{ color: 'var(--primary-color)', fontSize: '13px' }} />
-                  )}
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                    @{comment.profiles.username}
-                  </span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>·</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                    {comment.createdAt
-                      ? formatDistanceToNow(parseDate(comment.createdAt), { addSuffix: true, locale: ko })
-                      : ''}
-                  </span>
-                </div>
-                <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
-                  {comment.content}
-                </p>
-                <div className="tweet-actions" style={{ marginTop: '12px', display: 'flex', gap: '32px', color: 'var(--text-secondary)' }}>
-                  <div className="action-item" style={{ cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <i className="far fa-comment"></i>
-                    <span style={{ fontSize: '13px' }}>답글 남기기</span>
-                  </div>
-                  <div className="action-item" style={{ cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <i className="far fa-heart"></i>
-                    <span style={{ fontSize: '13px' }}>좋아요</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
+          comments.map((comment) => {
+            const commentAsPost = {
+              id: String(comment.id),
+              content: comment.content,
+              createdAt: comment.createdAt,
+              imageUrl: null,
+              likesCount: 0,
+              retweetsCount: 0,
+              commentsCount: 0,
+              profiles: comment.profiles
+            };
+            return (
+              <PostCard key={comment.id} post={commentAsPost} suppressNavigation={false} />
+            );
+          })
         )}
       </div>
     </div>

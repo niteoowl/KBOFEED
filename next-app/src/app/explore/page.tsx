@@ -1,12 +1,17 @@
 import Link from 'next/link';
 import SearchHeader from '@/components/search/SearchHeader';
+import GlobalHeader from '@/components/layout/GlobalHeader';
 
 export const runtime = 'edge';
 
 export default function ExplorePage() {
   return (
     <>
-      <SearchHeader title="탐색" />
+      <GlobalHeader title="탐색">
+        <div style={{ width: '100%', paddingBottom: '8px' }}>
+          <SearchHeader />
+        </div>
+      </GlobalHeader>
 
       <section className="explore-section">
         {/* Categorized Trends - High Density Text */}

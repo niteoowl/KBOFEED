@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { KBO_TEAMS, getTeamLogo } from '@/lib/constants';
 import ComposePost from '@/components/feed/ComposePost';
 import PostCard from '@/components/feed/PostCard';
+import GlobalHeader from '@/components/layout/GlobalHeader';
 import { getPosts, getTeamPosts } from '@/app/actions/post';
 
 const STORAGE_KEY = 'selected_team';
@@ -14,7 +16,10 @@ type PostRow = Awaited<ReturnType<typeof getPosts>>[number];
 
 export default function HomeFeed() {
   const { data: session } = useSession();
-  const [mainTab, setMainTab] = useState<'all' | 'myteam'>('all');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const mainTab = searchParams.get('tab') === 'myteam' ? 'myteam' : 'all';
+
   const [teamId, setTeamId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [subtab, setSubtab] = useState<'collection' | 'feed'>('collection');
@@ -110,25 +115,24 @@ export default function HomeFeed() {
 
   return (
     <>
-      <div className="feed-header-group">
-        <div className="feed-tabs">
+      <GlobalHeader title="홈">
+        <div className="feed-tabs" style={{ display: 'flex', width: '100%', borderTop: 'none' }}>
           <button
             type="button"
             className={`feed-tab ${mainTab === 'all' ? 'active' : ''}`}
-            onClick={() => setMainTab('all')}
+            onClick={() => router.replace('/?tab=all', { scroll: false })}
           >
             전체글
           </button>
           <button
             type="button"
             className={`feed-tab ${mainTab === 'myteam' ? 'active' : ''}`}
-            onClick={() => setMainTab('myteam')}
+            onClick={() => router.replace('/?tab=myteam', { scroll: false })}
           >
             내팀
           </button>
         </div>
-      </div>
-
+      </GlobalHeader>
       <ComposePost
         onPosted={async (content) => {
           if (content && session?.user) {

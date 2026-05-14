@@ -37,6 +37,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
   const [isRetweeted, setIsRetweeted] = useState(post.isRetweeted);
   const [retweetsCount, setRetweetsCount] = useState(post.retweetsCount || 0);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -127,102 +128,162 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
       }}
       style={suppressNavigation ? { cursor: 'default' } : { cursor: 'pointer' }}
     >
-      <div 
-        className="user-avatar"
-        style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%' }}
-        onClick={(e) => {
-          e.stopPropagation();
-          router.push(`/@${post.profiles.username}`);
-        }}
-      />
-      <div className="tweet-content">
-        <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-          <span 
-            className="display-name" 
-            style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/@${post.profiles.username}`);
-            }}
-          >
-            {post.profiles.displayName || '탐험가'}
-          </span>
-          {post.profiles.isVerified && (
-            <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginRight: '2px' }} />
-          )}
-          <span 
-            className="username" 
-            style={{ color: 'var(--text-secondary)', marginLeft: '2px' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/@${post.profiles.username}`);
-            }}
-          >
-            @{post.profiles.username}
-          </span>
-          <span className="dot" style={{ color: 'var(--text-secondary)' }}>·</span>
-          <span className="time" style={{ color: 'var(--text-secondary)' }}>{timeAgo}</span>
-          
-          {/* Detail View Options Menu */}
-          {isDetailView && (
-            <div style={{ marginLeft: 'auto', position: 'relative' }}>
-              <i 
-                className="fas fa-ellipsis-h" 
-                style={{ color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }} 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  alert('게시물 옵션: 수정, 삭제, 신고 등 (기능 개발 중)'); 
-                }}
-              />
+      {isDetailView ? (
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '16px 16px 0 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div 
+              className="user-avatar"
+              style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%', margin: 0 }}
+              onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
+            />
+            <div style={{ marginLeft: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <span 
+                className="display-name" 
+                style={{ fontWeight: 800, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
+              >
+                {post.profiles.displayName || '탐험가'}
+                {post.profiles.isVerified && <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginLeft: '4px' }} />}
+              </span>
+              <span 
+                className="username" 
+                style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}
+                onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
+              >
+                @{post.profiles.username}
+              </span>
             </div>
-          )}
-        </div>
-        
-        <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
-          {formatContent(displayContent)}
-          {!isExpanded && shouldTruncate && (
-            <span 
-              onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
-              style={{ color: 'var(--primary-color)', cursor: 'pointer', marginLeft: '6px', fontWeight: 'bold' }}
-            >
-              더보기
-            </span>
-          )}
-        </div>
+            <button style={{ 
+              background: '#111827', color: '#fff', borderRadius: '999px', padding: '6px 16px', border: 'none', fontWeight: 600, cursor: 'pointer' 
+            }}>
+              팔로우
+            </button>
+            <div style={{ position: 'relative', marginLeft: '12px' }}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' }}
+              >
+                <i className="fas fa-ellipsis-h" />
+              </button>
+              {menuOpen && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #eee', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', zIndex: 10, width: '150px' }}>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', color: '#ff4444', fontWeight: 600 }} onClick={(e) => { e.stopPropagation(); alert('게시물 삭제'); setMenuOpen(false); }}>게시물 삭제</div>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 수정'); setMenuOpen(false); }}>게시물 수정</div>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 신고'); setMenuOpen(false); }}>게시물 신고</div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="tweet-text" style={{ whiteSpace: 'pre-wrap', marginTop: '16px', fontSize: '18px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
+            {formatContent(displayContent)}
+          </div>
 
-        {post.imageUrl && (
-          <div className="tweet-media">
-            <img src={post.imageUrl} alt="게시물 이미지" />
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: '15px' }}>{post.createdAt ? formatDistanceToNow(parseDate(post.createdAt), { addSuffix: true, locale: ko }) : '최근'}</span>
           </div>
-        )}
 
-        <div className="tweet-actions">
-          <div className="action-item action-comment" onClick={handleComment}>
-            <i className="far fa-comment" />
-            <span>{post.commentsCount || 0}</span>
-          </div>
-          <div
-            onClick={handleRetweet}
-            className="action-item action-retweet"
-            style={{ color: isRetweeted ? '#00ba7c' : undefined }}
-          >
-            <i className="fas fa-retweet" />
-            <span>{retweetsCount}</span>
-          </div>
-          <div
-            onClick={handleLike}
-            className="action-item action-like"
-            style={{ color: isLiked ? '#f91880' : undefined }}
-          >
-            <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
-            <span>{likesCount}</span>
-          </div>
-          <div className="action-item action-views" onClick={(e) => e.stopPropagation()}>
-            <i className="far fa-chart-bar" />
-            <span>0</span>
+          <div className="tweet-actions" style={{ padding: '12px 0 12px 0', display: 'flex', justifyContent: 'space-around', color: 'var(--text-secondary)' }}>
+            <div className="action-item action-comment" onClick={handleComment} style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}>
+              <i className="far fa-comment" />
+              <span>{post.commentsCount || 0}</span>
+            </div>
+            <div onClick={handleRetweet} className="action-item action-retweet" style={{ color: isRetweeted ? '#00ba7c' : undefined, flex: 1, textAlign: 'center', cursor: 'pointer' }}>
+              <i className="fas fa-retweet" />
+              <span>{retweetsCount}</span>
+            </div>
+            <div onClick={handleLike} className="action-item action-like" style={{ color: isLiked ? '#f91880' : undefined, flex: 1, textAlign: 'center', cursor: 'pointer' }}>
+              <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
+              <span>{likesCount}</span>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <div 
+            className="user-avatar"
+            style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/@${post.profiles.username}`);
+            }}
+          />
+          <div className="tweet-content">
+            <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <span 
+                className="display-name" 
+                style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/@${post.profiles.username}`);
+                }}
+              >
+                {post.profiles.displayName || '탐험가'}
+              </span>
+              {post.profiles.isVerified && (
+                <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginRight: '2px' }} />
+              )}
+              <span 
+                className="username" 
+                style={{ color: 'var(--text-secondary)', marginLeft: '2px' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/@${post.profiles.username}`);
+                }}
+              >
+                @{post.profiles.username}
+              </span>
+              <span className="dot" style={{ color: 'var(--text-secondary)' }}>·</span>
+              <span className="time" style={{ color: 'var(--text-secondary)' }}>{timeAgo}</span>
+            </div>
+            
+            <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
+              {formatContent(displayContent)}
+              {!isExpanded && shouldTruncate && (
+                <span 
+                  onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
+                  style={{ color: 'var(--primary-color)', cursor: 'pointer', marginLeft: '6px', fontWeight: 'bold' }}
+                >
+                  더보기
+                </span>
+              )}
+            </div>
+
+            {post.imageUrl && (
+              <div className="tweet-media">
+                <img src={post.imageUrl} alt="게시물 이미지" />
+              </div>
+            )}
+
+            <div className="tweet-actions">
+              <div className="action-item action-comment" onClick={handleComment}>
+                <i className="far fa-comment" />
+                <span>{post.commentsCount || 0}</span>
+              </div>
+              <div
+                onClick={handleRetweet}
+                className="action-item action-retweet"
+                style={{ color: isRetweeted ? '#00ba7c' : undefined }}
+              >
+                <i className="fas fa-retweet" />
+                <span>{retweetsCount}</span>
+              </div>
+              <div
+                onClick={handleLike}
+                className="action-item action-like"
+                style={{ color: isLiked ? '#f91880' : undefined }}
+              >
+                <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
+                <span>{likesCount}</span>
+              </div>
+              <div className="action-item action-views" onClick={(e) => e.stopPropagation()}>
+                <i className="far fa-chart-bar" />
+                <span>0</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </article>
     </>
   );
