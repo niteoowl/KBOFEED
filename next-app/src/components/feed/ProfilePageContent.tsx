@@ -183,7 +183,8 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
           borderRight: '1px solid #F3F4F6',
           borderTop: 'none',
           paddingBottom: '24px',
-          minHeight: '100vh'
+          minHeight: '100vh',
+          marginTop: '-56px'
         }}
       >
         <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
@@ -201,20 +202,20 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '80px', justifyContent: 'space-evenly' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0 }}>
+                    <h1 style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0, lineHeight: 1 }}>
                       {profile.displayName || profile.username}
                     </h1>
                     {profile.isVerified && (
                       <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '20px' }}></i>
                     )}
                   </div>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '15px', fontWeight: 500, color: '#6B7280' }}>
+                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 500, color: '#6B7280', lineHeight: 1 }}>
                     @{profile.username}
                   </p>
                   {profile.favoriteTeam && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, color: '#6B7280', marginTop: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, color: '#6B7280', lineHeight: 1 }}>
                       <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} style={{ width: '16px', height: '16px' }} />
                       <span>{profile.favoriteTeam} 팬</span>
                     </div>

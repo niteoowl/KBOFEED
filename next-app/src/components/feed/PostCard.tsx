@@ -112,8 +112,10 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
   };
 
   return (
-    <article
-      className="tweet"
+    <>
+      {isDetailView && <style>{`.no-hover:hover { background-color: var(--bg-primary, #fff) !important; }`}</style>}
+      <article
+        className={`tweet ${isDetailView ? 'no-hover' : ''}`}
       role={suppressNavigation ? undefined : 'link'}
       tabIndex={suppressNavigation ? undefined : 0}
       onClick={suppressNavigation ? undefined : openPostDetail}
@@ -127,7 +129,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
     >
       <div 
         className="user-avatar"
-        style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover' }}
+        style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%' }}
         onClick={(e) => {
           e.stopPropagation();
           router.push(`/@${post.profiles.username}`);
@@ -222,6 +224,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
         </div>
       </div>
     </article>
+    </>
   );
 };
 

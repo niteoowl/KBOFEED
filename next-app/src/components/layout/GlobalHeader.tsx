@@ -11,26 +11,27 @@ export default function GlobalHeader() {
   const router = useRouter();
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (typeof window !== 'undefined') {
-        const currentScrollY = window.scrollY;
-        // 하향 스크롤이고, 60px 이상 내려왔을 때 숨김
-        if (currentScrollY > lastScrollY && currentScrollY > 60) {
-          setShow(false);
-        } else {
-          // 상향 스크롤일 때 다시 표시
-          setShow(true);
-        }
-        setLastScrollY(currentScrollY);
+    const scrollContainer = document.querySelector('.main-feed') || window;
+    
+    const handleScroll = (e: Event) => {
+      const currentScrollY = scrollContainer === window 
+        ? window.scrollY 
+        : (scrollContainer as Element).scrollTop;
+
+      // 하향 스크롤이고, 60px 이상 내려왔을 때 숨김
+      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        setShow(false);
+      } else {
+        // 상향 스크롤일 때 다시 표시
+        setShow(true);
       }
+      setLastScrollY(currentScrollY);
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    }
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
   }, [lastScrollY]);
 
   // Determine Title and Back button logic
@@ -77,9 +78,9 @@ export default function GlobalHeader() {
           <button 
             onClick={() => router.back()} 
             style={{ 
-              background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer', outline: 'none', 
+              background: 'transparent', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', outline: 'none', 
               width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backdropFilter: 'blur(4px)'
+              fontSize: '20px'
             }}
           >
             <i className="fas fa-arrow-left"></i>
@@ -90,7 +91,7 @@ export default function GlobalHeader() {
           </Link>
         )}
       </div>
-      <h2 className="desktop-title" style={{ flex: 2, textAlign: 'center', fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+      <h2 style={{ flex: 2, textAlign: 'center', fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
         {title}
       </h2>
       <div className="header-right" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
