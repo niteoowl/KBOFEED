@@ -99,15 +99,15 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
               borderRadius: '50%',
             }}
           />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="답글을 작성하세요..."
               style={{
-                width: '100%',
+                flex: 1,
                 minHeight: '40px',
-                padding: '12px 0 0 0',
+                padding: '8px 0',
                 border: 'none',
                 backgroundColor: 'transparent',
                 color: 'var(--text-primary)',
@@ -117,19 +117,23 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
                 fontFamily: 'inherit',
               }}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px' }}>
-              <button
-                onClick={handleSubmit}
-                disabled={!text.trim() || submitting}
-                className="inline-post-btn"
-                style={{
-                  opacity: text.trim() ? 1 : 0.5,
-                  cursor: text.trim() ? 'pointer' : 'not-allowed'
-                }}
-              >
-                {submitting ? '전송 중...' : '답글'}
-              </button>
-            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!text.trim() || submitting}
+              style={{
+                color: 'var(--primary-color)',
+                background: 'transparent',
+                border: 'none',
+                fontWeight: 800,
+                fontSize: '16px',
+                opacity: text.trim() ? 1 : 0.5,
+                cursor: text.trim() ? 'pointer' : 'not-allowed',
+                whiteSpace: 'nowrap',
+                padding: '0 8px'
+              }}
+            >
+              {submitting ? '전송...' : '답글'}
+            </button>
           </div>
         </div>
       )}
@@ -152,7 +156,7 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
               profiles: comment.profiles
             };
             return (
-              <PostCard key={comment.id} post={commentAsPost} suppressNavigation={false} />
+              <PostCard key={comment.id} post={commentAsPost} suppressNavigation={true} />
             );
           })
         )}

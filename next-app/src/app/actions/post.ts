@@ -113,6 +113,34 @@ export async function createPost(content: string, imageUrl?: string) {
   return shortId;
 }
 
+export async function deletePost(postId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Unauthorized');
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+  
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+  if (post && post.userId === session.user.id) {
+    await db.delete(posts).where(eq(posts.id, postId));
+    await env.KV.delete('main_feed_posts');
+    revalidatePath('/');
+  }
+}
+
+export async function updatePost(postId: string, newContent: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Unauthorized');
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+  
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+  if (post && post.userId === session.user.id) {
+    await db.update(posts).set({ content: newContent }).where(eq(posts.id, postId));
+    await env.KV.delete('main_feed_posts');
+    revalidatePath('/');
+  }
+}
+
 export async function toggleLike(postId: string) {
   const session = await auth();
   if (!session?.user?.id) return;

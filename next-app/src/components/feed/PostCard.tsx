@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { toggleLike, toggleRetweet } from '@/app/actions/post';
+import { toggleLike, toggleRetweet, deletePost, updatePost } from '@/app/actions/post';
 import { postPermalink } from '@/lib/post-url';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -117,6 +117,10 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
       {isDetailView && <style>{`.no-hover:hover { background-color: var(--bg-primary, #fff) !important; }`}</style>}
       <article
         className={`tweet ${isDetailView ? 'no-hover' : ''}`}
+        style={{
+          display: isDetailView ? 'block' : undefined,
+          cursor: suppressNavigation ? 'default' : 'pointer'
+        }}
       role={suppressNavigation ? undefined : 'link'}
       tabIndex={suppressNavigation ? undefined : 0}
       onClick={suppressNavigation ? undefined : openPostDetail}
@@ -126,10 +130,9 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
           openPostDetail();
         }
       }}
-      style={suppressNavigation ? { cursor: 'default' } : { cursor: 'pointer' }}
     >
       {isDetailView ? (
-        <div style={{ display: 'flex', flexDirection: 'column', padding: '16px 16px 0 16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '0 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div 
               className="user-avatar"
@@ -167,9 +170,22 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
               </button>
               {menuOpen && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #eee', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', zIndex: 10, width: '150px' }}>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', color: '#ff4444', fontWeight: 600 }} onClick={(e) => { e.stopPropagation(); alert('게시물 삭제'); setMenuOpen(false); }}>게시물 삭제</div>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 수정'); setMenuOpen(false); }}>게시물 수정</div>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 신고'); setMenuOpen(false); }}>게시물 신고</div>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', color: '#ff4444', fontWeight: 600 }} onClick={async (e) => { 
+                    e.stopPropagation(); setMenuOpen(false); 
+                    if (confirm('이 게시물을 삭제하시겠습니까?')) {
+                      await deletePost(post.id);
+                      router.push('/');
+                    }
+                  }}>게시물 삭제</div>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={async (e) => { 
+                    e.stopPropagation(); setMenuOpen(false); 
+                    const newContent = prompt('수정할 내용을 입력하세요:', post.content || '');
+                    if (newContent && newContent !== post.content) {
+                      await updatePost(post.id, newContent);
+                      window.location.reload();
+                    }
+                  }}>게시물 수정</div>
+                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 신고 완료'); setMenuOpen(false); }}>게시물 신고</div>
                 </div>
               )}
             </div>
