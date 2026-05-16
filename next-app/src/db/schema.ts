@@ -50,6 +50,7 @@ export const profiles = sqliteTable('profiles', {
   avatarUrl: text('avatar_url'),
   bio: text('bio'),
   favoriteTeam: text('favorite_team'),
+  coverUrl: text('cover_url'),
   isVerified: integer('is_verified', { mode: 'boolean' }).default(false),
   isAdmin: integer('is_admin', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -67,6 +68,7 @@ export const posts = sqliteTable('posts', {
   likesCount: integer('likes_count').default(0),
   retweetsCount: integer('retweets_count').default(0),
   commentsCount: integer('comments_count').default(0),
+  viewsCount: integer('views_count').default(0),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -89,7 +91,7 @@ export const retweets = sqliteTable('retweets', {
 }));
 
 export const comments = sqliteTable('comments', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
   postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
@@ -154,6 +156,14 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   retweets: many(retweets),
   comments: many(comments),
   notifications: many(notifications),
+  originalPost: one(posts, {
+    fields: [posts.retweetId],
+    references: [posts.id],
+    relationName: 'retweetedPost',
+  }),
+  retweetingPosts: many(posts, {
+    relationName: 'retweetedPost',
+  }),
 }));
 
 export const likesRelations = relations(likes, ({ one }) => ({

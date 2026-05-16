@@ -89,7 +89,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
     // Cloudflare Pages에서 도메인 인식이 안 될 경우를 대비해 명시적 설정
     basePath: "/api/auth",
     callbacks: {
-      jwt: async ({ token, user, trigger }) => {
+      jwt: async ({ token, user, trigger, session }) => {
+        // Handle trigger update with explicit session data to bypass D1 Next.js fetch caching
+        if (trigger === 'update' && session) {
+          if (session.username !== undefined) token.username = session.username;
+          if (session.needsOnboarding !== undefined) token.needsOnboarding = session.needsOnboarding;
+          return token;
+        }
+
         // On initial sign-in or session update, fetch profile
         if (user || trigger === 'update') {
           const userId = user?.id || token.id as string;

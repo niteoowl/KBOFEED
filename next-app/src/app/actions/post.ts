@@ -25,6 +25,7 @@ export async function getPosts() {
     allPosts = await db.query.posts.findMany({
       with: {
         profiles: true,
+        originalPost: { with: { profiles: true } },
       },
       orderBy: [desc(posts.createdAt)],
       limit: 20,
@@ -70,6 +71,7 @@ export async function getTeamPosts(
     where: whereClause,
     with: {
       profiles: true,
+      originalPost: { with: { profiles: true } },
     },
     orderBy: [desc(posts.createdAt)],
     limit: 50,
@@ -233,6 +235,7 @@ export async function searchPosts(query: string) {
     where: like(posts.content, `%${query}%`),
     with: {
       profiles: true,
+      originalPost: { with: { profiles: true } },
     },
     orderBy: [desc(posts.createdAt)],
     limit: 50,
@@ -256,6 +259,7 @@ export async function getPostDetail(postId: string) {
     where: eq(posts.id, postId),
     with: {
       profiles: true,
+      originalPost: { with: { profiles: true } },
     },
   });
 
@@ -276,7 +280,10 @@ export async function getPostDetail(postId: string) {
     isRetweeted = (rtCount?.value || 0) > 0;
   }
 
-  return { ...post, isLiked, isRetweeted };
+  // view count increment logic here (soft increment to bypass heavy writes, but for now just basic update)
+  await db.update(posts).set({ viewsCount: sql`views_count + 1` }).where(eq(posts.id, postId)).run();
+
+  return { ...post, isLiked, isRetweeted, viewsCount: (post.viewsCount || 0) + 1 };
 }
 
 export async function searchUsers(query: string) {
@@ -310,6 +317,16 @@ export async function getComments(postId: string) {
   });
 }
 
+/** 특정 댓글 1개 조회 (ID 기반) */
+export async function getCommentDetail(commentId: string) {
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  return await db.query.comments.findFirst({
+    where: eq(comments.id, commentId),
+  });
+}
+
 /** 댓글 작성 */
 export async function createComment(postId: string, content: string) {
   const session = await auth();
@@ -318,8 +335,11 @@ export async function createComment(postId: string, content: string) {
 
   const { env } = getRequestContext();
   const db = getDb(env.DB);
+  
+  const shortId = generateShortId();
 
   await db.insert(comments).values({
+    id: shortId,
     postId,
     userId: session.user.id,
     content: content.trim(),
@@ -371,7 +391,10 @@ export async function getUserLikedPosts(userId: string) {
   for (const pid of postIds) {
     const post = await db.query.posts.findFirst({
       where: eq(posts.id, pid),
-      with: { profiles: true },
+      with: { 
+        profiles: true,
+        originalPost: { with: { profiles: true } }
+      },
     });
     if (post) likedPosts.push(post);
   }

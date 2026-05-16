@@ -29,10 +29,10 @@ export default function OnboardingPage() {
         setError(result.error);
         setLoading(false);
       } else {
-        // ★ 세션 갱신 후 하드 리다이렉트로 완전히 새로운 세션을 로드
-        // router.push('/')는 클라이언트 캐시된 세션이 needsOnboarding=true를 유지해
-        // OnboardingGuard가 다시 온보딩으로 보내는 문제가 있음
-        await update();
+        await update({ 
+          username: (formData.get('username') as string)?.replace(/^@/, '').trim(),
+          needsOnboarding: false 
+        });
         window.location.href = '/';
       }
     } catch (err) {

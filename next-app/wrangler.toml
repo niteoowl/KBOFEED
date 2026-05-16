@@ -11,6 +11,7 @@ id = "1260b258c2f64482a4b193c1957bd27f"
 binding = "DB"
 database_name = "kbo-feed-db"
 database_id = "d8483595-b836-483b-a48b-31f10608be80"
+migrations_dir = "drizzle"
 
 # [[r2_buckets]]
 # binding = "R2"

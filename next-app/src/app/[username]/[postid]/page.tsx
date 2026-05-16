@@ -1,4 +1,4 @@
-import { getPostDetail, getComments } from '@/app/actions/post';
+import { getPostDetail, getComments, getCommentDetail } from '@/app/actions/post';
 import PostCard from '@/components/feed/PostCard';
 import CommentSection from '@/components/feed/CommentSection';
 import { notFound } from 'next/navigation';
@@ -16,13 +16,22 @@ interface PostDetailPageProps {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { username, postid } = await params;
   
-  // ★ ShortID는 문자열이므로 parseInt 불필요
-  const post = await getPostDetail(postid);
+  let post = await getPostDetail(postid);
+  let focusedCommentId: string | null = null;
+
+  if (!post) {
+    const comment = await getCommentDetail(postid);
+    if (comment) {
+      post = await getPostDetail(comment.postId);
+      focusedCommentId = String(comment.id);
+    }
+  }
+
   if (!post) {
     notFound();
   }
 
-  const commentsData = await getComments(postid);
+  const commentsData = await getComments(post.id);
 
   return (
     <main className="main-feed" style={{ borderTop: 'none', paddingTop: 0 }}>
@@ -31,7 +40,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <PostCard post={post} suppressNavigation={true} isDetailView={true} />
         
         {/* 댓글 작성 + 목록 */}
-        <CommentSection postId={postid} initialComments={commentsData} />
+        <CommentSection postId={post.id} initialComments={commentsData} focusedCommentId={focusedCommentId} />
       </section>
     </main>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { createComment } from '@/app/actions/post';
 import { formatDistanceToNow } from 'date-fns';
@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import PostCard from '@/components/feed/PostCard';
 
 interface CommentData {
-  id: number;
+  id: string;
   content: string;
   createdAt: string | null;
   userId: string;
@@ -25,14 +25,24 @@ interface CommentData {
 interface CommentSectionProps {
   postId: string;
   initialComments: CommentData[];
+  focusedCommentId?: string | null;
 }
 
-export default function CommentSection({ postId, initialComments }: CommentSectionProps) {
+export default function CommentSection({ postId, initialComments, focusedCommentId }: CommentSectionProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [comments, setComments] = useState<CommentData[]>(initialComments);
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const focusedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focusedCommentId && focusedRef.current) {
+      setTimeout(() => {
+        focusedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [focusedCommentId]);
 
   const parseDate = (dateStr: string) => {
     if (!dateStr) return new Date();
@@ -51,7 +61,7 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
     try {
       // 낙관적 업데이트
       const optimistic: CommentData = {
-        id: Date.now(),
+        id: String(Date.now()),
         content: text.trim(),
         createdAt: new Date().toISOString(),
         userId: session.user.id,
@@ -156,7 +166,13 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
               profiles: comment.profiles
             };
             return (
-              <PostCard key={comment.id} post={commentAsPost} suppressNavigation={true} />
+              <div 
+                key={comment.id}
+                ref={String(comment.id) === focusedCommentId ? focusedRef : null}
+                style={String(comment.id) === focusedCommentId ? { backgroundColor: 'var(--bg-secondary)', transition: 'background-color 0.5s' } : undefined}
+              >
+                <PostCard post={commentAsPost} suppressNavigation={false} />
+              </div>
             );
           })
         )}

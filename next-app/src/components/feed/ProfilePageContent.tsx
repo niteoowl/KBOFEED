@@ -7,7 +7,7 @@ import PostCard from '@/components/feed/PostCard';
 import Link from 'next/link';
 import { getTeamLogo } from '@/lib/constants';
 import { getUserLikedPosts, getUserComments } from '@/app/actions/post';
-import { getUserPosts, getProfile, updateProfile } from '@/app/actions/user';
+import { getUserPosts, getProfile, updateProfile, toggleFollow } from '@/app/actions/user';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -16,11 +16,13 @@ interface ProfileData {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  coverUrl: string | null;
   bio: string | null;
   favoriteTeam: string | null;
   isVerified: boolean | null;
   followersCount: number;
   followingCount: number;
+  isFollowing: boolean;
 }
 
 interface ProfilePageContentProps {
@@ -36,27 +38,10 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
   const [likedPosts, setLikedPosts] = useState<any[]>([]);
   const [userComments, setUserComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Profile Edit State
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    displayName: profile.displayName || '',
-    bio: profile.bio || '',
-    favoriteTeam: profile.favoriteTeam || '',
-    avatarUrl: profile.avatarUrl || ''
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSaveProfile = async () => {
-    setIsSaving(true);
-    try {
-      await updateProfile(editForm);
-      window.location.reload();
-    } catch (e) {
-      alert('프로필 수정 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
+  const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
+  
+  const handleEditProfile = () => {
+    router.push('/settings');
   };
 
   const parseDate = (dateStr: string) => {
@@ -209,7 +194,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
           marginTop: '-56px'
         }}
       >
-        <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9', objectFit: 'cover' }}></div>
+        {profile.coverUrl ? (
+          <div style={{ width: '100%', height: '192px', backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+        ) : (
+          <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9' }}></div>
+        )}
 
         {/* Profile Identity - No overlapping */}
         <div style={{ padding: '24px 32px' }}>
@@ -248,7 +237,7 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                 <div>
                   {(session as any)?.user?.username === profile.username ? (
                     <button 
-                      onClick={() => setIsEditing(true)}
+                      onClick={handleEditProfile}
                       style={{
                         padding: '10px 20px', borderRadius: '9999px',
                         backgroundColor: '#111827', color: '#FFFFFF',
@@ -259,13 +248,23 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                     </button>
                   ) : (
                     <button 
+                      onClick={async () => {
+                        try {
+                          await toggleFollow(profile.id);
+                          setIsFollowing(!isFollowing);
+                        } catch (e) {
+                          alert('로그인이 필요합니다.');
+                        }
+                      }}
                       style={{
                         padding: '10px 20px', borderRadius: '9999px',
-                        backgroundColor: '#111827', color: '#FFFFFF',
-                        fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer'
+                        backgroundColor: isFollowing ? 'transparent' : '#111827', 
+                        color: isFollowing ? '#111827' : '#FFFFFF',
+                        border: isFollowing ? '1px solid #D1D5DB' : 'none',
+                        fontWeight: 600, fontSize: '14px', cursor: 'pointer'
                       }}
                     >
-                      팔로우
+                      {isFollowing ? '언팔로우' : '팔로우'}
                     </button>
                   )}
                 </div>
@@ -330,81 +329,6 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
         </div>
       </section>
 
-      {/* Profile Edit Modal */}
-      {isEditing && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#fff', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', position: 'relative',
-            maxHeight: '90vh', overflowY: 'auto'
-          }}>
-            <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: 800 }}>프로필 수정</h2>
-            
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '14px', marginBottom: '4px', fontWeight: 600 }}>프로필 이미지 URL</label>
-              <input 
-                value={editForm.avatarUrl} onChange={e => setEditForm({...editForm, avatarUrl: e.target.value})}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '15px' }} 
-              />
-            </div>
-            
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '14px', marginBottom: '4px', fontWeight: 600 }}>이름 (Display Name)</label>
-              <input 
-                value={editForm.displayName} onChange={e => setEditForm({...editForm, displayName: e.target.value})}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '15px' }} 
-              />
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '14px', marginBottom: '4px', fontWeight: 600 }}>소개글 (Bio)</label>
-              <textarea 
-                value={editForm.bio} onChange={e => setEditForm({...editForm, bio: e.target.value})}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '8px', minHeight: '80px', fontSize: '15px' }} 
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', marginBottom: '4px', fontWeight: 600 }}>응원팀</label>
-              <select 
-                value={editForm.favoriteTeam} onChange={e => setEditForm({...editForm, favoriteTeam: e.target.value})}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '15px' }}
-              >
-                <option value="">선택 안함</option>
-                <option value="KIA">KIA 타이거즈</option>
-                <option value="삼성">삼성 라이온즈</option>
-                <option value="LG">LG 트윈스</option>
-                <option value="두산">두산 베어스</option>
-                <option value="KT">KT 위즈</option>
-                <option value="SSG">SSG 랜더스</option>
-                <option value="롯데">롯데 자이언츠</option>
-                <option value="한화">한화 이글스</option>
-                <option value="NC">NC 다이노스</option>
-                <option value="키움">키움 히어로즈</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button 
-                onClick={() => setIsEditing(false)} 
-                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 600 }}
-              >
-                취소
-              </button>
-              <button 
-                onClick={handleSaveProfile} 
-                disabled={isSaving}
-                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 600 }}
-              >
-                {isSaving ? '저장 중...' : '저장'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

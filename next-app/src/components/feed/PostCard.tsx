@@ -19,6 +19,9 @@ interface PostProps {
     likesCount: number | null;
     retweetsCount: number | null;
     commentsCount: number | null;
+    viewsCount?: number | null;
+    retweetId?: string | null;
+    originalPost?: any;
     isLiked?: boolean;
     isRetweeted?: boolean;
     profiles: {
@@ -114,6 +117,31 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
 
   return (
     <>
+      <style>{`
+        .post-card-dropdown {
+          position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #eee; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px; zIndex: 10; width: 150px;
+        }
+        @media (max-width: 768px) {
+          .mobile-bottom-sheet {
+            position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
+            width: 100% !important; border-radius: 20px 20px 0 0 !important; box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+            z-index: 1000 !important; animation: slideUp 0.3s ease-out; padding-bottom: calc(safe-area-inset-bottom + 20px);
+          }
+          .mobile-backdrop {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;
+          }
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      `}</style>
+      
+      {/* Retweet Preview if it's a retweet */}
+      {post.retweetId && post.originalPost && (
+        <div style={{ padding: '12px 16px 0 36px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <i className="fas fa-retweet"></i>
+          <span>{post.profiles.displayName}님이 리트윗했습니다</span>
+        </div>
+      )}
+
       {isDetailView && <style>{`.no-hover:hover { background-color: var(--bg-primary, #fff) !important; }`}</style>}
       <article
         className={`tweet ${isDetailView ? 'no-hover' : ''}`}
@@ -136,7 +164,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div 
               className="user-avatar"
-              style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%', margin: 0 }}
+              style={{ backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined, backgroundSize: 'cover', borderRadius: '50%', margin: 0, width: '40px', height: '40px', minWidth: '40px' }}
               onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
             />
             <div style={{ marginLeft: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -146,18 +174,18 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
                 onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
               >
                 {post.profiles.displayName || '탐험가'}
-                {post.profiles.isVerified && <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginLeft: '4px' }} />}
+                {post.profiles.isVerified && <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '15px', marginLeft: '4px' }} />}
               </span>
               <span 
                 className="username" 
-                style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}
+                style={{ color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px' }}
                 onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
               >
                 @{post.profiles.username}
               </span>
             </div>
             <button style={{ 
-              background: '#111827', color: '#fff', borderRadius: '999px', padding: '6px 16px', border: 'none', fontWeight: 600, cursor: 'pointer' 
+              background: '#111827', color: '#fff', borderRadius: '999px', padding: '6px 14px', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '13px' 
             }}>
               팔로우
             </button>
@@ -169,34 +197,64 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
                 <i className="fas fa-ellipsis-h" />
               </button>
               {menuOpen && (
-                <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #eee', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', zIndex: 10, width: '150px' }}>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', color: '#ff4444', fontWeight: 600 }} onClick={async (e) => { 
-                    e.stopPropagation(); setMenuOpen(false); 
-                    if (confirm('이 게시물을 삭제하시겠습니까?')) {
-                      await deletePost(post.id);
-                      router.push('/');
-                    }
-                  }}>게시물 삭제</div>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={async (e) => { 
-                    e.stopPropagation(); setMenuOpen(false); 
-                    const newContent = prompt('수정할 내용을 입력하세요:', post.content || '');
-                    if (newContent && newContent !== post.content) {
-                      await updatePost(post.id, newContent);
-                      window.location.reload();
-                    }
-                  }}>게시물 수정</div>
-                  <div style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6' }} onClick={(e) => { e.stopPropagation(); alert('게시물 신고 완료'); setMenuOpen(false); }}>게시물 신고</div>
-                </div>
+                <>
+                  <div className="mobile-backdrop" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}></div>
+                  <div className="post-card-dropdown mobile-bottom-sheet">
+                    <div style={{ padding: '16px', cursor: 'pointer', color: '#ff4444', fontWeight: 600, fontSize: '15px' }} onClick={async (e) => { 
+                      e.stopPropagation(); setMenuOpen(false); 
+                      if (confirm('이 게시물을 삭제하시겠습니까?')) {
+                        await deletePost(post.id);
+                        router.push('/');
+                      }
+                    }}>
+                      <i className="fas fa-trash" style={{ width: '24px' }}></i> 게시물 삭제
+                    </div>
+                    <div style={{ padding: '16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6', fontSize: '15px', color: 'var(--text-primary)' }} onClick={async (e) => { 
+                      e.stopPropagation(); setMenuOpen(false); 
+                      const newContent = prompt('수정할 내용을 입력하세요:', post.content || '');
+                      if (newContent && newContent !== post.content) {
+                        await updatePost(post.id, newContent);
+                        window.location.reload();
+                      }
+                    }}>
+                      <i className="fas fa-edit" style={{ width: '24px' }}></i> 게시물 수정
+                    </div>
+                    <div style={{ padding: '16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6', fontSize: '15px', color: 'var(--text-primary)' }} onClick={(e) => { e.stopPropagation(); alert('게시물 신고 완료'); setMenuOpen(false); }}>
+                      <i className="fas fa-flag" style={{ width: '24px' }}></i> 게시물 신고
+                    </div>
+                    <div style={{ padding: '16px', cursor: 'pointer', fontWeight: 600, borderTop: '1px solid #f3f4f6', fontSize: '15px', textAlign: 'center', color: 'var(--text-secondary)' }} className="mobile-cancel" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}>
+                      취소
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
           
-          <div className="tweet-text" style={{ whiteSpace: 'pre-wrap', marginTop: '16px', fontSize: '18px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
-            {formatContent(displayContent)}
+          <div className="tweet-text" style={{ whiteSpace: 'pre-wrap', marginTop: '16px', fontSize: '17px', color: 'var(--text-primary)' }}>
+            {post.retweetId && post.originalPost ? formatContent(post.originalPost.content || '') : formatContent(displayContent)}
           </div>
 
+          {post.imageUrl && (
+            <div className="tweet-media" style={{ marginTop: '12px' }}>
+              <img src={post.imageUrl} alt="미디어" style={{ borderRadius: '16px', width: '100%' }} />
+            </div>
+          )}
+
+          {/* RT일 경우 아래에 원작자 표시 */}
+          {post.retweetId && post.originalPost && (
+            <div style={{ marginTop: '12px', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+               <span style={{ fontWeight: 700 }}>{post.originalPost.profiles.displayName}</span>
+               <span style={{ color: 'var(--text-secondary)' }}> @{post.originalPost.profiles.username}님의 글</span>
+            </div>
+          )}
+
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-            <span style={{ fontSize: '15px' }}>{post.createdAt ? formatDistanceToNow(parseDate(post.createdAt), { addSuffix: true, locale: ko }) : '최근'}</span>
+            <span style={{ fontSize: '15px' }}>
+              {post.createdAt 
+                ? `${parseDate(post.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })} · ${parseDate(post.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}` 
+                : '최근'}
+            </span>
           </div>
 
           <div className="tweet-actions" style={{ padding: '12px 0 12px 0', display: 'flex', justifyContent: 'space-around', color: 'var(--text-secondary)' }}>
@@ -211,6 +269,10 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
             <div onClick={handleLike} className="action-item action-like" style={{ color: isLiked ? '#f91880' : undefined, flex: 1, textAlign: 'center', cursor: 'pointer' }}>
               <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
               <span>{likesCount}</span>
+            </div>
+            <div className="action-item action-views" style={{ flex: 1, textAlign: 'center' }}>
+              <i className="far fa-chart-bar" />
+              <span>{post.viewsCount || 0}</span>
             </div>
           </div>
         </div>
@@ -254,7 +316,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
             </div>
             
             <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
-              {formatContent(displayContent)}
+              {post.retweetId && post.originalPost ? formatContent(post.originalPost.content || '') : formatContent(displayContent)}
               {!isExpanded && shouldTruncate && (
                 <span 
                   onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
@@ -294,7 +356,7 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
               </div>
               <div className="action-item action-views" onClick={(e) => e.stopPropagation()}>
                 <i className="far fa-chart-bar" />
-                <span>0</span>
+                <span>{post.viewsCount || 0}</span>
               </div>
             </div>
           </div>

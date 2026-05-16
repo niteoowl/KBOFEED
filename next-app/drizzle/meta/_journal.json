@@ -15,6 +15,13 @@
       "when": 1778506493876,
       "tag": "0001_sloppy_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778893380347,
+      "tag": "0002_violet_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

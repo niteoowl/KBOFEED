@@ -51,6 +51,12 @@ const Sidebar = () => {
             <span>프로필</span>
           </div>
         </Link>
+        <Link href="/settings" className="nav-item-link">
+          <div className="nav-item" id="nav-settings" style={{ padding: '10px 12px' }}>
+            <i className="fas fa-cog"></i>
+            <span>설정</span>
+          </div>
+        </Link>
       </nav>
       <button className="post-btn">게시하기</button>
       
