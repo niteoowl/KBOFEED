@@ -8,6 +8,8 @@ import { KBO_TEAMS, getTeamLogo } from '@/lib/constants';
 import ComposePost from '@/components/feed/ComposePost';
 import PostCard from '@/components/feed/PostCard';
 import GlobalHeader from '@/components/layout/GlobalHeader';
+import LoginPrompt from '@/components/auth/LoginPrompt';
+import { useProfile } from '@/context/ProfileContext';
 import { getPosts, getTeamPosts } from '@/app/actions/post';
 
 const STORAGE_KEY = 'selected_team';
@@ -16,10 +18,12 @@ type PostRow = Awaited<ReturnType<typeof getPosts>>[number];
 
 export default function HomeFeed() {
   const { data: session } = useSession();
+  const { profile, displayName, avatarUrl } = useProfile();
   const searchParams = useSearchParams();
   const router = useRouter();
   const mainTab = searchParams.get('tab') === 'myteam' ? 'myteam' : 'all';
 
+  const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [subtab, setSubtab] = useState<'collection' | 'feed'>('collection');
@@ -36,9 +40,10 @@ export default function HomeFeed() {
           const u = session.user as any;
           if (u.username) {
             const { getProfile } = await import('@/app/actions/user');
-            const profile = await getProfile(u.username);
-            if (!cancelled && profile?.favoriteTeam) {
-              setTeamId(profile.favoriteTeam);
+            const userProfile = await getProfile(u.username);
+            if (!cancelled && userProfile?.favoriteTeam) {
+              setFavoriteTeamId(userProfile.favoriteTeam);
+              setTeamId(userProfile.favoriteTeam);
               return;
             }
           }
@@ -102,6 +107,10 @@ export default function HomeFeed() {
   }, [mainTab, teamId, subtab]);
 
   const currentTeam = KBO_TEAMS.find((t) => t.id === teamId);
+  const isOwnTeam = !favoriteTeamId || teamId === favoriteTeamId;
+  const collectionLabel = isOwnTeam ? '내팀 모아보기' : `${currentTeam?.shortLabel || '팀'} 모아보기`;
+  const feedLabel = isOwnTeam ? '내팀 피드' : `${currentTeam?.shortLabel || '팀'} 피드`;
+  const showCompose = !!session && (mainTab === 'all' || (mainTab === 'myteam' && subtab === 'feed'));
 
   const selectTeam = (id: string) => {
     setTeamId(id);
@@ -133,7 +142,8 @@ export default function HomeFeed() {
           </button>
         </div>
       </GlobalHeader>
-      {session ? (
+      <LoginPrompt />
+      {showCompose && (
         <ComposePost
           onPosted={async (content) => {
             if (content && session?.user) {
@@ -141,20 +151,24 @@ export default function HomeFeed() {
               const optimisticPost = {
                 id: 'tmp_' + Date.now(),
                 content,
+                imageUrl: null as string | null,
                 createdAt: new Date().toISOString(),
                 likesCount: 0,
                 retweetsCount: 0,
                 commentsCount: 0,
                 profiles: {
-                  username: (session.user as any)?.username || session.user.name || 'user',
-                  displayName: session.user.name || '사용자',
-                  avatarUrl: session.user.image,
-                  isVerified: false
+                  id: session.user.id,
+                  username: (session.user as { username?: string })?.username || 'user',
+                  displayName: profile?.displayName || displayName,
+                  avatarUrl: profile?.avatarUrl || avatarUrl,
+                  isVerified: false,
                 },
                 isLiked: false,
-                isRetweeted: false
+                isRetweeted: false,
               };
-              setAllPosts(prev => [optimisticPost, ...prev]);
+              if (mainTab === 'all') {
+                setAllPosts((prev) => [optimisticPost, ...prev]);
+              }
             }
 
             // 2. 실제 데이터 동기화
@@ -162,23 +176,16 @@ export default function HomeFeed() {
               try {
                 const p = await getPosts();
                 setAllPosts(p);
+                if (mainTab === 'myteam' && teamId) {
+                  const tp = await getTeamPosts(teamId, subtab === 'collection' ? 'collection' : 'feed');
+                  setTeamPosts(tp);
+                }
               } catch {
                 /* ignore */
               }
             }, 1000);
           }}
         />
-      ) : (
-        <div style={{ padding: '32px 20px', textAlign: 'center', backgroundColor: '#fff', borderBottom: '8px solid var(--divider-color)', borderTop: '1px solid var(--border-color)' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '8px' }}>크보피드에 오신 것을 환영합니다!</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '15px' }}>로그인하고 좋아하는 팀의 최신 소식을 받아보세요.</p>
-          <button 
-            onClick={() => router.push('/login')} 
-            style={{ backgroundColor: 'var(--primary-color)', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: '9999px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', transition: 'background-color 0.2s', width: '100%', maxWidth: '300px' }}
-          >
-            로그인 / 회원가입하기
-          </button>
-        </div>
       )}
 
       <div id="tab-all" className={`tab-content ${mainTab === 'all' ? 'active' : ''}`}>
@@ -214,7 +221,7 @@ export default function HomeFeed() {
             ) : (
               <div className="feed-content">
                 {allPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard key={post.id} post={post} isProcessing={post.id.startsWith('tmp_')} />
                 ))}
               </div>
             )}
@@ -270,13 +277,13 @@ export default function HomeFeed() {
                 className={`sub-tab ${subtab === 'collection' ? 'active' : ''}`}
                 onClick={() => setSubtab('collection')}
               >
-                내팀 모아보기
+                {collectionLabel}
               </div>
               <div
                 className={`sub-tab ${subtab === 'feed' ? 'active' : ''}`}
                 onClick={() => setSubtab('feed')}
               >
-                내팀 피드
+                {feedLabel}
               </div>
             </div>
 

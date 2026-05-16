@@ -53,6 +53,7 @@ export const profiles = sqliteTable('profiles', {
   coverUrl: text('cover_url'),
   isVerified: integer('is_verified', { mode: 'boolean' }).default(false),
   isAdmin: integer('is_admin', { mode: 'boolean' }).default(false),
+  pinnedPostId: text('pinned_post_id').references((): any => posts.id, { onDelete: 'set null' }),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
@@ -79,6 +80,15 @@ export const likes = sqliteTable('likes', {
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   userPostUnique: uniqueIndex('likes_user_post_unique').on(table.userId, table.postId),
+}));
+
+export const bookmarks = sqliteTable('bookmarks', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  userPostUnique: uniqueIndex('bookmarks_user_post_unique').on(table.userId, table.postId),
 }));
 
 export const retweets = sqliteTable('retweets', {
@@ -120,7 +130,7 @@ export const notifications = sqliteTable('notifications', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   receiverId: text('receiver_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
   senderId: text('sender_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(), // 'like', 'retweet', 'comment', 'follow'
+  type: text('type').notNull(), // 'like', 'retweet', 'comment', 'follow', 'mention'
   postId: text('post_id').references(() => posts.id, { onDelete: 'cascade' }),
   isRead: integer('is_read', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -136,9 +146,21 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   sessions: many(sessions),
 }));
 
+export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
+  profiles: one(profiles, {
+    fields: [bookmarks.userId],
+    references: [profiles.id],
+  }),
+  post: one(posts, {
+    fields: [bookmarks.postId],
+    references: [posts.id],
+  }),
+}));
+
 export const profilesRelations = relations(profiles, ({ many }) => ({
   posts: many(posts),
   likes: many(likes),
+  bookmarks: many(bookmarks),
   retweets: many(retweets),
   comments: many(comments),
   follows: many(follows, { relationName: 'follower' }),
@@ -153,6 +175,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
     references: [profiles.id],
   }),
   likes: many(likes),
+  bookmarks: many(bookmarks),
   retweets: many(retweets),
   comments: many(comments),
   notifications: many(notifications),

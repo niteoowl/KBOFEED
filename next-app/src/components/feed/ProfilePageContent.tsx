@@ -6,10 +6,12 @@ import { useSession } from 'next-auth/react';
 import PostCard from '@/components/feed/PostCard';
 import Link from 'next/link';
 import { getTeamLogo } from '@/lib/constants';
-import { getUserLikedPosts, getUserComments } from '@/app/actions/post';
+import { getUserLikedPosts, getUserComments, getUserSavedPosts } from '@/app/actions/post';
+import ThreadBlock from '@/components/feed/ThreadBlock';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { getUserPosts, getProfile, updateProfile, toggleFollow } from '@/app/actions/user';
 import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 interface ProfileData {
   id: string;
@@ -23,6 +25,7 @@ interface ProfileData {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  createdAt?: string | null;
 }
 
 interface ProfilePageContentProps {
@@ -33,9 +36,10 @@ interface ProfilePageContentProps {
 export default function ProfilePageContent({ profile, initialPosts }: ProfilePageContentProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'media' | 'likes'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'media' | 'activity'>('posts');
   const [posts, setPosts] = useState<any[]>(initialPosts);
   const [likedPosts, setLikedPosts] = useState<any[]>([]);
+  const [savedPosts, setSavedPosts] = useState<any[]>([]);
   const [userComments, setUserComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
@@ -52,11 +56,14 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
 
   // 탭 변경 시 데이터 로드
   useEffect(() => {
-    if (activeTab === 'likes' && likedPosts.length === 0) {
+    if (activeTab === 'activity' && likedPosts.length === 0 && savedPosts.length === 0) {
       setLoading(true);
-      getUserLikedPosts(profile.id)
-        .then(data => setLikedPosts(data))
-        .catch(err => console.error(err))
+      Promise.all([getUserLikedPosts(profile.id), getUserSavedPosts(profile.id)])
+        .then(([liked, saved]) => {
+          setLikedPosts(liked);
+          setSavedPosts(saved);
+        })
+        .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
     if (activeTab === 'replies' && userComments.length === 0) {
@@ -93,84 +100,67 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             아직 작성한 답글이 없습니다.
           </div>
         ) : (
-          userComments.map((comment: any) => (
-            <div
-              key={comment.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                borderBottom: '8px solid var(--divider-color)',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                if (comment.post?.profiles?.username && comment.postId) {
-                  router.push(`/@${comment.post.profiles.username}/${comment.postId}`);
-                }
-              }}
-            >
-              {/* 원본 글 (부모 포스트) */}
-              {comment.post && (
-                <div>
-                  <PostCard post={comment.post} suppressNavigation={true} />
-                </div>
-              )}
-              {/* 댓글 본문 (답글) */}
-              <div style={{ display: 'flex', gap: '12px', padding: '12px 16px 16px 16px', position: 'relative', zIndex: 1 }}>
-                <div
-                  className="user-avatar"
-                  style={{
-                    backgroundImage: comment.profiles?.avatarUrl
-                      ? `url(${comment.profiles.avatarUrl})`
-                      : `url(https://i.pravatar.cc/150?u=${comment.profiles?.username})`,
-                    backgroundSize: 'cover',
-                    width: '44px',
-                    height: '44px',
-                    minWidth: '44px',
-                    borderRadius: '50%',
-                  }}
-                />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {comment.profiles?.displayName || '탐험가'}
-                    </span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                      @{comment.profiles?.username}
-                    </span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>·</span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                      {comment.createdAt
-                        ? formatDistanceToNow(parseDate(comment.createdAt), { addSuffix: true, locale: ko })
-                        : ''}
-                    </span>
-                  </div>
-                  <p style={{ color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {comment.content}
-                  </p>
-                </div>
+          userComments.map((comment: any) =>
+            comment.post ? (
+              <ThreadBlock
+                key={comment.id}
+                parentPost={comment.post}
+                comment={{
+                  id: comment.id,
+                  content: comment.content,
+                  createdAt: comment.createdAt,
+                  profiles: comment.profiles,
+                }}
+                onClick={() => {
+                  if (comment.post?.profiles?.username) {
+                    router.push(`/@${comment.post.profiles.username}/${comment.id}`);
+                  }
+                }}
+              />
+            ) : null
+          )
+        );
+
+      case 'activity': {
+        const activityPosts = [
+          ...likedPosts,
+          ...savedPosts.filter((s) => !likedPosts.some((l) => l.id === s.id)),
+        ];
+        return (
+          <>
+            <p style={{ padding: '12px 20px', margin: 0, fontSize: 14, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+              내 활동은 나만 볼 수 있습니다.
+            </p>
+            {activityPosts.length === 0 ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                활동 내역이 없습니다.
               </div>
-            </div>
-          ))
+            ) : (
+              activityPosts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </>
         );
+      }
 
-      case 'likes':
-        return likedPosts.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            아직 좋아요한 게시물이 없습니다.
-          </div>
-        ) : (
-          likedPosts.map(post => <PostCard key={post.id} post={post} />)
-        );
-
-      case 'media':
-        const mediaPosts = posts.filter(p => p.imageUrl);
+      case 'media': {
+        const mediaPosts = posts.filter((p) => p.imageUrl);
         return mediaPosts.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
             미디어 게시물이 없습니다.
           </div>
         ) : (
-          mediaPosts.map(post => <PostCard key={post.id} post={post} />)
+          <div className="profile-media-grid">
+            {mediaPosts.map((post) => (
+              <a
+                key={post.id}
+                href={`/@${profile.username}/${post.id}`}
+                className="profile-media-item"
+                style={{ backgroundImage: `url(${post.imageUrl})` }}
+              />
+            ))}
+          </div>
         );
+      }
 
       default:
         return null;
@@ -290,6 +280,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                 <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>팔로워</span>
               </div>
             </div>
+            {profile.createdAt && (
+              <p style={{ margin: '12px 0 0', fontSize: 14, color: '#6B7280' }}>
+                {format(parseDate(profile.createdAt), 'yyyy년 M월 d일', { locale: ko })} 가입
+              </p>
+            )}
           </div>
         </div>
 
@@ -316,11 +311,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             미디어
           </div>
           <div
-            className={`profile-nav-tab ${activeTab === 'likes' ? 'active' : ''}`}
-            onClick={() => setActiveTab('likes')}
+            className={`profile-nav-tab ${activeTab === 'activity' ? 'active' : ''}`}
+            onClick={() => setActiveTab('activity')}
             style={{ cursor: 'pointer' }}
           >
-            좋아요
+            활동
           </div>
         </div>
 

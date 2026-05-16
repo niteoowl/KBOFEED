@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useProfile } from '@/context/ProfileContext';
 import { updateProfile, getProfile } from '@/app/actions/user';
 import { KBO_TEAMS, getTeamLogo } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
+  const { refreshProfile } = useProfile();
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
@@ -59,8 +61,12 @@ export default function SettingsPage() {
 
     try {
       await updateProfile(editForm);
+      await updateSession({
+        name: editForm.displayName,
+        image: editForm.avatarUrl || undefined,
+      });
+      await refreshProfile();
       setSuccess('프로필이 성공적으로 업데이트되었습니다.');
-      // Update session if needed
       setTimeout(() => {
         router.push(`/@${username}`);
       }, 1000);
@@ -79,13 +85,11 @@ export default function SettingsPage() {
     <main className="main-feed" style={{ borderTop: 'none', paddingTop: 0 }}>
       <section className="profile-container" style={{ backgroundColor: 'var(--bg-primary)', borderBottom: '8px solid var(--divider-color)', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
         
-        <header style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px', color: 'var(--text-primary)' }}>
+        <header style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px', color: 'var(--text-primary)', position: 'absolute', left: 16 }}>
             <i className="fas fa-arrow-left"></i>
           </button>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>정보 수정</h1>
-          </div>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: '0 auto', textAlign: 'center', flex: 1 }}>정보 수정</h1>
         </header>
 
         <div style={{ padding: '24px' }}>

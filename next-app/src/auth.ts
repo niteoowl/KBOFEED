@@ -90,6 +90,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
         if (trigger === 'update' && session) {
           if (session.username !== undefined) token.username = session.username;
           if (session.needsOnboarding !== undefined) token.needsOnboarding = session.needsOnboarding;
+          if (session.name !== undefined) token.name = session.name;
+          if (session.image !== undefined) token.picture = session.image;
           return token;
         }
 
@@ -125,6 +127,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
           session.user.id = token.id as string;
           (session.user as any).username = token.username;
           (session.user as any).needsOnboarding = token.needsOnboarding || false;
+          if (token.name) session.user.name = token.name as string;
+          if (token.picture) session.user.image = token.picture as string;
         }
         return session;
       },

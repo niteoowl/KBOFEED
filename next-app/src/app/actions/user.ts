@@ -2,7 +2,7 @@
 
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getDb } from '@/db/db';
-import { profiles, posts, likes, retweets, follows } from '@/db/schema';
+import { profiles, posts, likes, retweets, follows, notifications } from '@/db/schema';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
@@ -107,7 +107,26 @@ export async function toggleFollow(targetUserId: string) {
       followerId: myId,
       followingId: targetUserId,
     });
+    await db.insert(notifications).values({
+      receiverId: targetUserId,
+      senderId: myId,
+      type: 'follow',
+    }).catch(() => {});
   }
 
+  revalidatePath('/');
+}
+
+export async function pinPostToProfile(postId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Not authenticated');
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+  if (!post || post.userId !== session.user.id) throw new Error('Forbidden');
+
+  await db.update(profiles).set({ pinnedPostId: postId }).where(eq(profiles.id, session.user.id));
   revalidatePath('/');
 }

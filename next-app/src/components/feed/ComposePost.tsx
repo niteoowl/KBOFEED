@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { createPost } from '@/app/actions/post';
+import { useProfile } from '@/context/ProfileContext';
+import { buildPollTag, extractGifUrl } from '@/lib/content';
 
 // ─── IMGBB 임시방편 키 (제거 쉽게 분리) ───
 const IMGBB_API_KEY = 'fdd1c97d2f4e24833b2ae441153061f9';
@@ -31,6 +33,7 @@ interface KlipyGif {
 
 const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { data: session } = useSession();
+  const { displayName, avatarUrl } = useProfile();
   const [content, setContent] = useState('');
   const [isPending, setIsPending] = useState(false);
 
@@ -48,6 +51,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   // ─── Poll ───
   const [pollOpen, setPollOpen] = useState(false);
   const [pollOptions, setPollOptions] = useState(['', '']);
+  const [pollEndsAt, setPollEndsAt] = useState('');
 
   if (!session) return null;
 
@@ -99,7 +103,11 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   };
 
   const selectGif = (gif: KlipyGif) => {
-    const url = gif.file?.md?.webp || gif.file?.md?.gif || gif.file?.sm?.webp || gif.file?.sm?.gif || '';
+    const url = extractGifUrl(gif.file);
+    if (!url) {
+      alert('GIF URL을 불러올 수 없습니다.');
+      return;
+    }
     setImageUrl(url);
     setGifOpen(false);
     setGifSearch('');
@@ -110,12 +118,13 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
 
     // Poll logic: embed as JSON in content if poll active
     let finalContent = content;
-    if (pollOpen && pollOptions.filter(o => o.trim()).length >= 2) {
-      const pollData = {
-        type: 'poll',
-        options: pollOptions.filter(o => o.trim()),
-      };
-      finalContent = content + '\n\n[POLL]' + JSON.stringify(pollData) + '[/POLL]';
+    if (pollOpen && pollOptions.filter((o) => o.trim()).length >= 2) {
+      finalContent =
+        content +
+        buildPollTag({
+          options: pollOptions.filter((o) => o.trim()),
+          endsAt: pollEndsAt || undefined,
+        });
     }
 
     if (!finalContent.trim() && !imageUrl) return;
@@ -143,7 +152,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
       <div style={{ display: 'flex', gap: '12px' }}>
         <div 
           className="user-avatar"
-          style={{ backgroundImage: session.user?.image ? `url(${session.user.image})` : undefined, backgroundSize: 'cover', width: '44px', height: '44px', minWidth: '44px', borderRadius: '50%' }}
+          style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined, backgroundSize: 'cover', width: '44px', height: '44px', minWidth: '44px', borderRadius: '50%' }}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <textarea 
@@ -190,6 +199,15 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
                   <i className="fas fa-times" />
                 </button>
               </div>
+              <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>
+                투표 종료일 (선택)
+                <input
+                  type="datetime-local"
+                  value={pollEndsAt}
+                  onChange={(e) => setPollEndsAt(e.target.value)}
+                  style={{ display: 'block', width: '100%', marginTop: 4, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)' }}
+                />
+              </label>
               {pollOptions.map((opt, idx) => (
                 <input
                   key={idx}

@@ -6,40 +6,70 @@ import { users, profiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
-// Argon2id password hashing via hash-wasm (Edge-compatible WebAssembly)
-import { argon2id, argon2Verify } from 'hash-wasm';
+const PBKDF2_ITERATIONS = 100_000;
 
-async function hashPassword(password: string): Promise<string> {
-  // Generate a random 16-byte salt
-  const salt = new Uint8Array(16);
-  crypto.getRandomValues(salt);
-
-  const hash = await argon2id({
-    password,
-    salt,
-    parallelism: 1,
-    iterations: 3,
-    memorySize: 4096, // 4MB — conservative for Edge
-    hashLength: 32,
-    outputType: 'encoded', // PHC string format: $argon2id$v=19$m=4096,t=3,p=1$...
-  });
-
-  return hash;
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
 }
 
-/** Verify password against stored hash (supports both Argon2id and legacy SHA-256) */
+function base64ToBytes(b64: string): Uint8Array {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function derivePbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: salt as BufferSource, iterations, hash: 'SHA-256' },
+    key,
+    256
+  );
+  return new Uint8Array(bits);
+}
+
+/** PBKDF2-SHA256 (Cloudflare Workers–safe; no WASM) */
+async function hashPassword(password: string): Promise<string> {
+  const salt = new Uint8Array(16);
+  crypto.getRandomValues(salt);
+  const hash = await derivePbkdf2(password, salt, PBKDF2_ITERATIONS);
+  return `pbkdf2$${PBKDF2_ITERATIONS}$${bytesToBase64(salt)}$${bytesToBase64(hash)}`;
+}
+
+/** Verify password against stored hash (PBKDF2, legacy SHA-256; Argon2 requires password reset on Edge) */
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  // Argon2id hashes start with $argon2id$
-  if (storedHash.startsWith('$argon2id$')) {
-    return argon2Verify({ password, hash: storedHash });
+  if (storedHash.startsWith('pbkdf2$')) {
+    const parts = storedHash.split('$');
+    if (parts.length !== 4) return false;
+    const iterations = parseInt(parts[1], 10);
+    const salt = base64ToBytes(parts[2]);
+    const expected = base64ToBytes(parts[3]);
+    const derived = await derivePbkdf2(password, salt, iterations);
+    if (derived.length !== expected.length) return false;
+    let diff = 0;
+    for (let i = 0; i < derived.length; i++) diff |= derived[i] ^ expected[i];
+    return diff === 0;
   }
 
-  // Legacy SHA-256 fallback for existing accounts
+  if (storedHash.startsWith('$argon2id$')) {
+    // Argon2 used hash-wasm which is blocked on Cloudflare Workers; user must reset password
+    return false;
+  }
+
   const encoder = new TextEncoder();
   const data = encoder.encode(password + 'KBOFEED_SALT');
   const digest = await crypto.subtle.digest('SHA-256', data);
   const legacyHash = Array.from(new Uint8Array(digest))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
   return legacyHash === storedHash;
 }
@@ -58,14 +88,12 @@ export async function signUp(formData: FormData) {
     return { error: '모든 필드를 입력해주세요.' };
   }
 
-  // 1. 중복 확인
   const existingUser = await db.select().from(users).where(eq(users.email, email)).get();
   if (existingUser) return { error: '이미 존재하는 이메일입니다.' };
 
   const existingProfile = await db.select().from(profiles).where(eq(profiles.username, username)).get();
   if (existingProfile) return { error: '이미 존재하는 핸들(@아이디)입니다.' };
 
-  // 2. 유저 생성
   const userId = crypto.randomUUID();
   const hashedPassword = await hashPassword(password);
 
@@ -76,7 +104,6 @@ export async function signUp(formData: FormData) {
     password: hashedPassword,
   });
 
-  // 3. 프로필 생성
   await db.insert(profiles).values({
     id: userId,
     username: username.replace(/^@/, ''),
@@ -87,15 +114,10 @@ export async function signUp(formData: FormData) {
   redirect('/login?message=signup_success');
 }
 
-/**
- * 소셜 로그인 후 온보딩: 핸들(@아이디)과 응원팀 설정
- */
 export async function completeOnboarding(formData: FormData) {
   const { env } = getRequestContext();
   const db = getDb(env.DB);
 
-  // auth() 를 직접 import하면 순환참조 위험이 있으므로, 
-  // 클라이언트에서 세션 userId를 넘기지 않고, 서버에서 auth()로 가져옴
   const { auth } = await import('@/auth');
   const session = await auth();
   if (!session?.user?.id) {
@@ -114,7 +136,6 @@ export async function completeOnboarding(formData: FormData) {
     return { error: '핸들은 영문, 숫자, _만 사용 가능합니다. (2~20자)' };
   }
 
-  // 중복 확인
   const existingProfile = await db.select().from(profiles)
     .where(eq(profiles.username, username))
     .get();
@@ -123,7 +144,6 @@ export async function completeOnboarding(formData: FormData) {
     return { error: '이미 존재하는 핸들(@아이디)입니다.' };
   }
 
-  // 프로필 업데이트
   await db.update(profiles)
     .set({
       username,
@@ -132,7 +152,6 @@ export async function completeOnboarding(formData: FormData) {
     })
     .where(eq(profiles.id, session.user.id));
 
-  // users 테이블의 name도 업데이트
   await db.update(users)
     .set({ name: displayName })
     .where(eq(users.id, session.user.id));
@@ -140,9 +159,6 @@ export async function completeOnboarding(formData: FormData) {
   return { success: true };
 }
 
-/**
- * 프로필이 온보딩 완료 상태인지 확인 (자동생성된 user_xxx 핸들인지)
- */
 export async function checkNeedsOnboarding(userId: string): Promise<boolean> {
   const { env } = getRequestContext();
   const db = getDb(env.DB);
@@ -152,6 +168,5 @@ export async function checkNeedsOnboarding(userId: string): Promise<boolean> {
     .get();
 
   if (!profile) return true;
-  // 자동생성된 핸들 패턴: user_xxxxxxxx
   return /^user_[a-f0-9]{8}$/.test(profile.username);
 }

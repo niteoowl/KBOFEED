@@ -32,10 +32,12 @@ const Sidebar = () => {
             <span>경기</span>
           </div>
         </Link>
-        <div className="nav-item" style={{ padding: '10px 12px' }}>
-          <i className="far fa-bell"></i>
-          <span>알림</span>
-        </div>
+        <Link href="/notifications" className="nav-item-link">
+          <div className="nav-item" style={{ padding: '10px 12px' }}>
+            <i className="far fa-bell"></i>
+            <span>알림</span>
+          </div>
+        </Link>
         <div className="nav-item" style={{ padding: '10px 12px' }}>
           <i className="far fa-envelope"></i>
           <span>쪽지</span>

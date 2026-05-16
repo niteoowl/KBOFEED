@@ -102,8 +102,8 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
         <div className={`search-suggestions ${isFocused ? 'active' : ''}`}>
           {suggestions.length > 0 ? (
             suggestions.map((sug, idx) => (
-              <div key={idx} className="suggestion-item" onClick={() => selectSuggestion(sug)}>
-                <i className="fas fa-search" style={{ marginRight: '12px', color: 'var(--text-secondary)' }}></i>
+              <div key={idx} className="suggestion-item suggestion-item--row" onClick={() => selectSuggestion(sug)}>
+                <i className="fas fa-search" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
                 <span className="suggestion-name" style={{ fontSize: '15px', fontWeight: 600 }}>{sug}</span>
               </div>
             ))

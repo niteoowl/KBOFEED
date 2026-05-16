@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useProfile } from '@/context/ProfileContext';
 import { createComment } from '@/app/actions/post';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -31,6 +32,7 @@ interface CommentSectionProps {
 
 export default function CommentSection({ postId, initialComments, focusedCommentId }: CommentSectionProps) {
   const { data: session } = useSession();
+  const { profile, displayName, avatarUrl } = useProfile();
   const router = useRouter();
   const [comments, setComments] = useState<CommentData[]>(initialComments);
   const [text, setText] = useState('');
@@ -70,9 +72,9 @@ export default function CommentSection({ postId, initialComments, focusedComment
         postId,
         profiles: {
           id: session.user.id,
-          username: (session.user as any).username || session.user.name || 'user',
-          displayName: session.user.name || '사용자',
-          avatarUrl: session.user.image || null,
+          username: (session.user as { username?: string }).username || 'user',
+          displayName: profile?.displayName || displayName,
+          avatarUrl: profile?.avatarUrl || avatarUrl,
           isVerified: false,
         },
       };
@@ -104,7 +106,7 @@ export default function CommentSection({ postId, initialComments, focusedComment
           <div
             className="user-avatar"
             style={{
-              backgroundImage: session.user.image ? `url(${session.user.image})` : undefined,
+              backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
               backgroundSize: 'cover',
               width: '36px',
               height: '36px',

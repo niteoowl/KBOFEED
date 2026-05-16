@@ -2,7 +2,8 @@
 
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getDb } from '@/db/db';
-import { posts, profiles, likes, retweets, comments, notifications } from '@/db/schema';
+import { posts, profiles, likes, retweets, comments, notifications, bookmarks } from '@/db/schema';
+import { extractMentions } from '@/lib/content';
 import { desc, eq, and, sql, like, or, count } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
@@ -38,18 +39,21 @@ export async function getPosts() {
   if (session?.user?.id && allPosts) {
     const userLikes = await db.select().from(likes).where(eq(likes.userId, session.user.id));
     const userRetweets = await db.select().from(retweets).where(eq(retweets.userId, session.user.id));
+    const userBookmarks = await db.select().from(bookmarks).where(eq(bookmarks.userId, session.user.id));
     
     const likeSet = new Set(userLikes.map(l => l.postId));
     const rtSet = new Set(userRetweets.map(r => r.postId));
+    const bookmarkSet = new Set(userBookmarks.map((b) => b.postId));
 
     return allPosts.map(post => ({
       ...post,
       isLiked: likeSet.has(post.id),
       isRetweeted: rtSet.has(post.id),
+      isBookmarked: bookmarkSet.has(post.id),
     }));
   }
 
-  return (allPosts || []).map(post => ({ ...post, isLiked: false, isRetweeted: false }));
+  return (allPosts || []).map(post => ({ ...post, isLiked: false, isRetweeted: false, isBookmarked: false }));
 }
 
 /** 내팀 탭: 모아보기(본문에 팀 키워드) / 피드(team_tag 일치) */
@@ -80,16 +84,19 @@ export async function getTeamPosts(
   if (session?.user?.id && rows.length) {
     const userLikes = await db.select().from(likes).where(eq(likes.userId, session.user.id));
     const userRetweets = await db.select().from(retweets).where(eq(retweets.userId, session.user.id));
+    const userBookmarks = await db.select().from(bookmarks).where(eq(bookmarks.userId, session.user.id));
     const likeSet = new Set(userLikes.map((l) => l.postId));
     const rtSet = new Set(userRetweets.map((r) => r.postId));
+    const bookmarkSet = new Set(userBookmarks.map((b) => b.postId));
     return rows.map((post) => ({
       ...post,
       isLiked: likeSet.has(post.id),
       isRetweeted: rtSet.has(post.id),
+      isBookmarked: bookmarkSet.has(post.id),
     }));
   }
 
-  return rows.map((post) => ({ ...post, isLiked: false, isRetweeted: false }));
+  return rows.map((post) => ({ ...post, isLiked: false, isRetweeted: false, isBookmarked: false }));
 }
 
 export async function createPost(content: string, imageUrl?: string) {
@@ -108,11 +115,32 @@ export async function createPost(content: string, imageUrl?: string) {
     imageUrl,
   });
 
-  // KV 캐시 무효화: 다음 getPosts 호출 시 신규 데이터를 D1에서 읽도록 함
+  await notifyMentions(db, content, session.user.id, shortId);
+
   await env.KV.delete('main_feed_posts');
 
   revalidatePath('/');
   return shortId;
+}
+
+async function notifyMentions(
+  db: ReturnType<typeof getDb>,
+  content: string,
+  senderId: string,
+  postId: string
+) {
+  const handles = extractMentions(content);
+  for (const handle of handles) {
+    const mentioned = await db.select().from(profiles).where(eq(profiles.username, handle)).get();
+    if (mentioned && mentioned.id !== senderId) {
+      await db.insert(notifications).values({
+        receiverId: mentioned.id,
+        senderId,
+        type: 'mention',
+        postId,
+      }).catch(() => {});
+    }
+  }
 }
 
 export async function deletePost(postId: string) {
@@ -268,6 +296,7 @@ export async function getPostDetail(postId: string) {
   let isLiked = false;
   let isRetweeted = false;
 
+  let isBookmarked = false;
   if (session?.user?.id) {
     const likeCount = await db.select({ value: count() }).from(likes)
       .where(and(eq(likes.postId, postId), eq(likes.userId, session.user.id)))
@@ -275,15 +304,19 @@ export async function getPostDetail(postId: string) {
     const rtCount = await db.select({ value: count() }).from(retweets)
       .where(and(eq(retweets.postId, postId), eq(retweets.userId, session.user.id)))
       .get();
+    const bm = await db.select().from(bookmarks)
+      .where(and(eq(bookmarks.postId, postId), eq(bookmarks.userId, session.user.id)))
+      .get();
     
     isLiked = (likeCount?.value || 0) > 0;
     isRetweeted = (rtCount?.value || 0) > 0;
+    isBookmarked = !!bm;
   }
 
   // view count increment logic here (soft increment to bypass heavy writes, but for now just basic update)
   await db.update(posts).set({ viewsCount: sql`views_count + 1` }).where(eq(posts.id, postId)).run();
 
-  return { ...post, isLiked, isRetweeted, viewsCount: (post.viewsCount || 0) + 1 };
+  return { ...post, isLiked, isRetweeted, isBookmarked, viewsCount: (post.viewsCount || 0) + 1 };
 }
 
 export async function searchUsers(query: string) {
@@ -360,6 +393,7 @@ export async function createComment(postId: string, content: string) {
           postId,
         });
       }
+      await notifyMentions(db, content.trim(), session.user.id, postId);
     } catch (notifErr) {
       console.error('Notification creation failed', notifErr);
     }
@@ -445,4 +479,80 @@ export async function getUserComments(userId: string) {
   });
 
   return userComments;
+}
+
+export async function toggleBookmark(postId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Not authenticated');
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const existing = await db
+    .select()
+    .from(bookmarks)
+    .where(and(eq(bookmarks.postId, postId), eq(bookmarks.userId, session.user.id)))
+    .get();
+
+  if (existing) {
+    await db.delete(bookmarks).where(eq(bookmarks.id, existing.id));
+  } else {
+    await db.insert(bookmarks).values({ postId, userId: session.user.id });
+  }
+
+  revalidatePath('/');
+}
+
+export async function getUserSavedPosts(userId: string) {
+  const session = await auth();
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  const rows = await db.select().from(bookmarks).where(eq(bookmarks.userId, userId)).orderBy(desc(bookmarks.createdAt)).limit(50);
+  if (!rows.length) return [];
+
+  const saved: Awaited<ReturnType<typeof getPosts>> = [];
+  for (const b of rows) {
+    const post = await db.query.posts.findFirst({
+      where: eq(posts.id, b.postId),
+      with: { profiles: true, originalPost: { with: { profiles: true } } },
+    });
+    if (post) saved.push(post as any);
+  }
+
+  if (session?.user?.id) {
+    const userLikes = await db.select().from(likes).where(eq(likes.userId, session.user.id));
+    const likeSet = new Set(userLikes.map((l) => l.postId));
+    return saved.map((p) => ({ ...p, isLiked: likeSet.has(p.id), isBookmarked: true }));
+  }
+  return saved.map((p) => ({ ...p, isLiked: false, isBookmarked: true }));
+}
+
+export async function getNotifications() {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  return db.query.notifications.findMany({
+    where: eq(notifications.receiverId, session.user.id),
+    with: {
+      sender: true,
+      post: { with: { profiles: true } },
+    },
+    orderBy: [desc(notifications.createdAt)],
+    limit: 50,
+  });
+}
+
+export async function markNotificationsRead() {
+  const session = await auth();
+  if (!session?.user?.id) return;
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(eq(notifications.receiverId, session.user.id));
 }

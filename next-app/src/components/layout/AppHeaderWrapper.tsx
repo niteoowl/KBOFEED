@@ -6,7 +6,15 @@ import GlobalHeader from './GlobalHeader';
 export default function AppHeaderWrapper() {
   const pathname = usePathname();
   
-  if (pathname === '/' || pathname.includes('/explore') || pathname.includes('/login') || pathname.includes('/signup') || pathname.includes('/onboarding')) {
+  if (
+    pathname === '/' ||
+    pathname.includes('/explore') ||
+    pathname.includes('/login') ||
+    pathname.includes('/signup') ||
+    pathname.includes('/onboarding') ||
+    pathname.includes('/settings') ||
+    pathname.includes('/notifications')
+  ) {
     return null;
   }
   
@@ -15,6 +23,9 @@ export default function AppHeaderWrapper() {
 
   if (pathname.includes('/search')) {
     title = '검색';
+  } else if (pathname.includes('/notifications')) {
+    title = '알림';
+    showBackBtn = true;
   } else if (pathname.includes('/game')) {
     title = '경기';
   } else if (pathname.includes('/profile')) {

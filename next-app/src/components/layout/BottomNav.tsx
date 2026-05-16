@@ -15,6 +15,9 @@ const BottomNav = () => {
         <Link href="/explore" className={`nav-item ${pathname === '/explore' || pathname.startsWith('/search') ? 'active' : ''}`}>
           <svg viewBox="0 0 24 24"><path d="M11 2a9 9 0 1 0 5.6 16.05l4.1 4.1a1.5 1.5 0 1 0 2.12-2.12l-4.1-4.1A9 9 0 0 0 11 2zm0 3a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"></path></svg>
         </Link>
+        <Link href="/notifications" className={`nav-item ${pathname === '/notifications' ? 'active' : ''}`}>
+          <svg viewBox="0 0 24 24"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 1 0-14 0v5l-2 2v1h18v-1l-2-2z"></path></svg>
+        </Link>
         <Link href="/game" className={`nav-item ${pathname === '/game' ? 'active' : ''}`}>
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>

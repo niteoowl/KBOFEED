@@ -1,6 +1,7 @@
 'use client';
 
 import { SessionProvider, useSession } from "next-auth/react";
+import { ProfileProvider } from "@/context/ProfileContext";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -39,9 +40,11 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <OnboardingGuard>
-        {children}
-      </OnboardingGuard>
+      <ProfileProvider>
+        <OnboardingGuard>
+          {children}
+        </OnboardingGuard>
+      </ProfileProvider>
     </SessionProvider>
   );
 }
