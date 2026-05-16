@@ -329,41 +329,51 @@ export async function getCommentDetail(commentId: string) {
 
 /** 댓글 작성 */
 export async function createComment(postId: string, content: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error('Unauthorized');
-  if (!content.trim()) throw new Error('Content is empty');
+  try {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+    if (!content.trim()) throw new Error('Content is empty');
 
-  const { env } = getRequestContext();
-  const db = getDb(env.DB);
-  
-  const shortId = generateShortId();
+    const { env } = getRequestContext();
+    const db = getDb(env.DB);
+    
+    const shortId = generateShortId();
 
-  await db.insert(comments).values({
-    id: shortId,
-    postId,
-    userId: session.user.id,
-    content: content.trim(),
-  });
-
-  // comments_count 는 DB 트리거가 있지만, 혹시 없을 경우 수동으로도 증가
-  // (트리거가 있으면 중복 증가되므로 트리거가 확실하면 이 줄 제거)
-  // await db.update(posts).set({ commentsCount: sql`comments_count + 1` }).where(eq(posts.id, postId));
-
-  // 알림 생성 (글 작성자가 자기 글에 댓글 달 때 제외)
-  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
-  if (post && post.userId !== session.user.id) {
-    await db.insert(notifications).values({
-      receiverId: post.userId,
-      senderId: session.user.id,
-      type: 'comment',
+    await db.insert(comments).values({
+      id: shortId,
       postId,
+      userId: session.user.id,
+      content: content.trim(),
     });
+
+    // 안전하게 카운트 증가
+    await db.update(posts).set({ commentsCount: sql`comments_count + 1` }).where(eq(posts.id, postId)).execute().catch(() => {});
+
+    // 알림 생성
+    try {
+      const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+      if (post && post.userId !== session.user.id) {
+        await db.insert(notifications).values({
+          receiverId: post.userId,
+          senderId: session.user.id,
+          type: 'comment',
+          postId,
+        });
+      }
+    } catch (notifErr) {
+      console.error('Notification creation failed', notifErr);
+    }
+
+    try {
+      if (env.KV) await env.KV.delete('main_feed_posts');
+      revalidatePath('/');
+    } catch (e) {}
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('createComment error:', err);
+    throw new Error('Comment insertion failed');
   }
-
-  // 캐시 무효화
-  await env.KV.delete('main_feed_posts');
-
-  revalidatePath('/');
 }
 
 // ========================

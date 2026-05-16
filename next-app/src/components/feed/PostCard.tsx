@@ -6,6 +6,7 @@ import { toggleLike, toggleRetweet, deletePost, updatePost } from '@/app/actions
 import { postPermalink } from '@/lib/post-url';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { getTeamLogo } from '@/lib/constants';
 
 interface PostProps {
   /** 게시물 단일 페이지 등에서는 카드 클릭 네비게이션 끔 */
@@ -30,6 +31,7 @@ interface PostProps {
       displayName: string | null;
       avatarUrl: string | null;
       isVerified: boolean | null;
+      favoriteTeam?: string | null;
     };
   };
 }
@@ -187,6 +189,9 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
                 onClick={(e) => { e.stopPropagation(); router.push(`/@${post.profiles.username}`); }}
               >
                 {post.profiles.displayName || '탐험가'}
+                {post.profiles.favoriteTeam && (
+                  <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="team logo" style={{ width: '16px', height: '16px', marginLeft: '6px', objectFit: 'contain' }} />
+                )}
                 {post.profiles.isVerified && <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '15px', marginLeft: '4px' }} />}
               </span>
               <span 
@@ -318,16 +323,19 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
             <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
               <span 
                 className="display-name" 
-                style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
+                style={{ fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   router.push(`/@${post.profiles.username}`);
                 }}
               >
                 {post.profiles.displayName || '탐험가'}
+                {post.profiles.favoriteTeam && (
+                  <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="team logo" style={{ width: '16px', height: '16px', marginLeft: '4px', objectFit: 'contain' }} />
+                )}
               </span>
               {post.profiles.isVerified && (
-                <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginRight: '2px' }} />
+                <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: '14px', marginLeft: '0px', marginRight: '2px' }} />
               )}
               <span 
                 className="username" 

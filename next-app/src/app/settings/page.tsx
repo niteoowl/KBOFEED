@@ -84,8 +84,7 @@ export default function SettingsPage() {
             <i className="fas fa-arrow-left"></i>
           </button>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>계정 센터</h1>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>@{username}</span>
+            <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 }}>정보 수정</h1>
           </div>
         </header>
 

@@ -31,6 +31,10 @@ export function normalizePostForCard(
       isVerified: Boolean(
         profilesRaw?.isVerified ?? r.isVerified ?? r.is_verified
       ),
+      favoriteTeam: (profilesRaw?.favoriteTeam ??
+        r.favoriteTeam ??
+        r.favorite_team ??
+        null) as string | null,
     },
   };
 }

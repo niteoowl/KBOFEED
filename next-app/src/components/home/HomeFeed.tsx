@@ -133,40 +133,53 @@ export default function HomeFeed() {
           </button>
         </div>
       </GlobalHeader>
-      <ComposePost
-        onPosted={async (content) => {
-          if (content && session?.user) {
-            // 1. 낙관적 업데이트: 서버 응답 전 UI에 즉시 반영
-            const optimisticPost = {
-              id: 'tmp_' + Date.now(), // 임시 ID (ShortID는 서버에서 생성)
-              content,
-              createdAt: new Date().toISOString(),
-              likesCount: 0,
-              retweetsCount: 0,
-              commentsCount: 0,
-              profiles: {
-                username: session.user.name || 'user',
-                displayName: session.user.name || '사용자',
-                avatarUrl: session.user.image,
-                isVerified: false
-              },
-              isLiked: false,
-              isRetweeted: false
-            };
-            setAllPosts(prev => [optimisticPost, ...prev]);
-          }
-
-          // 2. 실제 데이터 동기화 (KV 무효화 지연 고려)
-          setTimeout(async () => {
-            try {
-              const p = await getPosts();
-              setAllPosts(p);
-            } catch {
-              /* ignore */
+      {session ? (
+        <ComposePost
+          onPosted={async (content) => {
+            if (content && session?.user) {
+              // 1. 낙관적 업데이트: 서버 응답 전 UI에 즉시 반영
+              const optimisticPost = {
+                id: 'tmp_' + Date.now(),
+                content,
+                createdAt: new Date().toISOString(),
+                likesCount: 0,
+                retweetsCount: 0,
+                commentsCount: 0,
+                profiles: {
+                  username: (session.user as any)?.username || session.user.name || 'user',
+                  displayName: session.user.name || '사용자',
+                  avatarUrl: session.user.image,
+                  isVerified: false
+                },
+                isLiked: false,
+                isRetweeted: false
+              };
+              setAllPosts(prev => [optimisticPost, ...prev]);
             }
-          }, 1000);
-        }}
-      />
+
+            // 2. 실제 데이터 동기화
+            setTimeout(async () => {
+              try {
+                const p = await getPosts();
+                setAllPosts(p);
+              } catch {
+                /* ignore */
+              }
+            }, 1000);
+          }}
+        />
+      ) : (
+        <div style={{ padding: '32px 20px', textAlign: 'center', backgroundColor: '#fff', borderBottom: '8px solid var(--divider-color)', borderTop: '1px solid var(--border-color)' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '8px' }}>크보피드에 오신 것을 환영합니다!</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '15px' }}>로그인하고 좋아하는 팀의 최신 소식을 받아보세요.</p>
+          <button 
+            onClick={() => router.push('/login')} 
+            style={{ backgroundColor: 'var(--primary-color)', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: '9999px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', transition: 'background-color 0.2s', width: '100%', maxWidth: '300px' }}
+          >
+            로그인 / 회원가입하기
+          </button>
+        </div>
+      )}
 
       <div id="tab-all" className={`tab-content ${mainTab === 'all' ? 'active' : ''}`}>
         {mainTab === 'all' && (

@@ -53,15 +53,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth((req) => {
 
           if (!user || !user.password) return null;
 
-          // Hash input for comparison
-          const encoder = new TextEncoder();
-          const data = encoder.encode((credentials.password as string) + 'KBOFEED_SALT');
-          const hash = await crypto.subtle.digest('SHA-256', data);
-          const hashedPassword = Array.from(new Uint8Array(hash))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
+          // Verify password (supports Argon2id + legacy SHA-256)
+          const { verifyPassword } = await import('@/app/actions/auth');
+          const isValid = await verifyPassword(credentials.password as string, user.password);
 
-          if (hashedPassword === user.password) {
+          if (isValid) {
             // Fetch profile to get username
             const profile = await db.query.profiles.findFirst({
               where: (profiles, { eq }) => eq(profiles.id, user.id)

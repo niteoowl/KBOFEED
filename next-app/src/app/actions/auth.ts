@@ -6,14 +6,42 @@ import { users, profiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
-// For simplicity in Edge runtime, we use a basic SHA-256 hash
-async function hashPassword(password: string) {
+// Argon2id password hashing via hash-wasm (Edge-compatible WebAssembly)
+import { argon2id, argon2Verify } from 'hash-wasm';
+
+async function hashPassword(password: string): Promise<string> {
+  // Generate a random 16-byte salt
+  const salt = new Uint8Array(16);
+  crypto.getRandomValues(salt);
+
+  const hash = await argon2id({
+    password,
+    salt,
+    parallelism: 1,
+    iterations: 3,
+    memorySize: 4096, // 4MB — conservative for Edge
+    hashLength: 32,
+    outputType: 'encoded', // PHC string format: $argon2id$v=19$m=4096,t=3,p=1$...
+  });
+
+  return hash;
+}
+
+/** Verify password against stored hash (supports both Argon2id and legacy SHA-256) */
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  // Argon2id hashes start with $argon2id$
+  if (storedHash.startsWith('$argon2id$')) {
+    return argon2Verify({ password, hash: storedHash });
+  }
+
+  // Legacy SHA-256 fallback for existing accounts
   const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'KBOFEED_SALT'); // Simple salt
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
+  const data = encoder.encode(password + 'KBOFEED_SALT');
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const legacyHash = Array.from(new Uint8Array(digest))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
+  return legacyHash === storedHash;
 }
 
 export async function signUp(formData: FormData) {

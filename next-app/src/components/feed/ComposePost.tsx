@@ -1,38 +1,138 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { createPost } from '@/app/actions/post';
+
+// ─── IMGBB 임시방편 키 (제거 쉽게 분리) ───
+const IMGBB_API_KEY = 'fdd1c97d2f4e24833b2ae441153061f9';
+const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
+
+// ─── Klipy GIF API ───
+const KLIPY_APP_KEY = '8HmSCYNUL4rhrnFaKVJDVgJpparYc0PmqS5LgCR6wB60cHjp41vsX2C40pmWPefT';
+const KLIPY_BASE_URL = `https://api.klipy.com/api/v1/${KLIPY_APP_KEY}`;
 
 type ComposePostProps = {
   /** 게시 후 홈 피드 등에서 목록 갱신 */
   onPosted?: (newPostContent?: string) => void | Promise<void>;
 };
 
+interface KlipyGif {
+  id: string;
+  slug: string;
+  title: string;
+  blur_preview?: string;
+  file: {
+    md?: { webp?: string; gif?: string; mp4?: string };
+    sm?: { webp?: string; gif?: string; mp4?: string };
+    xs?: { webp?: string; gif?: string };
+  };
+}
+
 const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { data: session } = useSession();
   const [content, setContent] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isPending, setIsPending] = useState(false);
+
+  // ─── Image (IMGBB) ───
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // ─── GIF (Klipy) ───
+  const [gifOpen, setGifOpen] = useState(false);
+  const [gifSearch, setGifSearch] = useState('');
+  const [gifs, setGifs] = useState<KlipyGif[]>([]);
+  const [gifLoading, setGifLoading] = useState(false);
+
+  // ─── Poll ───
+  const [pollOpen, setPollOpen] = useState(false);
+  const [pollOptions, setPollOptions] = useState(['', '']);
 
   if (!session) return null;
 
+  // ─── Handlers ───
+
+  const handleImageUpload = async (file: File) => {
+    if (!file || uploading) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('key', IMGBB_API_KEY);
+      const res = await fetch(IMGBB_UPLOAD_URL, { method: 'POST', body: formData });
+      const json: any = await res.json();
+      if (json.success) {
+        setImageUrl(json.data.url);
+      } else {
+        alert('이미지 업로드에 실패했습니다.');
+      }
+    } catch {
+      alert('이미지 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const fetchGifs = async (query?: string) => {
+    setGifLoading(true);
+    try {
+      const endpoint = query
+        ? `${KLIPY_BASE_URL}/gifs/search?q=${encodeURIComponent(query)}&per_page=20&locale=kr`
+        : `${KLIPY_BASE_URL}/gifs/trending?per_page=20&locale=kr`;
+      const res = await fetch(endpoint);
+      const json: any = await res.json();
+      if (json.result && json.data?.data) {
+        setGifs(json.data.data);
+      }
+    } catch {
+      setGifs([]);
+    } finally {
+      setGifLoading(false);
+    }
+  };
+
+  const openGifPicker = () => {
+    setGifOpen(true);
+    setPollOpen(false);
+    fetchGifs();
+  };
+
+  const selectGif = (gif: KlipyGif) => {
+    const url = gif.file?.md?.webp || gif.file?.md?.gif || gif.file?.sm?.webp || gif.file?.sm?.gif || '';
+    setImageUrl(url);
+    setGifOpen(false);
+    setGifSearch('');
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim() || isPending) return;
-    
-    const submittedContent = content; // Store for optimistic update
+    if (isPending) return;
+
+    // Poll logic: embed as JSON in content if poll active
+    let finalContent = content;
+    if (pollOpen && pollOptions.filter(o => o.trim()).length >= 2) {
+      const pollData = {
+        type: 'poll',
+        options: pollOptions.filter(o => o.trim()),
+      };
+      finalContent = content + '\n\n[POLL]' + JSON.stringify(pollData) + '[/POLL]';
+    }
+
+    if (!finalContent.trim() && !imageUrl) return;
+
+    const submittedContent = finalContent;
     setContent('');
-    setIsExpanded(false);
-    
-    // Optimistic update trigger (optional if parent supports it)
+    setImageUrl(null);
+    setPollOpen(false);
+    setPollOptions(['', '']);
+
     onPosted?.(submittedContent);
-    
+
     setIsPending(true);
     try {
-      await createPost(submittedContent);
-    } catch (e) {
+      await createPost(submittedContent, imageUrl || undefined);
+    } catch {
       alert('게시글 작성 중 오류가 발생했습니다.');
-      // rollback? but for simplicity we'll just alert
     } finally {
       setIsPending(false);
     }
@@ -60,27 +160,158 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
               fontFamily: 'inherit', color: 'var(--text-primary)', paddingTop: '8px'
             }}
           />
+
+          {/* ─── Image Preview ─── */}
+          {imageUrl && (
+            <div style={{ position: 'relative', marginTop: '8px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+              <img src={imageUrl} alt="미리보기" style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'cover' }} />
+              <button 
+                onClick={() => setImageUrl(null)}
+                style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
+          )}
+
+          {uploading && (
+            <div style={{ padding: '8px 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
+              <i className="fas fa-spinner fa-spin" style={{ marginRight: '6px' }} />
+              이미지 업로드 중...
+            </div>
+          )}
+
+          {/* ─── Poll Options ─── */}
+          {pollOpen && (
+            <div style={{ marginTop: '12px', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--divider-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>투표 만들기</span>
+                <button onClick={() => { setPollOpen(false); setPollOptions(['', '']); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '16px' }}>
+                  <i className="fas fa-times" />
+                </button>
+              </div>
+              {pollOptions.map((opt, idx) => (
+                <input
+                  key={idx}
+                  value={opt}
+                  onChange={(e) => {
+                    const next = [...pollOptions];
+                    next[idx] = e.target.value;
+                    setPollOptions(next);
+                  }}
+                  placeholder={`선택지 ${idx + 1}`}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '15px', marginBottom: '6px', background: '#fff', color: 'var(--text-primary)' }}
+                />
+              ))}
+              {pollOptions.length < 4 && (
+                <button
+                  onClick={() => setPollOptions([...pollOptions, ''])}
+                  style={{ background: 'none', border: '1px dashed var(--border-color)', color: 'var(--primary-color)', padding: '8px', borderRadius: '8px', width: '100%', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}
+                >
+                  + 선택지 추가
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ─── GIF Picker ─── */}
+          {gifOpen && (
+            <div style={{ marginTop: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden', maxHeight: '360px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                <i className="fas fa-search" style={{ color: 'var(--text-secondary)' }} />
+                <input
+                  value={gifSearch}
+                  onChange={(e) => setGifSearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') fetchGifs(gifSearch); }}
+                  placeholder="GIF 검색..."
+                  style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', color: 'var(--text-primary)' }}
+                />
+                <button onClick={() => setGifOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                  <i className="fas fa-times" />
+                </button>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1, padding: '8px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                {gifLoading ? (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+                    <i className="fas fa-spinner fa-spin" /> 로딩 중...
+                  </div>
+                ) : gifs.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+                    결과가 없습니다.
+                  </div>
+                ) : (
+                  gifs.map((gif) => {
+                    const thumb = gif.file?.sm?.webp || gif.file?.sm?.gif || gif.file?.xs?.webp || '';
+                    return (
+                      <div
+                        key={gif.id}
+                        onClick={() => selectGif(gif)}
+                        style={{ cursor: 'pointer', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#f0f3f5' }}
+                      >
+                        <img src={thumb} alt={gif.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ─── Action Bar ─── */}
           <div className="compose-actions" style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="action-icons" style={{ display: 'flex', gap: '16px', color: 'var(--primary-color)' }}>
-              <i className="far fa-image" style={{ cursor: 'pointer', fontSize: '20px' }} />
+              {/* Image Upload (IMGBB) */}
+              <i 
+                className="far fa-image" 
+                title="이미지 업로드" 
+                style={{ cursor: 'pointer', fontSize: '20px', opacity: uploading ? 0.5 : 1 }} 
+                onClick={() => fileInputRef.current?.click()} 
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                  e.target.value = '';
+                }}
+              />
+
+              {/* GIF */}
+              <i 
+                className="fas fa-film" 
+                title="GIF 추가"
+                style={{ cursor: 'pointer', fontSize: '20px' }} 
+                onClick={openGifPicker}
+              />
+
+              {/* Hashtag */}
               <i 
                 className="fas fa-hashtag" 
                 title="태그 추가" 
                 style={{ cursor: 'pointer', fontSize: '20px' }} 
                 onClick={() => setContent(prev => prev + (prev.endsWith(' ') || !prev ? '#' : ' #'))} 
               />
-              <i className="far fa-smile" style={{ cursor: 'pointer', fontSize: '20px' }} />
-              <i className="far fa-calendar-alt" style={{ cursor: 'pointer', fontSize: '20px' }} />
+
+              {/* Poll */}
+              <i 
+                className="fas fa-poll" 
+                title="투표 만들기"
+                style={{ cursor: 'pointer', fontSize: '20px', color: pollOpen ? 'var(--accent-color)' : undefined }} 
+                onClick={() => { setPollOpen(!pollOpen); setGifOpen(false); }}
+              />
             </div>
             <button 
               onClick={handleSubmit}
-              disabled={!content.trim() || isPending}
+              disabled={(!content.trim() && !imageUrl) || isPending}
               className="inline-post-btn"
               style={{ 
                 padding: '8px 20px', fontSize: '15px', borderRadius: '9999px', border: 'none', 
-                backgroundColor: content.trim() ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)', 
-                color: '#fff', fontWeight: 'bold', cursor: content.trim() ? 'pointer' : 'default', 
-                opacity: content.trim() ? 1 : 0.5, transition: '0.2s' 
+                backgroundColor: (content.trim() || imageUrl) ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)', 
+                color: '#fff', fontWeight: 'bold', cursor: (content.trim() || imageUrl) ? 'pointer' : 'default', 
+                opacity: (content.trim() || imageUrl) ? 1 : 0.5, transition: '0.2s' 
               }}
             >
               {isPending ? '게시 중...' : '게시하기'}

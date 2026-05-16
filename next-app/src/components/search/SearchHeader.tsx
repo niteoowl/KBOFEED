@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { searchUsers } from '@/app/actions/post';
 
 interface SearchHeaderProps {
   initialQuery?: string;
@@ -14,6 +13,9 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
@@ -28,6 +30,40 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
     return () => document.body.classList.remove('search-open');
   }, [isFocused]);
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch autocomplete suggestions
+  useEffect(() => {
+    let active = true;
+    if (query.trim() && isFocused) {
+      const delayFn = setTimeout(() => {
+        fetch(`https://searchapi-six.vercel.app/api/autocomplete?q=${encodeURIComponent(query)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (active && Array.isArray(data)) {
+              setSuggestions(data);
+            }
+          })
+          .catch(() => {});
+      }, 200);
+      return () => clearTimeout(delayFn);
+    } else {
+      setSuggestions([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [query, isFocused]);
+
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -41,16 +77,10 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
     setIsFocused(false);
   };
 
-  const goToUser = (username: string) => {
-    setIsFocused(false);
-    router.push(`/@${username}`);
-  };
-
   return (
-    <header className="feed-header-group">
-      
+    <header className="feed-header-group" style={{ borderBottom: '1px solid var(--border-color)' }}>
       {/* Mobile Search Bar */}
-      <div className="mobile-search-container">
+      <div className="mobile-search-container" style={{ borderBottom: 'none' }} ref={containerRef}>
         <div className="search-input-wrapper">
           <i className="fas fa-arrow-left search-back-btn" onClick={() => setIsFocused(false)}></i>
           <div className="search-bar">
@@ -70,26 +100,37 @@ export default function SearchHeader({ initialQuery = '', title = '탐색' }: Se
 
         {/* Search Suggestions */}
         <div className={`search-suggestions ${isFocused ? 'active' : ''}`}>
-          <div className="suggestion-item" onClick={() => selectSuggestion('#잠실더비')}>
-            <span className="suggestion-category">실시간 트렌드</span>
-            <span className="suggestion-name">#잠실더비</span>
-            <span className="suggestion-count">12,4K 게시물</span>
-          </div>
-          <div className="suggestion-item" onClick={() => selectSuggestion('#고척돔_매진')}>
-            <span className="suggestion-category">실시간 화제</span>
-            <span className="suggestion-name">#고척돔_매진</span>
-            <span className="suggestion-count">3,102 게시물</span>
-          </div>
-          <div className="suggestion-item" onClick={() => selectSuggestion('KIA 타이거즈')}>
-            <span className="suggestion-category">커뮤니티</span>
-            <span className="suggestion-name">KIA 타이거즈 원정 응원단</span>
-            <span className="suggestion-count">12.4K 멤버</span>
-          </div>
-          <div className="suggestion-item" onClick={() => selectSuggestion('끝내기 홈런')}>
-            <span className="suggestion-category">인기 키워드</span>
-            <span className="suggestion-name">끝내기 홈런</span>
-            <span className="suggestion-count">8.2K 게시물</span>
-          </div>
+          {suggestions.length > 0 ? (
+            suggestions.map((sug, idx) => (
+              <div key={idx} className="suggestion-item" onClick={() => selectSuggestion(sug)}>
+                <i className="fas fa-search" style={{ marginRight: '12px', color: 'var(--text-secondary)' }}></i>
+                <span className="suggestion-name" style={{ fontSize: '15px', fontWeight: 600 }}>{sug}</span>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="suggestion-item" onClick={() => selectSuggestion('#잠실더비')}>
+                <span className="suggestion-category">실시간 트렌드</span>
+                <span className="suggestion-name">#잠실더비</span>
+                <span className="suggestion-count">12,4K 게시물</span>
+              </div>
+              <div className="suggestion-item" onClick={() => selectSuggestion('#고척돔_매진')}>
+                <span className="suggestion-category">실시간 화제</span>
+                <span className="suggestion-name">#고척돔_매진</span>
+                <span className="suggestion-count">3,102 게시물</span>
+              </div>
+              <div className="suggestion-item" onClick={() => selectSuggestion('KIA 타이거즈')}>
+                <span className="suggestion-category">커뮤니티</span>
+                <span className="suggestion-name">KIA 타이거즈 원정 응원단</span>
+                <span className="suggestion-count">12.4K 멤버</span>
+              </div>
+              <div className="suggestion-item" onClick={() => selectSuggestion('끝내기 홈런')}>
+                <span className="suggestion-category">인기 키워드</span>
+                <span className="suggestion-name">끝내기 홈런</span>
+                <span className="suggestion-count">8.2K 게시물</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
