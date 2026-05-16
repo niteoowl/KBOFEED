@@ -60,8 +60,9 @@ export default function CommentSection({ postId, initialComments, focusedComment
     setSubmitting(true);
     try {
       // 낙관적 업데이트
+      const optimisticId = Math.random().toString(36).substring(2, 10);
       const optimistic: CommentData = {
-        id: String(Date.now()),
+        id: optimisticId,
         content: text.trim(),
         createdAt: new Date().toISOString(),
         userId: session.user.id,

@@ -5,7 +5,7 @@ import { ko } from 'date-fns/locale';
 import { toggleLike, toggleRetweet, deletePost, updatePost } from '@/app/actions/post';
 import { postPermalink } from '@/lib/post-url';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PostProps {
   /** 게시물 단일 페이지 등에서는 카드 클릭 네비게이션 끔 */
@@ -25,6 +25,7 @@ interface PostProps {
     isLiked?: boolean;
     isRetweeted?: boolean;
     profiles: {
+      id: string;
       username: string;
       displayName: string | null;
       avatarUrl: string | null;
@@ -41,6 +42,18 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
   const [retweetsCount, setRetweetsCount] = useState(post.retweetsCount || 0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  useEffect(() => {
+    if (isDetailView) {
+      import('@/app/actions/user').then(({ getProfile }) => {
+        getProfile(post.profiles.username).then(profile => {
+          if (profile) setIsFollowing(profile.isFollowing);
+        });
+      });
+    }
+  }, [isDetailView, post.profiles.username]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -184,10 +197,25 @@ const PostCard = ({ post, suppressNavigation, isDetailView }: PostProps) => {
                 @{post.profiles.username}
               </span>
             </div>
-            <button style={{ 
-              background: '#111827', color: '#fff', borderRadius: '999px', padding: '6px 14px', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '13px' 
-            }}>
-              팔로우
+            <button 
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const { toggleFollow } = await import('@/app/actions/user');
+                  await toggleFollow(post.profiles.id);
+                  setIsFollowing(!isFollowing);
+                } catch (err) {
+                  alert('로그인이 필요합니다.');
+                }
+              }}
+              style={{ 
+                background: isFollowing ? 'transparent' : '#111827', 
+                color: isFollowing ? '#111827' : '#fff', 
+                borderRadius: '999px', padding: '6px 14px', 
+                border: isFollowing ? '1px solid #D1D5DB' : 'none', 
+                fontWeight: 600, cursor: 'pointer', fontSize: '13px' 
+              }}>
+              {isFollowing ? '언팔로우' : '팔로우'}
             </button>
             <div style={{ position: 'relative', marginLeft: '12px' }}>
               <button 
