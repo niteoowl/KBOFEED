@@ -14,7 +14,7 @@ async function requireAdmin() {
   const profile = await db.query.profiles.findFirst({
     where: eq(profiles.id, session.user.id)
   });
-  if (!profile?.isAdmin) throw new Error('Not authorized');
+  if (!profile?.isAdmin && !profile?.isVerified) throw new Error('Not authorized');
   return db;
 }
 

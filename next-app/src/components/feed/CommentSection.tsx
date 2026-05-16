@@ -15,6 +15,7 @@ interface CommentData {
   userId: string;
   postId: string;
   profiles: {
+    id: string;
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
@@ -68,6 +69,7 @@ export default function CommentSection({ postId, initialComments, focusedComment
         userId: session.user.id,
         postId,
         profiles: {
+          id: session.user.id,
           username: (session.user as any).username || session.user.name || 'user',
           displayName: session.user.name || '사용자',
           avatarUrl: session.user.image || null,
