@@ -202,7 +202,7 @@ const PostCard = ({
   );
 
   const menuButton = showMenu && (
-    /* 중요: 이 컨테이너가 relative 기준점이 되어 내부 메뉴가 절대 글자를 밀어내지 않습니다 */
+    /* 중요: 컨테이너를 absolute의 기준점으로 잡습니다 */
     <div style={{ position: 'relative', display: 'inline-block' }}>
       <button
         type="button"
@@ -215,7 +215,7 @@ const PostCard = ({
           border: 'none',
           cursor: 'pointer',
           color: 'var(--text-secondary)',
-          padding: '2px 4px', // 버튼 자체의 높이도 살짝 낮춤
+          padding: '2px 4px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -225,7 +225,7 @@ const PostCard = ({
         <i className="fas fa-ellipsis-h" />
       </button>
 
-      {/* 팝업 메뉴가 주변 글자를 밀어내지 않도록 absolute 컨테이너로 감싸서 공중에 띄웁니다 */}
+      {/* 팝업 메뉴 위치 제어 컨테이너 */}
       {menuOpen && (
         <div
           style={{
@@ -233,8 +233,14 @@ const PostCard = ({
             top: '100%',
             right: 0,
             zIndex: 50,
-            /* PostMenu 내부 스타일을 강제 제어하기 위한 인라인 스타일 덮어쓰기 팁 */
-            fontSize: '14px',
+            /* 핵심: 글자가 세로로 쪼개지는 현상과 줄바꿈을 완벽히 방지합니다 */
+            whiteSpace: 'nowrap',
+            minWidth: '120px', // 메뉴의 최소 너비 확보
+            backgroundColor: 'var(--background-primary, #fff)', // 배경 투명화 방지
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // 살짝 뜨는 느낌의 그림자
+            border: '1px solid var(--border-color, #e3e8ed)',
+            borderRadius: '8px', // 요청하신 조금만 둥근 효과 적용
+            overflow: 'hidden', // 내부 아이템들이 튀어나가지 않게 정돈
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -251,7 +257,7 @@ const PostCard = ({
                 : () => router.push(detailHref)
             }
             onDelete={async () => {
-              if (confirm('이 게시물을 삭제하시겠물이 삭제하시겠습니까?')) {
+              if (confirm('이 게시물을 삭제하시겠습니까?')) {
                 await deletePost(post.id);
                 router.push('/');
               }
