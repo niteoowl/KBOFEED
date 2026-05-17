@@ -72,7 +72,7 @@ export default function MessagesPage() {
       lastMessage: '아니 오늘 김도영 30-30 달성 실화인가요?! 소름 돋았음 ㄷㄷ',
       lastMessageTime: '오후 5:48',
       avatarSymbol: '⚾',
-      gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+      gradient: 'var(--primary-color)',
       messages: [
         { id: 'm1', senderId: 'user_a', senderName: '타이거즈_응원러', senderAvatar: 'https://i.pravatar.cc/150?u=a', content: '기아 타이거즈 화이팅!! 올해도 우승이다!', timestamp: new Date(Date.now() - 600000).toISOString(), senderTeam: 'KIA' },
         { id: 'm2', senderId: 'user_b', senderName: '무적엘지팬', senderAvatar: 'https://i.pravatar.cc/150?u=b', content: '잠실 더비 응원 오신 분 있나요?? 외야 분위기 대박입니다', timestamp: new Date(Date.now() - 400000).toISOString(), senderTeam: 'LG' },
@@ -90,7 +90,7 @@ export default function MessagesPage() {
       lastMessage: '문동주 오늘 선발 160km 직구 꽂는 거 봤습니까?? 미쳤다',
       lastMessageTime: '오후 5:42',
       avatarSymbol: '🦅',
-      gradient: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)',
+      gradient: '#ff6600',
       messages: [
         { id: 'm1', senderId: 'user_e', senderName: '한화에살어리랏다', senderAvatar: 'https://i.pravatar.cc/150?u=e', content: '올해는 진짜 대전에서 가을야구 냄새 난다!!', timestamp: new Date(Date.now() - 1000000).toISOString(), senderTeam: '한화' },
         { id: 'm2', senderId: 'user_f', senderName: '오렌지독수리', senderAvatar: 'https://i.pravatar.cc/150?u=f', content: '오늘 퇴근하고 한화생명이글스파크 1루 내야 달려갑니다!', timestamp: new Date(Date.now() - 500000).toISOString(), senderTeam: '한화' },
@@ -107,7 +107,7 @@ export default function MessagesPage() {
       lastMessage: '구자욱 오늘 연타석 홈런 ㅋㅋㅋㅋ 대구의 왕 맞네',
       lastMessageTime: '오후 5:35',
       avatarSymbol: '🦁',
-      gradient: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+      gradient: '#ea0029',
       messages: [
         { id: 'm1', senderId: 'user_h', senderName: '라팍달리기', senderAvatar: 'https://i.pravatar.cc/150?u=h', content: '원태인 완봉승 기원하는 사람 개추 ㅋㅋㅋ', timestamp: new Date(Date.now() - 800000).toISOString(), senderTeam: '삼성' },
         { id: 'm2', senderId: 'user_i', senderName: '푸른심장33', senderAvatar: 'https://i.pravatar.cc/150?u=i', content: '구자욱 오늘 연타석 홈런 ㅋㅋㅋㅋ 대구의 왕 맞네', timestamp: new Date(Date.now() - 300000).toISOString(), senderTeam: '삼성' },
@@ -123,7 +123,7 @@ export default function MessagesPage() {
       lastMessage: '신바람 야구 가동!! 오늘 경기 무조건 스윕 가자',
       lastMessageTime: '오후 5:30',
       avatarSymbol: '🌟',
-      gradient: 'linear-gradient(135deg, #be185d 0%, #db2777 100%)',
+      gradient: '#c0004d',
       messages: [
         { id: 'm1', senderId: 'user_j', senderName: '트윈스포에버', senderAvatar: 'https://i.pravatar.cc/150?u=j', content: '유광점퍼 세탁소 맡겼던 거 찾았습니다 ㅋㅋㅋ 가을 준비 해야죠', timestamp: new Date(Date.now() - 900000).toISOString(), senderTeam: 'LG' },
         { id: 'm2', senderId: 'user_k', senderName: '엘지오지환', senderAvatar: 'https://i.pravatar.cc/150?u=k', content: '신바람 야구 가동!! 오늘 경기 무조건 스윕 가자', timestamp: new Date(Date.now() - 400000).toISOString(), senderTeam: 'LG' },
@@ -139,7 +139,7 @@ export default function MessagesPage() {
       lastMessage: '기아 김도영 싸인 포카 가지고 계신 분 교환 가능할까요?? 쪽지 주세요',
       lastMessageTime: '오후 5:21',
       avatarSymbol: '💎',
-      gradient: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
+      gradient: 'var(--bg-secondary)',
       messages: [
         { id: 'm1', senderId: 'user_l', senderName: '굿즈콜렉터', senderAvatar: 'https://i.pravatar.cc/150?u=l', content: '삼성 사자 랜드 마스코트 인형 구합니다!', timestamp: new Date(Date.now() - 1200000).toISOString() },
         { id: 'm2', senderId: 'user_m', senderName: '포카좋아', senderAvatar: 'https://i.pravatar.cc/150?u=m', content: '기아 김도영 싸인 포카 가지고 계신 분 교환 가능할까요?? 쪽지 주세요', timestamp: new Date(Date.now() - 600000).toISOString() },
@@ -388,7 +388,7 @@ export default function MessagesPage() {
       lastMessage: '새로운 대화방이 개설되었습니다. 대화를 시작해 보세요!',
       lastMessageTime: '오후 6:00',
       avatarSymbol: ['⚾', '🔥', '🏆', '📣', '🤝'][Math.floor(Math.random() * 5)],
-      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      gradient: 'var(--primary-color)',
       messages: [
         {
           id: 'm_init',
@@ -448,11 +448,13 @@ export default function MessagesPage() {
         </button>
       </div>
 
+      <div style={{ height: '8px', backgroundColor: 'var(--divider-color)', borderBottom: '1px solid var(--border-color)' }} />
+
       <div
         className="messages-page-wrapper"
         style={{
           display: 'flex',
-          height: 'calc(100vh - 53px - 53px - 45px)', // Adjusted height considering double headers
+          height: 'calc(100vh - 56px - 46px - 8px - 53px)', // Optimized fullscreen flat chat layout
           backgroundColor: 'var(--bg-primary)',
           borderBottom: '1px solid var(--border-color)',
           overflow: 'hidden'
@@ -554,7 +556,7 @@ export default function MessagesPage() {
                             cursor: 'pointer',
                             flexShrink: 0,
                             position: 'relative',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                            boxShadow: 'none', border: '1px solid var(--border-color)',
                           }}
                         >
                           <div style={{ fontSize: '20px', marginBottom: '8px' }}>{room.avatarSymbol}</div>
@@ -902,7 +904,7 @@ export default function MessagesPage() {
                     maxWidth: '450px',
                     padding: '24px',
                     border: '1px solid var(--border-color)',
-                    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+                    boxShadow: 'none',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '16px'
@@ -1031,7 +1033,7 @@ export default function MessagesPage() {
                         padding: '12px',
                         borderRadius: '12px',
                         border: 'none',
-                        background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%)',
+                        background: 'var(--primary-color)',
                         color: '#ffffff',
                         fontWeight: 900,
                         cursor: 'pointer',
@@ -1261,11 +1263,11 @@ export default function MessagesPage() {
                               )}
                               <div
                                 style={{
-                                  background: isMe ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'var(--bg-primary)',
+                                  background: isMe ? 'var(--primary-color)' : 'var(--bg-secondary)',
                                   color: isMe ? '#ffffff' : 'var(--text-primary)',
                                   padding: '8px 14px',
                                   borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                  boxShadow: 'none',
                                   fontSize: '13.5px',
                                   lineHeight: '1.4',
                                   whiteSpace: 'pre-wrap',

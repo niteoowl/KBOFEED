@@ -12,7 +12,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className={`app-container ${isMessagesPage ? 'messages-layout' : ''}`}>
-      {!isMessagesPage && <Sidebar />}
+      <Sidebar />
       <main className="main-feed">
         <AppHeaderWrapper />
         {children}

@@ -13,7 +13,8 @@ export default function AppHeaderWrapper() {
     pathname.includes('/signup') ||
     pathname.includes('/onboarding') ||
     pathname.includes('/settings') ||
-    pathname.includes('/notifications')
+    pathname.includes('/notifications') ||
+    pathname.includes('/messages')
   ) {
     return null;
   }

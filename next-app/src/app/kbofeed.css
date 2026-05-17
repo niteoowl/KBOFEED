@@ -2745,7 +2745,7 @@ html[data-theme='dark'] .kakao-chat-bg {
     padding: 8px 12px;
     font-size: 14px;
     max-width: 80%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: none;
 }
 html[data-theme='dark'] .kakao-bubble-other {
     background-color: #1e293b;
@@ -2760,7 +2760,7 @@ html[data-theme='dark'] .kakao-bubble-other {
     padding: 8px 12px;
     font-size: 14px;
     max-width: 80%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    box-shadow: none;
 }
 html[data-theme='dark'] .kakao-bubble-me {
     background-color: #facc15; /* Golden yellow in dark mode */
@@ -2768,7 +2768,7 @@ html[data-theme='dark'] .kakao-bubble-me {
 }
 
 .openchat-create-btn {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+    background: var(--primary-color);
     color: #ffffff;
     border: none;
     padding: 10px 18px;
@@ -2776,7 +2776,7 @@ html[data-theme='dark'] .kakao-bubble-me {
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(29, 155, 240, 0.2);
+    box-shadow: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
