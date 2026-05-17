@@ -510,7 +510,7 @@ ul {
     font-size: 16px;
     line-height: 22px;
     margin-bottom: 12px;
-    color: #0f1419;
+    color: var(--text-primary);
 }
 
 .tweet-media {
@@ -2690,3 +2690,98 @@ ul {
 }
 
 
+
+/* ==========================================
+   KakaoTalk-style Open Chat UI Styles
+   ========================================== */
+.messages-layout {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.messages-layout .main-feed {
+    max-width: 100% !important;
+    border-right: none !important;
+}
+
+.messages-layout-content {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.openchat-sidebar {
+    width: 320px;
+    border-right: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.openchat-main-view {
+    flex: 1;
+    background-color: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+/* KakaoTalk themed bubble backgrounds */
+.kakao-chat-bg {
+    background-color: #bacee0 !important;
+}
+html[data-theme='dark'] .kakao-chat-bg {
+    background-color: #0f172a !important; /* Premium dark slate */
+}
+
+.kakao-bubble-other {
+    background-color: #ffffff;
+    color: #000000;
+    border-radius: 4px 16px 16px 16px;
+    padding: 8px 12px;
+    font-size: 14px;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+html[data-theme='dark'] .kakao-bubble-other {
+    background-color: #1e293b;
+    color: #e7e9ea;
+    border: 1px solid #334155;
+}
+
+.kakao-bubble-me {
+    background-color: #fee500;
+    color: #000000;
+    border-radius: 16px 4px 16px 16px;
+    padding: 8px 12px;
+    font-size: 14px;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+html[data-theme='dark'] .kakao-bubble-me {
+    background-color: #facc15; /* Golden yellow in dark mode */
+    color: #000000;
+}
+
+.openchat-create-btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(29, 155, 240, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+.openchat-create-btn:hover {
+    transform: translateY(-2px);
+}

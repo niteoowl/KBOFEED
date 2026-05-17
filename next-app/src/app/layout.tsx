@@ -12,6 +12,8 @@ export const metadata: Metadata = {
 
 import Providers from "@/components/Providers";
 
+import ClientLayout from "@/components/layout/ClientLayout";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,15 +37,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <div className="app-container">
-            <Sidebar />
-            <main className="main-feed">
-              <AppHeaderWrapper />
-              {children}
-            </main>
-            <RightSidebar />
-            <BottomNav />
-          </div>
+          <ClientLayout>{children}</ClientLayout>
         </Providers>
         <script
           dangerouslySetInnerHTML={{
