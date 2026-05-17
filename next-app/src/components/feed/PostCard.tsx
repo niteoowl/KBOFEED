@@ -84,6 +84,13 @@ const PostCard = ({
   const [isFollowing, setIsFollowing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content || '');
+  const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+
+  const isSmallImage = naturalSize ? (naturalSize.width < 300 && naturalSize.height < 300) : false;
+
+  useEffect(() => {
+    setNaturalSize(null);
+  }, [activeImageIndex]);
 
   const isOwner = session?.user?.id === post.profiles.id;
   const showFollowBtn =
@@ -332,12 +339,10 @@ const PostCard = ({
       <article
         className="tweet"
         style={{
-          borderBottom: '1px solid var(--border-color)',
           cursor: 'pointer',
-          padding: '16px 0',
+          padding: '16px 20px',
           display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#fff',
+          gap: '8px',
         }}
         onClick={() => {
           if (adPost.linkUrl) {
@@ -345,59 +350,62 @@ const PostCard = ({
           }
         }}
       >
-        {/* Ad Header & Text: standard 20px padding */}
-        <div style={{ display: 'flex', gap: '12px', padding: '0 20px', marginBottom: 12 }}>
-          <div
-            className="user-avatar"
-            style={{
-              backgroundImage: 'url(https://cdn-icons-png.flaticon.com/512/5482/5482912.png)',
-              backgroundSize: 'cover',
-              borderRadius: '50%',
-              width: 40,
-              height: 40,
-              minWidth: 40,
-              marginRight: 0,
-            }}
-          />
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>스폰서 광고</span>
-              <span style={{ fontSize: '11px', padding: '1px 5px', borderRadius: '4px', backgroundColor: '#F3F4F6', color: '#6B7280', fontWeight: 'bold', marginLeft: '6px' }}>AD</span>
-            </div>
-            <div style={{ whiteSpace: 'pre-wrap', marginTop: 8, fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.5 }}>
-              {adPost.content}
-            </div>
+        {/* Left Column: Avatar */}
+        <div
+          className="user-avatar"
+          style={{
+            backgroundImage: 'url(https://cdn-icons-png.flaticon.com/512/5482/5482912.png)',
+            backgroundSize: 'cover',
+            borderRadius: '50%',
+            width: 40,
+            height: 40,
+            minWidth: 40,
+            marginRight: 0,
+          }}
+        />
+
+        {/* Right Column: Content */}
+        <div className="tweet-content" style={{ flex: 1, paddingLeft: 0, marginLeft: 0 }}>
+          {/* Header */}
+          <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>
+            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>스폰서 광고</span>
+            <span style={{ fontSize: '11px', padding: '1px 5px', borderRadius: '4px', backgroundColor: '#F3F4F6', color: '#6B7280', fontWeight: 'bold', marginLeft: '6px' }}>AD</span>
           </div>
+
+          {/* Text */}
+          <div className="tweet-text" style={{ whiteSpace: 'pre-wrap', fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: 12 }}>
+            {adPost.content}
+          </div>
+
+          {/* Image */}
+          {adPost.imageUrl && (
+            <div className="tweet-media" style={{ width: '100%', marginBottom: 12, overflow: 'hidden', borderRadius: 16 }}>
+              <img 
+                src={adPost.imageUrl} 
+                alt="광고 이미지" 
+                style={{ width: '100%', display: 'block', maxHeight: 400, objectFit: 'cover' }} 
+              />
+            </div>
+          )}
+
+          {/* Ad Link */}
+          {adPost.linkUrl && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 13,
+                  color: 'var(--primary-color)',
+                  fontWeight: 600,
+                }}
+              >
+                자세히 보기 <i className="fas fa-external-link-alt" style={{ fontSize: 11 }} />
+              </span>
+            </div>
+          )}
         </div>
-
-        {/* Ad Image: Stretches absolutely 100% edge-to-edge! */}
-        {adPost.imageUrl && (
-          <div style={{ width: '100%', marginBottom: 12 }}>
-            <img 
-              src={adPost.imageUrl} 
-              alt="광고 이미지" 
-              style={{ width: '100%', display: 'block', maxHeight: 400, objectFit: 'cover' }} 
-            />
-          </div>
-        )}
-
-        {/* Ad Link: standard 20px padding */}
-        {adPost.linkUrl && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 20px' }}>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 13,
-                color: 'var(--primary-color)',
-                fontWeight: 600,
-              }}
-            >
-              자세히 보기 <i className="fas fa-external-link-alt" style={{ fontSize: 11 }} />
-            </span>
-          </div>
-        )}
       </article>
     );
   }
@@ -636,17 +644,44 @@ const PostCard = ({
 
                 <div
                   className="tweet-media"
-                  onClick={(e) => {
+                  onClick={isSmallImage ? undefined : (e) => {
                     e.stopPropagation();
                     setLightboxIndex(activeImageIndex);
                     setIsLightboxOpen(true);
                   }}
-                  style={{ cursor: 'zoom-in', display: 'inline-block', maxWidth: '100%' }}
+                  style={isSmallImage ? {
+                    cursor: 'default',
+                    display: 'inline-block',
+                    maxWidth: '100%',
+                    border: 'none',
+                    width: 'auto'
+                  } : {
+                    cursor: 'zoom-in',
+                    display: 'inline-block',
+                    maxWidth: '100%'
+                  }}
                 >
                   <img
                     src={images[activeImageIndex]}
                     alt={`post-media-${activeImageIndex}`}
-                    style={{ borderRadius: 16, maxWidth: '100%', width: 'auto', display: 'block', maxHeight: '500px', objectFit: 'contain' }}
+                    onLoad={(e) => {
+                      const { naturalWidth, naturalHeight } = e.currentTarget;
+                      setNaturalSize({ width: naturalWidth, height: naturalHeight });
+                    }}
+                    style={isSmallImage ? {
+                      borderRadius: 16,
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      display: 'block'
+                    } : {
+                      borderRadius: 16,
+                      maxWidth: '100%',
+                      width: 'auto',
+                      display: 'block',
+                      maxHeight: '500px',
+                      objectFit: 'contain'
+                    }}
                   />
                 </div>
 
@@ -884,17 +919,44 @@ const PostCard = ({
 
                   <div
                     className="tweet-media"
-                    onClick={(e) => {
+                    onClick={isSmallImage ? undefined : (e) => {
                       e.stopPropagation();
                       setLightboxIndex(activeImageIndex);
                       setIsLightboxOpen(true);
                     }}
-                    style={{ cursor: 'zoom-in', display: 'inline-block', maxWidth: '100%' }}
+                    style={isSmallImage ? {
+                      cursor: 'default',
+                      display: 'inline-block',
+                      maxWidth: '100%',
+                      border: 'none',
+                      width: 'auto'
+                    } : {
+                      cursor: 'zoom-in',
+                      display: 'inline-block',
+                      maxWidth: '100%'
+                    }}
                   >
                     <img
                       src={images[activeImageIndex]}
                       alt={`post-media-${activeImageIndex}`}
-                      style={{ borderRadius: 16, maxWidth: '100%', width: 'auto', display: 'block', maxHeight: '400px', objectFit: 'contain' }}
+                      onLoad={(e) => {
+                        const { naturalWidth, naturalHeight } = e.currentTarget;
+                        setNaturalSize({ width: naturalWidth, height: naturalHeight });
+                      }}
+                      style={isSmallImage ? {
+                        borderRadius: 16,
+                        maxWidth: '100%',
+                        width: 'auto',
+                        height: 'auto',
+                        display: 'block'
+                      } : {
+                        borderRadius: 16,
+                        maxWidth: '100%',
+                        width: 'auto',
+                        display: 'block',
+                        maxHeight: '400px',
+                        objectFit: 'contain'
+                      }}
                     />
                   </div>
 
@@ -979,44 +1041,17 @@ const PostCard = ({
       {rtMenuOpen && (
         <>
           <div
-            className="menu-overlay"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              zIndex: 9999,
-            }}
+            className="unified-sheet-overlay"
             onClick={(e) => {
               e.stopPropagation();
               setRtMenuOpen(false);
             }}
           />
           <div
-            className="post-menu-container"
+            className="unified-sheet-container"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 10000,
-              padding: 8,
-            }}
           >
-            <div
-              className="post-menu-content"
-              style={{
-                background: '#fff',
-                borderRadius: 16,
-                overflow: 'hidden',
-                maxWidth: 500,
-                margin: '0 auto',
-                boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
-              }}
-            >
+            <div className="unified-sheet-content">
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -1028,17 +1063,7 @@ const PostCard = ({
                   router.refresh();
                 }}
                 style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '16px',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  borderBottom: '1px solid var(--border-color)',
                   color: isRetweeted ? '#00ba7c' : 'var(--text-primary)',
-                  textAlign: 'center',
                 }}
               >
                 <i className="fas fa-retweet" style={{ marginRight: 8 }} />
@@ -1055,40 +1080,15 @@ const PostCard = ({
                     composeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }
                 }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '16px',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  borderBottom: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  textAlign: 'center',
-                }}
               >
                 <i className="fas fa-pencil-alt" style={{ marginRight: 8 }} />
                 덧붙이기
               </button>
               <button
-                className="cancel-btn"
+                className="unified-sheet-cancel"
                 onClick={(e) => {
                   e.stopPropagation();
                   setRtMenuOpen(false);
-                }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '16px',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  textAlign: 'center',
                 }}
               >
                 취소

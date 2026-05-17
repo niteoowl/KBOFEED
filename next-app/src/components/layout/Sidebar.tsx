@@ -24,7 +24,7 @@ const Sidebar = () => {
         </Link>
         <Link href="/game" className="nav-item-link">
           <div className="nav-item" id="nav-game" style={{ padding: '10px 12px', display: 'flex', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" style={{ width: '24px', height: '24px', display: 'block' }}>
+            <svg viewBox="0 0 24 24" style={{ width: '24px', height: '24px', display: 'block', marginRight: '20px' }}>
                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
                 <path d="M7 4.5c3 3 3 12 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 <path d="M17 4.5c-3 3-3 12 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

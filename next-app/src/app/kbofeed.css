@@ -2568,3 +2568,92 @@ ul {
         border-radius: 16px 16px 0 0;
     }
 }
+
+/* ==========================================
+   UNIFIED SHEETS & OVERLAYS SYSTEM (RT, Dots, Share)
+   ========================================== */
+
+.unified-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  zIndex: 99999 !important;
+  z-index: 99999 !important;
+  display: block;
+}
+
+.unified-sheet-container {
+  position: fixed;
+  z-index: 100000 !important;
+  padding: 8px;
+  /* Mobile default: bottom sheet style */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: auto;
+  transform: none;
+}
+
+.unified-sheet-content {
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1) !important;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.unified-sheet-content button, 
+.unified-sheet-content .sheet-header {
+  display: block;
+  width: 100%;
+  padding: 16px !important;
+  background: none !important;
+  border: none !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color) !important;
+  text-align: center !important;
+  color: var(--text-primary) !important;
+  font-family: inherit;
+  transition: background-color 0.2s;
+}
+
+.unified-sheet-content button:hover {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+.unified-sheet-content button:last-child {
+  border-bottom: none !important;
+}
+
+.unified-sheet-cancel {
+  font-weight: 800 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* PC/Desktop View: Centered dialog style */
+@media (min-width: 641px) {
+  .unified-sheet-container {
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    bottom: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    padding: 16px !important;
+  }
+  
+  .unified-sheet-content {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
