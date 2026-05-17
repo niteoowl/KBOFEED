@@ -1,0 +1,28 @@
+📋 KBO 통합 API 응답 명세서1. 경기 일정 및 스코어 (목록)Endpoint: /api/kbo?date=YYYY-MM-DD데이터 소스: result.games (배열)필드명타입설명gameIdString경기 고유 ID (상세 조회용)statusInfoString현재 경기 상태 (예: "9회초", "종료", "18:30")statusCodeString상태 코드 (RESULT: 종료, RUNNING: 진행중, BEFORE: 시작전)homeTeamNameString홈 팀 명 (한화, 롯데 등)awayTeamNameString원정 팀 명 (LG, KIA 등)homeTeamScoreNumber홈 팀 현재 점수awayTeamScoreNumber원정 팀 현재 점수homeTeamEmblemUrlString홈 팀 로고 이미지 URLawayTeamEmblemUrlString원정 팀 로고 이미지 URL2. 팀 순위 데이터Endpoint: /api/kbo/rank?year=2026데이터 소스: result.seasonTeamStats (배열)필드명타입설명rankingNumber전체 순위 (1~10)teamNameString팀 이름 (KT, 삼성 등)gameCountNumber총 경기 수winGameCountNumber승리 수loseGameCountNumber패배 수drawnGameCountNumber무승부 수wraNumber승률 (0.676 등)gameBehindNumber게임 차 (0.0, 1.5 등)continuousGameResultString최근 연승/연패 정보 (예: "6승", "1패")teamImageUrlString팀 로고 이미지 URL3. 경기 상세 Relay (실시간 상황)Endpoint: /api/kbo/relay?gameId={id}데이터 소스: result.currentGameState 및 result.textRelayData필드명경로 (Depth)설명현재 점수currentGameState.homeScore / awayScore실시간 스코어이닝 상황textRelayData.inn / homeOrAway이닝 숫자 및 초/말 구분 (1:초, 2:말)카운트currentGameState.strike / ball / outS/B/O 카운트주자 정보currentGameState.base1 / base2 / base3루상 주자 유무 (0:없음, 1:있음)이닝별 점수textRelayData.inningScore전광판용 이닝별 득점 데이터🛠️ 추천 프론트엔드 처리 로직 (JS)기존에 발생했던 "TypeError: Cannot read properties of undefined"를 방지하기 위한 안전한 호출 코드입니다.JavaScript// 1. 경기 목록 렌더링 시
+const renderGames = (data) => {
+  const games = data.result?.games || []; // .gameList가 아니라 .games 임을 명시
+  if (!games.length) return console.log("경기가 없습니다.");
+  
+  games.forEach(game => {
+    console.log(`${game.homeTeamName} vs ${game.awayTeamName} (${game.statusInfo})`);
+    // 이미지 처리 시 반드시 EmblemUrl 필드 사용 (404 방지)
+    const homeLogo = game.homeTeamEmblemUrl; 
+  });
+};
+
+// 2. 순위표 렌더링 시
+const renderRankings = (data) => {
+  const rankings = data.result?.seasonTeamStats || []; // .teamList가 아니라 .seasonTeamStats 임을 명시
+  rankings.map(team => {
+    console.log(`${team.ranking}위: ${team.teamName} (승률: ${team.wra})`);
+  });
+};
+
+// 3. 실시간 주자 정보 렌더링 시
+const renderRelay = (data) => {
+  const state = data.result?.currentGameState;
+  if (state) {
+    const { base1, base2, base3, strike, ball, out } = state;
+    console.log(`주자 상황: ${base1}-${base2}-${base3} | ${ball}B ${strike}S ${out}O`);
+  }
+};

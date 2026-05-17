@@ -1,0 +1,27 @@
+1. KBO 캘린더 API 명세서이 명세서는 프론트엔드 개발자가 해당 API를 사용할 때 어떤 데이터가 들어오는지 정의하는 문서 역할을 합니다.[기본 정보]Method: GETEndpoint: /api/kbo/calendar (또는 네이버 원본 URL)Description: 지정된 날짜가 속한 월의 전체 경기 일정 요약 및 월간 메타데이터를 반환합니다.[응답 파라미터 상세 (Result)]필드명타입설명비고monthInteger조회된 데이터의 월예: 5todayString서버 기준 오늘 날짜YYYY-MM-DDselectedDateString사용자가 선택한(요청한) 날짜yearsArray데이터 조회가 가능한 연도 목록[2008, ..., 2026]datesArray해당 월의 일별 경기 정보 배열 (핵심 데이터)[dates 내부 객체 상세]필드명타입설명ymdString해당 일자 (YYYY-MM-DD)dayOfWeekString요일 (월~일)gameCountInteger해당 날짜에 열리는 총 경기 수gameInfosArray개별 경기들의 요약 정보 (팀 코드, 승패 상태 등)2. JSON 데이터 해석법 (How to Read)제공된 예시 코드를 프로그래밍 관점에서 해석하는 방법입니다.① 메타데이터 (상태 및 날짜 정보)JSON"month": 5,
+"today": "2026-05-10",
+"selectedDate": "2026-05-10"
+해석: 현재 5월 데이터를 보고 있으며, 오늘 날짜는 5월 10일입니다. 캘린더 UI를 그릴 때 "오늘" 표시를 하거나 "5월" 제목을 정하는 용도로 씁니다.② 일별 데이터의 계층 구조 (Dates)dates 배열은 1일부터 마지막 날까지 들어있습니다. 5월 1일 데이터를 보면:JSON"ymd": "2026-05-01",
+"gameCount": 7,
+"gameInfos": [ ... ]
+해석: 5월 1일에는 총 7개의 경기가 잡혀 있습니다.활용: 캘린더 숫자 아래에 "7개의 경기"라고 표시하거나 점(dot)을 찍을 때 gameCount를 사용합니다.③ 개별 경기 요약 (gameInfos)dates[0].gameInfos[0]를 보면:JSON{
+  "gameId": "20260501HHSS02026",
+  "homeTeamCode": "SS",  // 삼성 (Samsung)
+  "awayTeamCode": "HH",  // 한화 (Hanwha)
+  "statusCode": "RESULT", // 경기 종료 상태
+  "winner": "HOME"       // 홈팀(삼성) 승리
+}
+해석: 삼성(SS)과 한화(HH)의 경기였고, 삼성이 이겼습니다.statusCode: RESULT는 종료, STARTED는 진행 중, BEFORE는 예정입니다.winner: HOME, AWAY, DRAW(무승부)로 구분됩니다.3. 코드 적용 팁 (JavaScript 예시)이 JSON을 받아 화면에 그릴 때 주로 사용하는 로직입니다.JavaScript// 1. 특정 날짜의 경기 수 출력
+const day1 = response.result.dates[0];
+console.log(`${day1.ymd}에는 ${day1.gameCount}개의 경기가 있습니다.`);
+
+// 2. 5월 1일의 홈팀들 목록 뽑기
+const homeTeams = day1.gameInfos.map(game => game.homeTeamCode);
+// 결과: ["SS", "HT", "SK", "LG", "WO", "", ""]
+
+// 3. 경기 상태 확인
+if (day1.gameInfos[0].statusCode === "RESULT") {
+    const winner = day1.gameInfos[0].winner;
+    console.log(`승리팀: ${winner === 'HOME' ? '홈팀' : '원정팀'}`);
+}
+참고 사항:gameInfos 내부에서 팀 코드가 빈 값("")이고 winner가 DRAW인 데이터(예: BMBC1)는 보통 야구 중계 방송 편성이나 기타 이벤트성 정보일 가능성이 높으므로, 실제 팀 경기만 필터링하려면 homeTeamCode가 존재하는 것만 골라내는 것이 좋습니다.

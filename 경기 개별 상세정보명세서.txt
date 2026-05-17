@@ -1,0 +1,21 @@
+1. JSON 데이터 핵심 해석 (Key Points)이 데이터의 가장 큰 특징은 "전광판을 그대로 옮겨놓은 듯한 상세함"입니다.① 전광판 및 경기 결과 (RHEB)가장 중요한 점수 데이터입니다.homeTeamScoreByInning / awayTeamScoreByInning: 배열 형태로 각 이닝(1회~9회)의 점수가 들어있습니다.예: 한화(home)는 8회에 5점을 몰아쳤음을 알 수 있습니다.homeTeamRheb / awayTeamRheb: 야구의 핵심 기록인 R(득점), H(안타), E(실책), B(사사구) 순서의 배열입니다.한화: 11점, 14안타, 0실책, 7사사구② 투수 정보homeStarterName / awayStarterName: 양 팀의 선발 투수입니다.winPitcherName / losePitcherName: 승리 투수와 패전 투수의 이름입니다. (경기가 종료된 RESULT 상태일 때 유효)③ 경기 부가 정보stadium: 경기가 열린 장소 (대전)weatherInfo: 경기 당시 기온과 날씨 (17.5° 맑음)broadChannel: 중계 방송사 (SBS)statusInfo / currentInning: 현재 경기 진행 상황 (9회초 종료)2. 경기 상세 정보 API 명세서[기본 정보]Endpoint: GET /api/kbo/gameDescription: 특정 경기의 상세 스코어보드, 이닝별 점수, 투수 정보, 날씨, 중계 채널 등을 반환합니다.[주요 응답 필드 상세]분류필드명 (Result.game 하위)타입설명기본gameIdString경기의 고유 식별자stadiumString경기장 이름statusCodeString경기 상태 (RESULT: 종료, RUNNING: 진행중)팀 정보homeTeamFullNameString홈팀 전체 명칭 (예: 한화 이글스)awayTeamFullNameString원정팀 전체 명칭 (예: LG 트윈스)homeTeamEmblemUrlString홈팀 엠블럼 이미지 URL스코어homeTeamScoreByInningArray홈팀의 이닝별 득점 배열 (1회~)awayTeamScoreByInningArray원정팀의 이닝별 득점 배열 (1회~)homeTeamRhebArray홈팀 [득점, 안타, 실책, 사사구]기록winPitcherNameString승리 투수 이름losePitcherNameString패전 투수 이름homeStarterNameString홈팀 선발 투수기타weatherInfo.weatherString경기장 날씨 정보broadChannelString중계 방송사 명칭3. 프론트엔드 활용 방법 (Example)이 데이터를 활용하여 UI를 구성할 때 다음과 같이 로직을 짤 수 있습니다.JavaScript// 1. 전광판(Scoreboard) 그리기
+const renderScoreboard = (data) => {
+    const homeInnings = data.result.game.homeTeamScoreByInning;
+    const awayInnings = data.result.game.awayTeamScoreByInning;
+    
+    // 이닝별 점수를 반복문으로 돌려 <td> 태그 생성
+    homeInnings.forEach((score, index) => {
+        console.log(`${index + 1}회 홈팀 점수: ${score}`);
+    });
+};
+
+// 2. 승리 투수 표시 (종료된 경기일 때만)
+if (data.result.game.statusCode === "RESULT") {
+    const winPitcher = data.result.game.winPitcherName;
+    console.log(`오늘의 승리 투수는 ${winPitcher}입니다.`);
+}
+
+// 3. R-H-E-B 요약
+const [R, H, E, B] = data.result.game.homeTeamRheb;
+console.log(`한화 기록 - 득점: ${R}, 안타: ${H}, 실책: ${E}, 사사구: ${B}`);
+주의사항homeTeamScoreByInning의 마지막 값이 "-"인 경우: 해당 이닝이 아직 진행되지 않았거나, 9회말 공격이 필요 없는 경우(홈팀이 이미 이기고 있는 종료 상황)를 의미합니다.reversedHomeAway: 가끔 중립 경기 등에서 홈/원정이 바뀌는 특수 케이스를 체크하는 플래그입니다. 보통은 무시해도 무방합니다.
