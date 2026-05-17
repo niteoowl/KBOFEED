@@ -449,41 +449,59 @@ const PostCard = ({
               }}
             />
             <div className="tweet-content" style={{ flex: 1, paddingLeft: 0, marginLeft: 0 }}>
-              <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                <span
-                  className="display-name"
-                  style={{ fontWeight: 800, display: 'flex', alignItems: 'center' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/@${post.profiles.username}`);
-                  }}
-                >
-                  {post.profiles.displayName || '알 수 없음'}
-                  {post.profiles.favoriteTeam && (
-                    <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="" style={{ width: 16, height: 16, marginLeft: 4 }} />
+              {/* 여기부터 교체 시작 */}
+              <div
+                className="tweet-header"
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start', // 텍스트와 버튼의 상단 라인을 맞춤
+                  justifyContent: 'space-between', // 유저 정보는 왼쪽, 메뉴 버튼은 맨 오른쪽 끝으로 밀어냄
+                  gap: 8,
+                  position: 'relative'
+                }}
+              >
+                {/* 왼쪽 유저 정보들을 묶어주는 컨테이너 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', flex: 1 }}>
+                  <span
+                    className="display-name"
+                    style={{ fontWeight: 800, display: 'flex', alignItems: 'center' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/@${post.profiles.username}`);
+                    }}
+                  >
+                    {post.profiles.displayName || '알 수 없음'}
+                    {post.profiles.favoriteTeam && (
+                      <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="" style={{ width: 16, height: 16, marginLeft: 4 }} />
+                    )}
+                  </span>
+                  {post.profiles.isVerified && (
+                    <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: 14 }} />
                   )}
-                </span>
-                {post.profiles.isVerified && (
-                  <i className="fas fa-check-circle verified" style={{ color: 'var(--primary-color)', fontSize: 14 }} />
-                )}
-                <span
-                  className="username"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/@${post.profiles.username}`);
-                  }}
-                >
-                  @{post.profiles.username}
-                </span>
-                <span className="dot" style={{ color: 'var(--text-secondary)' }}>
-                  ·
-                </span>
-                <span className="time" style={{ color: 'var(--text-secondary)' }}>
-                  {timeAgo}
-                </span>
-                {menuButton}
+                  <span
+                    className="username"
+                    style={{ color: 'var(--text-secondary)' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/@${post.profiles.username}`);
+                    }}
+                  >
+                    @{post.profiles.username}
+                  </span>
+                  <span className="dot" style={{ color: 'var(--text-secondary)' }}>
+                    ·
+                  </span>
+                  <span className="time" style={{ color: 'var(--text-secondary)' }}>
+                    {timeAgo}
+                  </span>
+                </div>
+
+                {/* 오른쪽 끝에 고정될 메뉴 버튼 */}
+                <div style={{ flexShrink: 0, marginTop: -2 }}>
+                  {menuButton}
+                </div>
               </div>
+              {/* 여기까지 교체 끝 */}
 
               <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
                 <FormattedContent
