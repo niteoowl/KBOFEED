@@ -332,9 +332,12 @@ const PostCard = ({
       <article
         className="tweet"
         style={{
-          padding: '16px 20px',
           borderBottom: '1px solid var(--border-color)',
           cursor: 'pointer',
+          padding: '16px 0',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#fff',
         }}
         onClick={() => {
           if (adPost.linkUrl) {
@@ -342,7 +345,8 @@ const PostCard = ({
           }
         }}
       >
-        <div style={{ display: 'flex', gap: '12px' }}>
+        {/* Ad Header & Text: standard 20px padding */}
+        <div style={{ display: 'flex', gap: '12px', padding: '0 20px', marginBottom: 12 }}>
           <div
             className="user-avatar"
             style={{
@@ -363,29 +367,37 @@ const PostCard = ({
             <div style={{ whiteSpace: 'pre-wrap', marginTop: 8, fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.5 }}>
               {adPost.content}
             </div>
-            {adPost.imageUrl && (
-              <div className="tweet-media" style={{ marginTop: 12 }}>
-                <img src={adPost.imageUrl} alt="광고 이미지" style={{ borderRadius: 16, width: '100%', maxHeight: 300, objectFit: 'cover' }} />
-              </div>
-            )}
-            {adPost.linkUrl && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontSize: 13,
-                    color: 'var(--primary-color)',
-                    fontWeight: 600,
-                  }}
-                >
-                  자세히 보기 <i className="fas fa-external-link-alt" style={{ fontSize: 11 }} />
-                </span>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Ad Image: Stretches absolutely 100% edge-to-edge! */}
+        {adPost.imageUrl && (
+          <div style={{ width: '100%', marginBottom: 12 }}>
+            <img 
+              src={adPost.imageUrl} 
+              alt="광고 이미지" 
+              style={{ width: '100%', display: 'block', maxHeight: 400, objectFit: 'cover' }} 
+            />
+          </div>
+        )}
+
+        {/* Ad Link: standard 20px padding */}
+        {adPost.linkUrl && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 20px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 13,
+                color: 'var(--primary-color)',
+                fontWeight: 600,
+              }}
+            >
+              자세히 보기 <i className="fas fa-external-link-alt" style={{ fontSize: 11 }} />
+            </span>
+          </div>
+        )}
       </article>
     );
   }
@@ -558,8 +570,9 @@ const PostCard = ({
                 hasVoted={!!(poll?.votedUsers && session?.user?.id && poll.votedUsers[session.user.id] !== undefined)}
               />
             )}
+
             {images.length > 0 && (
-              <div className="carousel-container" style={{ position: 'relative', marginTop: 12 }}>
+              <div className="carousel-container" style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', marginTop: 12 }}>
                 {images.length > 1 && (
                   <>
                     {activeImageIndex > 0 && (
@@ -628,7 +641,7 @@ const PostCard = ({
                     setLightboxIndex(activeImageIndex);
                     setIsLightboxOpen(true);
                   }}
-                  style={{ cursor: 'zoom-in' }}
+                  style={{ cursor: 'zoom-in', display: 'inline-block', maxWidth: '100%' }}
                 >
                   <img
                     src={images[activeImageIndex]}
@@ -676,7 +689,6 @@ const PostCard = ({
                   padding: 12,
                   background: '#f8fafc',
                   cursor: 'pointer',
-                  borderLeft: '4px solid var(--primary-color)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
@@ -808,7 +820,7 @@ const PostCard = ({
                 />
               )}
               {images.length > 0 && (
-                <div className="carousel-container" style={{ position: 'relative', marginTop: 12 }}>
+                <div className="carousel-container" style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', marginTop: 12 }}>
                   {images.length > 1 && (
                     <>
                       {activeImageIndex > 0 && (
@@ -877,7 +889,7 @@ const PostCard = ({
                       setLightboxIndex(activeImageIndex);
                       setIsLightboxOpen(true);
                     }}
-                    style={{ cursor: 'zoom-in' }}
+                    style={{ cursor: 'zoom-in', display: 'inline-block', maxWidth: '100%' }}
                   >
                     <img
                       src={images[activeImageIndex]}
@@ -925,7 +937,6 @@ const PostCard = ({
                     padding: 12,
                     background: '#f8fafc',
                     cursor: 'pointer',
-                    borderLeft: '4px solid var(--primary-color)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>

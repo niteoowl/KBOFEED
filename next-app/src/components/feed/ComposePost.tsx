@@ -262,6 +262,19 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
               <div style={{ fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
                 {quotePost.content}
               </div>
+              {quotePost.imageUrl && (
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src={
+                      quotePost.imageUrl.startsWith('[')
+                        ? JSON.parse(quotePost.imageUrl)[0]
+                        : quotePost.imageUrl
+                    }
+                    alt="embedded original post image"
+                    style={{ borderRadius: 8, maxHeight: 120, width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                  />
+                </div>
+              )}
             </div>
           )}
 

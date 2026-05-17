@@ -38,10 +38,12 @@ const Sidebar = () => {
             <span>알림</span>
           </div>
         </Link>
-        <div className="nav-item" style={{ padding: '10px 12px' }}>
-          <i className="far fa-envelope"></i>
-          <span>쪽지</span>
-        </div>
+        <Link href="/messages" className="nav-item-link">
+          <div className="nav-item" style={{ padding: '10px 12px' }}>
+            <i className="far fa-envelope"></i>
+            <span>쪽지</span>
+          </div>
+        </Link>
         <div className="nav-item" style={{ padding: '10px 12px' }}>
           <i className="far fa-bookmark"></i>
           <span>북마크</span>
