@@ -157,46 +157,96 @@ const PostCard = ({
     typeof post.imageUrl === 'string' && post.imageUrl.startsWith('http') ? post.imageUrl : null;
 
   const renderActions = () => (
-    <div className="tweet-actions">
-      <div className="action-item action-comment" onClick={handleComment}>
-        <i className="far fa-comment" />
+    <div
+      className="tweet-actions"
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: '10px',
+        maxWidth: '100%',
+        color: 'var(--text-secondary, #536471)',
+        paddingRight: '12px'
+      }}
+    >
+      {/* 댓글 */}
+      <div
+        className="action-item action-comment"
+        onClick={handleComment}
+        style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px' }}
+      >
+        <i className="far fa-comment" style={{ fontSize: '15px' }} />
         <span>{post.commentsCount || 0}</span>
       </div>
+
+      {/* 재게시 (RT) */}
       <div
         onClick={handleRetweet}
         className="action-item action-retweet"
-        style={{ color: isRetweeted ? '#00ba7c' : undefined }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          cursor: 'pointer',
+          fontSize: '13px',
+          color: isRetweeted ? '#00ba7c' : undefined
+        }}
       >
-        <i className="fas fa-retweet" />
+        <i className="fas fa-retweet" style={{ fontSize: '15px' }} />
         <span>{retweetsCount}</span>
       </div>
+
+      {/* 좋아요 */}
       <div
         onClick={handleLike}
         className="action-item action-like"
-        style={{ color: isLiked ? '#f91880' : undefined }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          cursor: 'pointer',
+          fontSize: '13px',
+          color: isLiked ? '#f91880' : undefined
+        }}
       >
-        <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} />
+        <i className={`${isLiked ? 'fas' : 'far'} fa-heart`} style={{ fontSize: '15px' }} />
         <span>{likesCount}</span>
       </div>
-      <div className="action-item action-views" onClick={(e) => e.stopPropagation()}>
-        <i className="far fa-chart-bar" />
+
+      {/* 조회수 */}
+      <div
+        className="action-item action-views"
+        onClick={(e) => e.stopPropagation()}
+        style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+      >
+        <i className="far fa-chart-bar" style={{ fontSize: '15px' }} />
         <span>{post.viewsCount || 0}</span>
       </div>
+
+      {/* 북마크 */}
       <div
         onClick={handleBookmark}
         className="action-item action-bookmark"
-        style={{ color: isBookmarked ? 'var(--primary-color)' : undefined }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          color: isBookmarked ? 'var(--primary-color)' : undefined
+        }}
       >
-        <i className={`${isBookmarked ? 'fas' : 'far'} fa-bookmark`} />
+        <i className={`${isBookmarked ? 'fas' : 'far'} fa-bookmark`} style={{ fontSize: '15px' }} />
       </div>
+
+      {/* 공유하기 */}
       <div
         className="action-item action-share"
         onClick={(e) => {
           e.stopPropagation();
           setShareOpen(true);
         }}
+        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
       >
-        <i className="fas fa-share" />
+        <i className="fas fa-share" style={{ fontSize: '15px' }} />
       </div>
     </div>
   );
