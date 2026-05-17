@@ -228,13 +228,13 @@ const PostCard = ({
         onEdit={
           isDetailView
             ? () => {
-                setEditContent(post.content || '');
-                setIsEditing(true);
-              }
+              setEditContent(post.content || '');
+              setIsEditing(true);
+            }
             : () => router.push(detailHref)
         }
         onDelete={async () => {
-          if (confirm('? ???? ?????????')) {
+          if (confirm('이 게시물을 삭제하시겠습니까?')) {
             await deletePost(post.id);
             router.push('/');
           }
@@ -242,9 +242,9 @@ const PostCard = ({
         onPin={async () => {
           const { pinPostToProfile } = await import('@/app/actions/user');
           await pinPostToProfile(post.id);
-          alert('???? ???????.');
+          alert('프로필에 고정되었습니다.');
         }}
-        onReport={() => alert('??? ?? ??')}
+        onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
       />
     </div>
   );
@@ -266,14 +266,15 @@ const PostCard = ({
           }}
         >
           <i className="fas fa-retweet" />
-          <span>{post.profiles.displayName}?? ???????</span>
+          <span>{post.profiles.displayName}님이 재게시했습니다</span>
         </div>
       )}
 
       <article
         className={`tweet ${isDetailView ? 'no-hover' : ''} ${isProcessing ? 'tweet-processing' : ''}`}
         style={{
-          display: isDetailView ? 'block' : undefined,
+          display: isDetailView ? 'block' : 'flex',
+          gap: isDetailView ? undefined : '8px',
           cursor: suppressNavigation || isProcessing ? 'default' : 'pointer',
           opacity: isProcessing ? 0.55 : 1,
           pointerEvents: isProcessing ? 'none' : undefined,
@@ -285,11 +286,11 @@ const PostCard = ({
           suppressNavigation || isProcessing
             ? undefined
             : (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openPostDetail();
-                }
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPostDetail();
               }
+            }
         }
       >
         {isDetailView ? (
@@ -318,7 +319,7 @@ const PostCard = ({
                     router.push(`/@${post.profiles.username}`);
                   }}
                 >
-                  {post.profiles.displayName || '???'}
+                  {post.profiles.displayName || '알 수 없음'}
                   {post.profiles.favoriteTeam && (
                     <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="" style={{ width: 16, height: 16, marginLeft: 6 }} />
                   )}
@@ -345,8 +346,8 @@ const PostCard = ({
                       setIsFollowing(!isFollowing);
                     } catch (err: unknown) {
                       const msg = err instanceof Error ? err.message : '';
-                      if (msg === 'Not authenticated') alert('???? ?????.');
-                      else alert(msg || '???? ? ????.');
+                      if (msg === 'Not authenticated') alert('로그인이 필요합니다.');
+                      else alert(msg || '요청을 처리할 수 없습니다.');
                     }
                   }}
                   style={{
@@ -359,7 +360,7 @@ const PostCard = ({
                     fontSize: 13,
                   }}
                 >
-                  {isFollowing ? '????' : '???'}
+                  {isFollowing ? '팔로잉' : '팔로우'}
                 </button>
               )}
               {menuButton}
@@ -425,7 +426,7 @@ const PostCard = ({
 
             <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
               {post.createdAt &&
-                `${parseDate(post.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })} ? ${parseDate(post.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}`}
+                `${parseDate(post.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })} · ${parseDate(post.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}`}
             </div>
             {renderActions()}
           </div>
@@ -437,13 +438,17 @@ const PostCard = ({
                 backgroundImage: post.profiles.avatarUrl ? `url(${post.profiles.avatarUrl})` : undefined,
                 backgroundSize: 'cover',
                 borderRadius: '50%',
+                width: 40,
+                height: 40,
+                minWidth: 40,
+                marginRight: 0,
               }}
               onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/@${post.profiles.username}`);
               }}
             />
-            <div className="tweet-content">
+            <div className="tweet-content" style={{ flex: 1, paddingLeft: 0, marginLeft: 0 }}>
               <div className="tweet-header" style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                 <span
                   className="display-name"
@@ -453,7 +458,7 @@ const PostCard = ({
                     router.push(`/@${post.profiles.username}`);
                   }}
                 >
-                  {post.profiles.displayName || '???'}
+                  {post.profiles.displayName || '알 수 없음'}
                   {post.profiles.favoriteTeam && (
                     <img src={getTeamLogo(post.profiles.favoriteTeam)} alt="" style={{ width: 16, height: 16, marginLeft: 4 }} />
                   )}
@@ -472,7 +477,7 @@ const PostCard = ({
                   @{post.profiles.username}
                 </span>
                 <span className="dot" style={{ color: 'var(--text-secondary)' }}>
-                  ?
+                  ·
                 </span>
                 <span className="time" style={{ color: 'var(--text-secondary)' }}>
                   {timeAgo}
@@ -496,7 +501,7 @@ const PostCard = ({
                     }}
                     style={{ color: 'var(--primary-color)', cursor: 'pointer', marginLeft: 6, fontWeight: 'bold' }}
                   >
-                    ???
+                    더보기
                   </span>
                 )}
               </div>
