@@ -5,9 +5,10 @@ import type { PollData } from '@/lib/content';
 interface PollBlockProps {
   poll: PollData;
   onVote?: (optionIndex: number) => void;
+  hasVoted?: boolean;
 }
 
-export default function PollBlock({ poll, onVote }: PollBlockProps) {
+export default function PollBlock({ poll, onVote, hasVoted }: PollBlockProps) {
   const totalVotes = poll.votes
     ? Object.values(poll.votes).reduce((a, b) => a + b, 0)
     : 0;
@@ -22,7 +23,7 @@ export default function PollBlock({ poll, onVote }: PollBlockProps) {
           <button
             key={i}
             type="button"
-            disabled={expired}
+            disabled={expired || hasVoted}
             onClick={(e) => {
               e.stopPropagation();
               onVote?.(i);

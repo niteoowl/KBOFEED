@@ -18,6 +18,7 @@ import { getTeamLogo } from '@/lib/constants';
 import FormattedContent from './FormattedContent';
 import PollBlock from './PollBlock';
 import PostMenu from './PostMenu';
+import ShareMenu from './ShareMenu';
 
 interface PostProps {
   suppressNavigation?: boolean;
@@ -75,6 +76,9 @@ const PostCard = ({
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked ?? false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content || '');
@@ -122,6 +126,17 @@ const PostCard = ({
     }
   };
 
+  const handleVoteForPost = async (postId: string, optionIndex: number) => {
+    if (isProcessing) return;
+    try {
+      const { voteInPoll } = await import('@/app/actions/post');
+      await voteInPoll(postId, optionIndex);
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message || '투표에 실패했습니다.');
+    }
+  };
+
   const detailHref = postPermalink(post.profiles.username, post.id);
 
   const handleComment = (e: React.MouseEvent) => {
@@ -133,7 +148,8 @@ const PostCard = ({
     if (!suppressNavigation && !isProcessing) router.push(detailHref);
   };
 
-  const rawContent = post.content || '';
+  const targetPost = post.retweetId && post.originalPost ? post.originalPost : post;
+  const rawContent = targetPost.content || '';
   const { text: contentWithoutPoll, poll } = parsePoll(rawContent);
   const shouldTruncate =
     !suppressNavigation &&
@@ -151,8 +167,19 @@ const PostCard = ({
     ? formatDistanceToNow(parseDate(post.createdAt), { addSuffix: true, locale: ko })
     : '';
 
-  const mediaSrc =
-    typeof post.imageUrl === 'string' && post.imageUrl.startsWith('http') ? post.imageUrl : null;
+  // Parse images (supporting multiple images uploaded via JSON array)
+  let images: string[] = [];
+  if (targetPost.imageUrl) {
+    if (targetPost.imageUrl.startsWith('[') && targetPost.imageUrl.endsWith(']')) {
+      try {
+        images = JSON.parse(targetPost.imageUrl);
+      } catch {
+        images = [targetPost.imageUrl];
+      }
+    } else {
+      images = [targetPost.imageUrl];
+    }
+  }
 
   const renderActions = () => (
     <div
@@ -235,12 +262,12 @@ const PostCard = ({
         <i className={`${isBookmarked ? 'fas' : 'far'} fa-bookmark`} style={{ fontSize: '15px' }} />
       </div>
 
-      {/* 공유하기 - 점 세개와 동일하게 메뉴가 열리도록 수정 & 버블링 방지 */}
+      {/* 공유하기 - 공유 시트가 따로 열리도록 수정 & 버블링 방지 */}
       <div
         className="action-item action-share"
         onClick={(e) => {
           e.stopPropagation(); // 글 상세 이동 방지
-          setMenuOpen(true);
+          setShareOpen(true);
         }}
         style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
       >
@@ -291,24 +318,76 @@ const PostCard = ({
           const { pinPostToProfile } = await import('@/app/actions/user');
           await pinPostToProfile(post.id);
           alert('프로필에 고정되었습니다.');
+          router.refresh();
         }}
         onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
-        url={detailHref}
-        postContent={post.content || ''}
-        isBookmarked={isBookmarked}
-        onBookmark={async () => {
-          if (isProcessing) return;
-          const targetState = !isBookmarked;
-          setIsBookmarked(targetState);
-          try {
-            await toggleBookmark(post.id);
-          } catch {
-            setIsBookmarked(!targetState);
-          }
-        }}
       />
     </div>
   );
+
+  if ((post as any).isAd) {
+    const adPost = post as any;
+    return (
+      <article
+        className="tweet"
+        style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--border-color)',
+          cursor: 'pointer',
+        }}
+        onClick={() => {
+          if (adPost.linkUrl) {
+            window.open(adPost.linkUrl, '_blank', 'noopener,noreferrer');
+          }
+        }}
+      >
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div
+            className="user-avatar"
+            style={{
+              backgroundImage: 'url(https://cdn-icons-png.flaticon.com/512/5482/5482912.png)',
+              backgroundSize: 'cover',
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              minWidth: 40,
+              marginRight: 0,
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>스폰서 광고</span>
+              <span style={{ fontSize: '11px', padding: '1px 5px', borderRadius: '4px', backgroundColor: '#F3F4F6', color: '#6B7280', fontWeight: 'bold', marginLeft: '6px' }}>AD</span>
+            </div>
+            <div style={{ whiteSpace: 'pre-wrap', marginTop: 8, fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+              {adPost.content}
+            </div>
+            {adPost.imageUrl && (
+              <div className="tweet-media" style={{ marginTop: 12 }}>
+                <img src={adPost.imageUrl} alt="광고 이미지" style={{ borderRadius: 16, width: '100%', maxHeight: 300, objectFit: 'cover' }} />
+              </div>
+            )}
+            {adPost.linkUrl && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 13,
+                    color: 'var(--primary-color)',
+                    fontWeight: 600,
+                  }}
+                >
+                  자세히 보기 <i className="fas fa-external-link-alt" style={{ fontSize: 11 }} />
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <>
@@ -467,20 +546,118 @@ const PostCard = ({
               </div>
             ) : (
               <div className="tweet-text" style={{ whiteSpace: 'pre-wrap', marginTop: 16, fontSize: 17 }}>
-                <FormattedContent
-                  text={
-                    post.retweetId && post.originalPost
-                      ? parsePoll(post.originalPost.content || '').text
-                      : displayContent
-                  }
-                />
+                <FormattedContent text={displayContent} />
               </div>
             )}
 
-            {poll && !isEditing && <PollBlock poll={poll} />}
-            {mediaSrc && (
-              <div className="tweet-media" style={{ marginTop: 12 }}>
-                <img src={mediaSrc} alt="media" style={{ borderRadius: 16, width: '100%' }} />
+            {poll && !isEditing && (
+              <PollBlock
+                poll={poll}
+                onVote={(optIdx) => handleVoteForPost(targetPost.id, optIdx)}
+                hasVoted={!!(poll?.votedUsers && session?.user?.id && poll.votedUsers[session.user.id] !== undefined)}
+              />
+            )}
+            {images.length > 0 && (
+              <div className="carousel-container" style={{ position: 'relative', marginTop: 12 }}>
+                {images.length > 1 && (
+                  <>
+                    {activeImageIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIndex((prev) => prev - 1);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: 10,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'rgba(0, 0, 0, 0.6)',
+                          border: 'none',
+                          color: '#fff',
+                          width: 30,
+                          height: 30,
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          zIndex: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <i className="fas fa-chevron-left" style={{ fontSize: 12 }} />
+                      </button>
+                    )}
+                    {activeImageIndex < images.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIndex((prev) => prev + 1);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          right: 10,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'rgba(0, 0, 0, 0.6)',
+                          border: 'none',
+                          color: '#fff',
+                          width: 30,
+                          height: 30,
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          zIndex: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <i className="fas fa-chevron-right" style={{ fontSize: 12 }} />
+                      </button>
+                    )}
+                  </>
+                )}
+
+                <div
+                  className="tweet-media"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                  style={{ cursor: 'zoom-in' }}
+                >
+                  <img
+                    src={images[activeImageIndex]}
+                    alt={`post-media-${activeImageIndex}`}
+                    style={{ borderRadius: 16, width: '100%', display: 'block', maxHeight: '500px', objectFit: 'contain', background: '#000' }}
+                  />
+                </div>
+
+                {images.length > 1 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: 6,
+                      marginTop: 8,
+                    }}
+                  >
+                    {images.map((_, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          background: idx === activeImageIndex ? 'var(--primary-color)' : '#D1D5DB',
+                          transition: 'background 0.2s',
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -564,13 +741,7 @@ const PostCard = ({
               {/* 여기까지 교체 끝 */}
 
               <div className="tweet-text" style={{ whiteSpace: 'pre-wrap' }}>
-                <FormattedContent
-                  text={
-                    post.retweetId && post.originalPost
-                      ? parsePoll(post.originalPost.content || '').text
-                      : displayContent
-                  }
-                />
+                <FormattedContent text={displayContent} />
                 {!isExpanded && shouldTruncate && (
                   <span
                     onClick={(e) => {
@@ -583,10 +754,114 @@ const PostCard = ({
                   </span>
                 )}
               </div>
-              {poll && <PollBlock poll={poll} />}
-              {mediaSrc && (
-                <div className="tweet-media">
-                  <img src={mediaSrc} alt="post" />
+              {poll && (
+                <PollBlock
+                  poll={poll}
+                  onVote={(optIdx) => handleVoteForPost(targetPost.id, optIdx)}
+                  hasVoted={!!(poll?.votedUsers && session?.user?.id && poll.votedUsers[session.user.id] !== undefined)}
+                />
+              )}
+              {images.length > 0 && (
+                <div className="carousel-container" style={{ position: 'relative', marginTop: 12 }}>
+                  {images.length > 1 && (
+                    <>
+                      {activeImageIndex > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIndex((prev) => prev - 1);
+                          }}
+                          style={{
+                            position: 'absolute',
+                            left: 10,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(0, 0, 0, 0.6)',
+                            border: 'none',
+                            color: '#fff',
+                            width: 30,
+                            height: 30,
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            zIndex: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <i className="fas fa-chevron-left" style={{ fontSize: 12 }} />
+                        </button>
+                      )}
+                      {activeImageIndex < images.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIndex((prev) => prev + 1);
+                          }}
+                          style={{
+                            position: 'absolute',
+                            right: 10,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(0, 0, 0, 0.6)',
+                            border: 'none',
+                            color: '#fff',
+                            width: 30,
+                            height: 30,
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            zIndex: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <i className="fas fa-chevron-right" style={{ fontSize: 12 }} />
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  <div
+                    className="tweet-media"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsLightboxOpen(true);
+                    }}
+                    style={{ cursor: 'zoom-in' }}
+                  >
+                    <img
+                      src={images[activeImageIndex]}
+                      alt={`post-media-${activeImageIndex}`}
+                      style={{ borderRadius: 16, width: '100%', display: 'block', maxHeight: '400px', objectFit: 'contain', background: '#000' }}
+                    />
+                  </div>
+
+                  {images.length > 1 && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: 6,
+                        marginTop: 8,
+                      }}
+                    >
+                      {images.map((_, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            background: idx === activeImageIndex ? 'var(--primary-color)' : '#D1D5DB',
+                            transition: 'background 0.2s',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {renderActions()}
@@ -594,6 +869,44 @@ const PostCard = ({
           </>
         )}
       </article>
+
+      {/* ShareMenu */}
+      <ShareMenu open={shareOpen} onClose={() => setShareOpen(false)} url={detailHref} postContent={post.content || ''} />
+
+      {/* Lightbox Zoom Overlay */}
+      {isLightboxOpen && images[activeImageIndex] && (
+        <div
+          className="lightbox-overlay"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsLightboxOpen(false);
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'zoom-out',
+          }}
+        >
+          <img
+            src={images[activeImageIndex]}
+            alt="Enlarged"
+            style={{
+              maxWidth: '95%',
+              maxHeight: '95%',
+              objectFit: 'contain',
+              borderRadius: '8px',
+            }}
+          />
+        </div>
+      )}
     </>
   );
 };

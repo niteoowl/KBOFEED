@@ -85,14 +85,30 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
     }
 
     switch (activeTab) {
-      case 'posts':
+      case 'posts': {
+        const pinnedPostId = (profile as any).pinnedPostId;
+        const pinnedPost = pinnedPostId ? posts.find(p => p.id === pinnedPostId) : null;
+        const regularPosts = pinnedPostId ? posts.filter(p => p.id !== pinnedPostId) : posts;
+
         return posts.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
             아직 작성한 게시물이 없습니다.
           </div>
         ) : (
-          posts.map(post => <PostCard key={post.id} post={post} />)
+          <>
+            {pinnedPost && (
+              <div style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <div style={{ padding: '8px 20px 0 20px', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fas fa-thumbtack" style={{ transform: 'rotate(45deg)' }} />
+                  <span>고정된 게시물</span>
+                </div>
+                <PostCard post={pinnedPost} />
+              </div>
+            )}
+            {regularPosts.map(post => <PostCard key={post.id} post={post} />)}
+          </>
         );
+      }
 
       case 'replies':
         return userComments.length === 0 ? (

@@ -2,7 +2,7 @@
 
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getDb } from '@/db/db';
-import { posts, profiles, likes, retweets, comments, notifications, bookmarks } from '@/db/schema';
+import { posts, profiles, likes, retweets, comments, notifications, bookmarks, ads } from '@/db/schema';
 import { extractMentions } from '@/lib/content';
 import { desc, eq, and, sql, like, or, count } from 'drizzle-orm';
 import { auth } from '@/auth';
@@ -23,7 +23,7 @@ export async function getPosts() {
     allPosts = JSON.parse(cachedData);
   } else {
     // 2. 캐시 없으면 D1에서 조회
-    allPosts = await db.query.posts.findMany({
+    const rawPosts = await db.query.posts.findMany({
       with: {
         profiles: true,
         originalPost: { with: { profiles: true } },
@@ -31,6 +31,45 @@ export async function getPosts() {
       orderBy: [desc(posts.createdAt)],
       limit: 20,
     });
+
+    // 활성화된 광고 가져오기
+    const activeAds = await db.select().from(ads).where(eq(ads.isActive, true)).execute().catch(() => []);
+    
+    if (activeAds && activeAds.length > 0) {
+      const mixedPosts: any[] = [];
+      let adIndex = 0;
+      
+      rawPosts.forEach((post, index) => {
+        mixedPosts.push(post);
+        if ((index + 1) % 5 === 0 && adIndex < activeAds.length) {
+          const ad = activeAds[adIndex];
+          mixedPosts.push({
+            id: `ad_${ad.id}`,
+            isAd: true,
+            content: ad.content,
+            imageUrl: ad.imageUrl,
+            linkUrl: ad.linkUrl,
+            createdAt: ad.createdAt || new Date().toISOString(),
+            likesCount: 0,
+            retweetsCount: 0,
+            commentsCount: 0,
+            viewsCount: 0,
+            profiles: {
+              id: 'ad_system',
+              username: 'sponsor',
+              displayName: '스폰서 광고',
+              avatarUrl: 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png',
+              isVerified: true
+            }
+          });
+          adIndex = (adIndex + 1) % activeAds.length;
+        }
+      });
+      allPosts = mixedPosts;
+    } else {
+      allPosts = rawPosts;
+    }
+
     // 3. KV에 저장 (60초 만료)
     await env.KV.put(cacheKey, JSON.stringify(allPosts), { expirationTtl: 60 });
   }
@@ -555,4 +594,50 @@ export async function markNotificationsRead() {
     .update(notifications)
     .set({ isRead: true })
     .where(eq(notifications.receiverId, session.user.id));
+}
+
+export async function voteInPoll(postId: string, optionIndex: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('로그인이 필요합니다.');
+
+  const { env } = getRequestContext();
+  const db = getDb(env.DB);
+
+  // 1. 게시글 가져오기
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).get();
+  if (!post) throw new Error('게시글을 찾을 수 없습니다.');
+
+  // 2. Poll 파싱
+  const { parsePoll } = await import('@/lib/content');
+  const { text, poll } = parsePoll(post.content || '');
+  if (!poll) throw new Error('투표가 없는 게시글입니다.');
+
+  // 3. 투표 종료 여부 확인
+  const expired = poll.endsAt ? new Date(poll.endsAt) < new Date() : false;
+  if (expired) throw new Error('종료된 투표입니다.');
+
+  // 4. 중복 투표 방지
+  const votedUsers = poll.votedUsers || {};
+  if (votedUsers[session.user.id] !== undefined) {
+    throw new Error('이미 투표에 참여하셨습니다.');
+  }
+
+  // 5. 표 수 및 유저 투표 정보 업데이트
+  const votes = poll.votes || {};
+  const optionKey = String(optionIndex);
+  votes[optionKey] = (votes[optionKey] || 0) + 1;
+  votedUsers[session.user.id] = optionIndex;
+
+  // 6. 직렬화하여 게시글 본문 업데이트
+  const updatedPollData = {
+    ...poll,
+    votes,
+    votedUsers
+  };
+  const updatedContent = `${text}\n\n[POLL]${JSON.stringify(updatedPollData)}[/POLL]`;
+
+  await db.update(posts).set({ content: updatedContent }).where(eq(posts.id, postId));
+
+  if (env.KV) await env.KV.delete('main_feed_posts');
+  revalidatePath('/');
 }

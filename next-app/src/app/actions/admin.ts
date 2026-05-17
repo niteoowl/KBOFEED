@@ -52,6 +52,16 @@ export async function createAd(data: { content: string; imageUrl?: string; linkU
     linkUrl: data.linkUrl || null,
     isActive: true,
   });
+  
+  // 메인 피드 캐시 삭제 및 재검증
+  try {
+    const { getRequestContext } = await import('@cloudflare/next-on-pages');
+    const { revalidatePath } = await import('next/cache');
+    const { env } = getRequestContext();
+    if (env.KV) await env.KV.delete('main_feed_posts');
+    revalidatePath('/');
+  } catch (e) {}
+
   return true;
 }
 
@@ -60,11 +70,31 @@ export async function toggleAdStatus(adId: number, isActive: boolean) {
   await db.update(ads)
     .set({ isActive })
     .where(eq(ads.id, adId));
+
+  // 메인 피드 캐시 삭제 및 재검증
+  try {
+    const { getRequestContext } = await import('@cloudflare/next-on-pages');
+    const { revalidatePath } = await import('next/cache');
+    const { env } = getRequestContext();
+    if (env.KV) await env.KV.delete('main_feed_posts');
+    revalidatePath('/');
+  } catch (e) {}
+
   return true;
 }
 
 export async function deleteAd(adId: number) {
   const db = await requireAdmin();
   await db.delete(ads).where(eq(ads.id, adId));
+
+  // 메인 피드 캐시 삭제 및 재검증
+  try {
+    const { getRequestContext } = await import('@cloudflare/next-on-pages');
+    const { revalidatePath } = await import('next/cache');
+    const { env } = getRequestContext();
+    if (env.KV) await env.KV.delete('main_feed_posts');
+    revalidatePath('/');
+  } catch (e) {}
+
   return true;
 }

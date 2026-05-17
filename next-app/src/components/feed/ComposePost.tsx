@@ -39,7 +39,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
 
   // ─── Image (IMGBB) ───
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
 
   // ─── GIF (Klipy) ───
@@ -67,7 +67,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
       const res = await fetch(IMGBB_UPLOAD_URL, { method: 'POST', body: formData });
       const json: any = await res.json();
       if (json.success) {
-        setImageUrl(json.data.url);
+        setImageUrls((prev) => [...prev, json.data.url]);
       } else {
         alert('이미지 업로드에 실패했습니다.');
       }
@@ -122,7 +122,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
       return;
     }
 
-    setImageUrl(url);
+    setImageUrls([url]);
     setGifOpen(false);
     setGifSearch('');
   };
@@ -141,11 +141,19 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
         });
     }
 
-    if (!finalContent.trim() && !imageUrl) return;
+    if (!finalContent.trim() && imageUrls.length === 0) return;
 
     const submittedContent = finalContent;
+    
+    let finalImgUrl: string | undefined = undefined;
+    if (imageUrls.length > 1) {
+      finalImgUrl = JSON.stringify(imageUrls);
+    } else if (imageUrls.length === 1) {
+      finalImgUrl = imageUrls[0];
+    }
+
     setContent('');
-    setImageUrl(null);
+    setImageUrls([]);
     setPollOpen(false);
     setPollOptions(['', '']);
 
@@ -153,7 +161,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
 
     setIsPending(true);
     try {
-      await createPost(submittedContent, imageUrl || undefined);
+      await createPost(submittedContent, finalImgUrl);
     } catch {
       alert('게시글 작성 중 오류가 발생했습니다.');
     } finally {
@@ -184,16 +192,49 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
             }}
           />
 
-          {/* ─── Image Preview ─── */}
-          {imageUrl && (
-            <div style={{ position: 'relative', marginTop: '8px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-              <img src={imageUrl} alt="미리보기" style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'cover' }} />
-              <button
-                onClick={() => setImageUrl(null)}
-                style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <i className="fas fa-times" />
-              </button>
+          {/* ─── Image Previews (Multiple) ─── */}
+          {imageUrls.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+              {imageUrls.map((url, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    position: 'relative',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: '1px solid var(--border-color)',
+                  }}
+                >
+                  <img src={url} alt="미리보기" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImageUrls((prev) => prev.filter((_, i) => i !== idx));
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      background: 'rgba(0,0,0,0.6)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <i className="fas fa-times" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -303,10 +344,15 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageUpload(file);
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (files && files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                      await handleImageUpload(files[i]);
+                    }
+                  }
                   e.target.value = '';
                 }}
               />
@@ -337,13 +383,13 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
             </div>
             <button
               onClick={handleSubmit}
-              disabled={(!content.trim() && !imageUrl) || isPending}
+              disabled={(!content.trim() && imageUrls.length === 0) || isPending}
               className="inline-post-btn"
               style={{
                 padding: '8px 20px', fontSize: '15px', borderRadius: '9999px', border: 'none',
-                backgroundColor: (content.trim() || imageUrl) ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)',
-                color: '#fff', fontWeight: 'bold', cursor: (content.trim() || imageUrl) ? 'pointer' : 'default',
-                opacity: (content.trim() || imageUrl) ? 1 : 0.5, transition: '0.2s'
+                backgroundColor: (content.trim() || imageUrls.length > 0) ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)',
+                color: '#fff', fontWeight: 'bold', cursor: (content.trim() || imageUrls.length > 0) ? 'pointer' : 'default',
+                opacity: (content.trim() || imageUrls.length > 0) ? 1 : 0.5, transition: '0.2s'
               }}
             >
               {isPending ? '게시 중...' : '게시하기'}

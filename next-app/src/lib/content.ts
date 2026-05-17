@@ -3,6 +3,7 @@ export interface PollData {
   options: string[];
   endsAt?: string;
   votes?: Record<string, number>;
+  votedUsers?: Record<string, number>;
 }
 
 const POLL_REGEX = /\[POLL\]([\s\S]*?)\[\/POLL\]/;
