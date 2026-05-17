@@ -47,7 +47,7 @@ export default function GlobalHeader({ title = '홈', showBackBtn = false, child
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      backgroundColor: 'rgba(255,255,255,0.95)',
+      backgroundColor: 'var(--header-bg, rgba(255,255,255,0.95))',
       backdropFilter: 'blur(10px)',
       borderBottom: '1px solid var(--border-color)',
       width: '100%',

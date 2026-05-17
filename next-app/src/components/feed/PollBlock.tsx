@@ -34,7 +34,7 @@ export default function PollBlock({ poll, onVote, hasVoted }: PollBlockProps) {
               padding: '12px 16px',
               border: 'none',
               borderBottom: i < poll.options.length - 1 ? '1px solid var(--border-color)' : 'none',
-              background: '#f7f9fa',
+              background: 'var(--bg-secondary)',
               textAlign: 'left',
               cursor: expired ? 'default' : 'pointer',
               position: 'relative',

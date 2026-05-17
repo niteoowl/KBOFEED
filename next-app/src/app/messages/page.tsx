@@ -192,7 +192,7 @@ export default function MessagesPage() {
         style={{
           display: 'flex',
           height: 'calc(100vh - 53px - 53px)', // minus header & bottom nav bounds
-          backgroundColor: '#fff',
+          backgroundColor: 'var(--bg-primary)',
           borderBottom: '1px solid var(--border-color)',
         }}
       >
@@ -205,7 +205,7 @@ export default function MessagesPage() {
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--bg-primary)',
             }}
           >
             {/* Search Input Box */}
@@ -218,7 +218,7 @@ export default function MessagesPage() {
                     left: '12px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: '#94a3b8',
+                    color: 'var(--text-secondary)',
                     fontSize: '14px',
                   }}
                 />
@@ -231,11 +231,12 @@ export default function MessagesPage() {
                     width: '100%',
                     padding: '8px 12px 8px 36px',
                     borderRadius: '20px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid var(--border-color)',
                     fontSize: '13px',
                     outline: 'none',
-                    backgroundColor: '#f8fafc',
+                    backgroundColor: 'var(--bg-secondary)',
                     fontFamily: 'inherit',
+                    color: 'var(--text-primary)',
                   }}
                 />
               </div>
@@ -264,8 +265,8 @@ export default function MessagesPage() {
                         gap: '12px',
                         padding: '12px 16px',
                         cursor: 'pointer',
-                        backgroundColor: isActive ? '#f1f5f9' : 'transparent',
-                        borderBottom: '1px solid #f8fafc',
+                        backgroundColor: isActive ? 'var(--hover-bg)' : 'transparent',
+                        borderBottom: '1px solid var(--border-color)',
                         transition: 'background-color 0.2s',
                       }}
                     >
@@ -284,20 +285,20 @@ export default function MessagesPage() {
                             height: '9px',
                             borderRadius: '50%',
                             backgroundColor: '#10B981',
-                            border: '2px solid #fff',
+                            border: '2px solid var(--bg-primary)',
                           }}
                         />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {user.displayName || user.username}
                           </span>
                           {user.isVerified && (
                             <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '12px' }} />
                           )}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           @{user.username}
                         </div>
                       </div>
@@ -317,7 +318,7 @@ export default function MessagesPage() {
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
-              backgroundColor: '#f8fafc',
+              backgroundColor: 'var(--bg-secondary)',
             }}
           >
             {activeChatUser ? (
@@ -330,7 +331,7 @@ export default function MessagesPage() {
                     justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'var(--bg-primary)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -356,13 +357,13 @@ export default function MessagesPage() {
                       style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
                     />
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {activeChatUser.displayName || activeChatUser.username}
                         {activeChatUser.isVerified && (
                           <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '12px' }} />
                         )}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>활동 중</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>활동 중</div>
                     </div>
                   </div>
                 </div>
@@ -401,15 +402,15 @@ export default function MessagesPage() {
                           )}
                           <div
                             style={{
-                              background: isMe ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#ffffff',
-                              color: isMe ? '#ffffff' : '#1e293b',
-                              padding: '8px 14px',
-                              borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                              fontSize: '13.5px',
-                              lineHeight: '1.4',
-                              whiteSpace: 'pre-wrap',
-                              border: isMe ? 'none' : '1px solid #e2e8f0',
+                            background: isMe ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'var(--bg-primary)',
+                            color: isMe ? '#ffffff' : 'var(--text-primary)',
+                            padding: '8px 14px',
+                            borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                            fontSize: '13.5px',
+                            lineHeight: '1.4',
+                            whiteSpace: 'pre-wrap',
+                            border: isMe ? 'none' : '1px solid var(--border-color)',
                             }}
                           >
                             {msg.content}
@@ -437,7 +438,7 @@ export default function MessagesPage() {
                   style={{
                     padding: '12px 16px',
                     borderTop: '1px solid var(--border-color)',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'var(--bg-primary)',
                     display: 'flex',
                     gap: '8px',
                     alignItems: 'center',
@@ -455,11 +456,12 @@ export default function MessagesPage() {
                       flex: 1,
                       padding: '10px 16px',
                       borderRadius: '20px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid var(--border-color)',
                       fontSize: '13px',
                       outline: 'none',
                       fontFamily: 'inherit',
-                      color: '#1e293b',
+                      color: 'var(--text-primary)',
+                      backgroundColor: 'var(--bg-secondary)',
                     }}
                   />
                   <button
@@ -511,10 +513,10 @@ export default function MessagesPage() {
                 >
                   <i className="far fa-paper-plane" />
                 </div>
-                <h3 style={{ fontWeight: 800, fontSize: '18px', color: '#1e293b', marginBottom: '8px' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)', marginBottom: '8px' }}>
                   메시지를 선택하세요
                 </h3>
-                <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '300px', margin: '0 auto' }}>
+                <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', maxWidth: '300px', margin: '0 auto' }}>
                   기존 대화방을 선택하거나, 쪽지 보낼 대상을 검색하여 새로운 대화를 시작해보세요.
                 </p>
               </div>
