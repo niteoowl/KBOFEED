@@ -256,7 +256,7 @@ const PostCard = ({
       <button
         type="button"
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation(); // 글 상세 이동 방지
           setMenuOpen(true);
         }}
         style={{
@@ -266,11 +266,11 @@ const PostCard = ({
           color: 'var(--text-secondary)',
           padding: '4px',
         }}
+        aria-label="Menu"
       >
         <i className="fas fa-ellipsis-h" />
       </button>
 
-      {/* 메뉴 컴포넌트 호출 (포털 없이도 작동하도록 설계됨) */}
       <PostMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -301,7 +301,13 @@ const PostCard = ({
 
   return (
     <>
-      <ShareMenu open={shareOpen} onClose={() => setShareOpen(false)} url={detailHref} />
+      {/* 1순위: 기존 컴포넌트 대신 아래에 새로 만들 ShareMenu를 호출합니다 */}
+      <ShareMenu
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={`${typeof window !== 'undefined' ? window.location.origin : ''}${detailHref}`}
+        postText={post.content || ''}
+      />
 
       {post.retweetId && post.originalPost && (
         <div
