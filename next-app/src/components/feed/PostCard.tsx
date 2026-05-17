@@ -202,75 +202,50 @@ const PostCard = ({
   );
 
   const menuButton = showMenu && (
-    /* 중요: 컨테이너를 absolute의 기준점으로 잡습니다 */
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ position: 'relative' }}>
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          setMenuOpen(!menuOpen);
+          setMenuOpen(true);
         }}
         style={{
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
           color: 'var(--text-secondary)',
-          padding: '2px 4px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          padding: '4px',
         }}
-        aria-label="Menu"
       >
         <i className="fas fa-ellipsis-h" />
       </button>
 
-      {/* 팝업 메뉴 위치 제어 컨테이너 */}
-      {menuOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            right: 0,
-            zIndex: 50,
-            /* 핵심: 글자가 세로로 쪼개지는 현상과 줄바꿈을 완벽히 방지합니다 */
-            whiteSpace: 'nowrap',
-            minWidth: '120px', // 메뉴의 최소 너비 확보
-            backgroundColor: 'var(--background-primary, #fff)', // 배경 투명화 방지
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // 살짝 뜨는 느낌의 그림자
-            border: '1px solid var(--border-color, #e3e8ed)',
-            borderRadius: '8px', // 요청하신 조금만 둥근 효과 적용
-            overflow: 'hidden', // 내부 아이템들이 튀어나가지 않게 정돈
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <PostMenu
-            open={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            isOwner={!!isOwner}
-            onEdit={
-              isDetailView
-                ? () => {
-                  setEditContent(post.content || '');
-                  setIsEditing(true);
-                }
-                : () => router.push(detailHref)
+      {/* 메뉴 컴포넌트 호출 (포털 없이도 작동하도록 설계됨) */}
+      <PostMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        isOwner={!!isOwner}
+        onEdit={
+          isDetailView
+            ? () => {
+              setEditContent(post.content || '');
+              setIsEditing(true);
             }
-            onDelete={async () => {
-              if (confirm('이 게시물을 삭제하시겠습니까?')) {
-                await deletePost(post.id);
-                router.push('/');
-              }
-            }}
-            onPin={async () => {
-              const { pinPostToProfile } = await import('@/app/actions/user');
-              await pinPostToProfile(post.id);
-              alert('프로필에 고정되었습니다.');
-            }}
-            onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
-          />
-        </div>
-      )}
+            : () => router.push(detailHref)
+        }
+        onDelete={async () => {
+          if (confirm('이 게시물을 삭제하시겠습니까?')) {
+            await deletePost(post.id);
+            router.push('/');
+          }
+        }}
+        onPin={async () => {
+          const { pinPostToProfile } = await import('@/app/actions/user');
+          await pinPostToProfile(post.id);
+          alert('프로필에 고정되었습니다.');
+        }}
+        onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
+      />
     </div>
   );
 
