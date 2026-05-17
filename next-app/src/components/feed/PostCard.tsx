@@ -202,7 +202,8 @@ const PostCard = ({
   );
 
   const menuButton = showMenu && (
-    <div style={{ position: 'relative', marginLeft: isDetailView ? 12 : 0 }}>
+    /* 중요: 이 컨테이너가 relative 기준점이 되어 내부 메뉴가 절대 글자를 밀어내지 않습니다 */
+    <div style={{ position: 'relative', display: 'inline-block' }}>
       <button
         type="button"
         onClick={(e) => {
@@ -214,38 +215,56 @@ const PostCard = ({
           border: 'none',
           cursor: 'pointer',
           color: 'var(--text-secondary)',
-          padding: 4,
-          marginLeft: 'auto',
+          padding: '2px 4px', // 버튼 자체의 높이도 살짝 낮춤
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         aria-label="Menu"
       >
         <i className="fas fa-ellipsis-h" />
       </button>
-      <PostMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        isOwner={!!isOwner}
-        onEdit={
-          isDetailView
-            ? () => {
-              setEditContent(post.content || '');
-              setIsEditing(true);
+
+      {/* 팝업 메뉴가 주변 글자를 밀어내지 않도록 absolute 컨테이너로 감싸서 공중에 띄웁니다 */}
+      {menuOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            zIndex: 50,
+            /* PostMenu 내부 스타일을 강제 제어하기 위한 인라인 스타일 덮어쓰기 팁 */
+            fontSize: '14px',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <PostMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            isOwner={!!isOwner}
+            onEdit={
+              isDetailView
+                ? () => {
+                  setEditContent(post.content || '');
+                  setIsEditing(true);
+                }
+                : () => router.push(detailHref)
             }
-            : () => router.push(detailHref)
-        }
-        onDelete={async () => {
-          if (confirm('이 게시물을 삭제하시겠습니까?')) {
-            await deletePost(post.id);
-            router.push('/');
-          }
-        }}
-        onPin={async () => {
-          const { pinPostToProfile } = await import('@/app/actions/user');
-          await pinPostToProfile(post.id);
-          alert('프로필에 고정되었습니다.');
-        }}
-        onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
-      />
+            onDelete={async () => {
+              if (confirm('이 게시물을 삭제하시겠물이 삭제하시겠습니까?')) {
+                await deletePost(post.id);
+                router.push('/');
+              }
+            }}
+            onPin={async () => {
+              const { pinPostToProfile } = await import('@/app/actions/user');
+              await pinPostToProfile(post.id);
+              alert('프로필에 고정되었습니다.');
+            }}
+            onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
+          />
+        </div>
+      )}
     </div>
   );
 
