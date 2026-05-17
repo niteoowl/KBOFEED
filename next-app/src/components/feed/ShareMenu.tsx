@@ -99,12 +99,8 @@ const ShareMenu = ({ open, onClose, url, postContent = '' }: ShareMenuProps) => 
       >
         <div className="post-menu-content">
           <div className="share-header">공유하기</div>
-          <button onClick={(e) => handleAction(e, () => shareToSocial('kakao'))}>카카오스토리 공유</button>
           <button onClick={(e) => handleAction(e, () => shareToSocial('x'))}>X (트위터) 공유</button>
           <button onClick={(e) => handleAction(e, () => shareToSocial('facebook'))}>페이스북 공유</button>
-          <button onClick={(e) => handleAction(e, () => shareToSocial('line'))}>라인 공유</button>
-          <button onClick={(e) => handleAction(e, () => shareToSocial('band'))}>네이버 밴드 공유</button>
-          <button onClick={(e) => handleAction(e, () => shareToSocial('system'))}>시스템 기본 공유</button>
           <button onClick={(e) => handleAction(e, handleCopyLink)} style={{ fontWeight: '600' }}>링크 복사</button>
           <button className="cancel-btn" onClick={(e) => { e.stopPropagation(); onClose(); }}>취소</button>
         </div>

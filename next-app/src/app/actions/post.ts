@@ -138,7 +138,7 @@ export async function getTeamPosts(
   return rows.map((post) => ({ ...post, isLiked: false, isRetweeted: false, isBookmarked: false }));
 }
 
-export async function createPost(content: string, imageUrl?: string) {
+export async function createPost(content: string, imageUrl?: string, retweetId?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error('Unauthorized');
 
@@ -152,6 +152,7 @@ export async function createPost(content: string, imageUrl?: string) {
     userId: session.user.id,
     content,
     imageUrl,
+    retweetId,
   });
 
   await notifyMentions(db, content, session.user.id, shortId);

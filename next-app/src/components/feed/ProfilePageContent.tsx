@@ -44,6 +44,112 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
   const [loading, setLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
   
+  // ─── DM Chat Room States & Handlers ───
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+
+  const currentUserKey = session?.user?.id || 'guest';
+  const chatStorageKey = `chat_${currentUserKey}_${profile.id}`;
+
+  useEffect(() => {
+    if (chatOpen) {
+      const stored = localStorage.getItem(chatStorageKey);
+      if (stored) {
+        setChatMessages(JSON.parse(stored));
+      } else {
+        const initialMsgs = [
+          {
+            id: '1',
+            senderId: profile.id,
+            senderName: profile.displayName || profile.username,
+            senderAvatar: profile.avatarUrl,
+            content: `안녕하세요! 제 프로필을 보시고 연락주셨네요! ⚾ 오늘 야구 경기 보셨나요?`,
+            timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+          },
+          {
+            id: '2',
+            senderId: currentUserKey,
+            senderName: session?.user?.name || '나',
+            senderAvatar: session?.user?.image,
+            content: `네! 경기 정말 흥미진진하게 봤어요. 활약하시는 모습 항상 멋집니다! 🔥`,
+            timestamp: new Date(Date.now() - 3600000).toISOString(),
+          },
+          {
+            id: '3',
+            senderId: profile.id,
+            senderName: profile.displayName || profile.username,
+            senderAvatar: profile.avatarUrl,
+            content: `감사합니다! 팬분들의 응원 덕분에 매 경기 힘이 납니다. 앞으로도 소중한 의견 피드에 많이 남겨주세요! 😊`,
+            timestamp: new Date(Date.now() - 1800000).toISOString(),
+          }
+        ];
+        setChatMessages(initialMsgs);
+        localStorage.setItem(chatStorageKey, JSON.stringify(initialMsgs));
+      }
+
+      // Auto scroll down
+      setTimeout(() => {
+        const el = document.getElementById('chat-messages-container');
+        if (el) el.scrollTop = el.scrollHeight;
+      }, 100);
+    }
+  }, [chatOpen, chatStorageKey, profile.id, profile.displayName, profile.username, profile.avatarUrl, currentUserKey, session]);
+
+  const handleSendMessage = () => {
+    if (!chatInput.trim()) return;
+
+    const newMsg = {
+      id: Date.now().toString(),
+      senderId: currentUserKey,
+      senderName: session?.user?.name || '나',
+      senderAvatar: session?.user?.image,
+      content: chatInput,
+      timestamp: new Date().toISOString(),
+    };
+
+    const updated = [...chatMessages, newMsg];
+    setChatMessages(updated);
+    localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+    setChatInput('');
+
+    setTimeout(() => {
+      const el = document.getElementById('chat-messages-container');
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 50);
+
+    // Auto athlete reply mock
+    setTimeout(() => {
+      const responses = [
+        "오! 정말 날카로운 분석이네요! 다음 경기에 적극 참고하겠습니다. 💪",
+        "앗 정말요? 경기장에서 마주치면 꼭 사인해 드릴게요! ✍️⚾",
+        "항상 응원해주셔서 너무 든든합니다. 건강 조심하시고 내일 경기도 기대해주세요! 🌟",
+        "오늘도 따뜻한 말씀으로 큰 기운을 얻고 갑니다! 즐거운 하루 보내세요 😆"
+      ];
+      const randomReply = responses[Math.floor(Math.random() * responses.length)];
+      
+      const replyMsg = {
+        id: (Date.now() + 1).toString(),
+        senderId: profile.id,
+        senderName: profile.displayName || profile.username,
+        senderAvatar: profile.avatarUrl,
+        content: randomReply,
+        timestamp: new Date().toISOString(),
+      };
+
+      setChatMessages((prev) => {
+        const next = [...prev, replyMsg];
+        localStorage.setItem(chatStorageKey, JSON.stringify(next));
+        return next;
+      });
+
+      setTimeout(() => {
+        const el = document.getElementById('chat-messages-container');
+        if (el) el.scrollTop = el.scrollHeight;
+      }, 50);
+    }, 1500);
+  };
+  
   const handleEditProfile = () => {
     router.push('/settings');
   };
@@ -253,25 +359,41 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                       프로필 수정
                     </button>
                   ) : (
-                    <button 
-                      onClick={async () => {
-                        try {
-                          await toggleFollow(profile.id);
-                          setIsFollowing(!isFollowing);
-                        } catch (e) {
-                          alert('로그인이 필요합니다.');
-                        }
-                      }}
-                      style={{
-                        padding: '10px 20px', borderRadius: '9999px',
-                        backgroundColor: isFollowing ? 'transparent' : '#111827', 
-                        color: isFollowing ? '#111827' : '#FFFFFF',
-                        border: isFollowing ? '1px solid #D1D5DB' : 'none',
-                        fontWeight: 600, fontSize: '14px', cursor: 'pointer'
-                      }}
-                    >
-                      {isFollowing ? '언팔로우' : '팔로우'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={async () => {
+                          try {
+                            await toggleFollow(profile.id);
+                            setIsFollowing(!isFollowing);
+                          } catch (e) {
+                            alert('로그인이 필요합니다.');
+                          }
+                        }}
+                        style={{
+                          padding: '10px 20px', borderRadius: '9999px',
+                          backgroundColor: isFollowing ? 'transparent' : '#111827', 
+                          color: isFollowing ? '#111827' : '#FFFFFF',
+                          border: isFollowing ? '1px solid #D1D5DB' : 'none',
+                          fontWeight: 600, fontSize: '14px', cursor: 'pointer'
+                        }}
+                      >
+                        {isFollowing ? '언팔로우' : '팔로우'}
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setChatOpen(true);
+                        }}
+                        style={{
+                          padding: '10px 20px', borderRadius: '9999px',
+                          backgroundColor: '#10B981', color: '#FFFFFF',
+                          fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '6px'
+                        }}
+                      >
+                        <i className="far fa-paper-plane" />
+                        채팅하기
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -340,6 +462,216 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
         </div>
       </section>
 
+      {/* Instagram-style Direct Message (DM) Modal */}
+      {chatOpen && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 99999,
+            }}
+            onClick={() => setChatOpen(false)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '100%',
+              maxWidth: '500px',
+              height: '80vh',
+              background: '#ffffff',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px',
+              boxShadow: '0 -8px 32px rgba(0,0,0,0.15)',
+              zIndex: 100000,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              fontFamily: 'inherit',
+            }}
+          >
+            {/* DM Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                borderBottom: '1px solid #f1f5f9',
+                background: '#ffffff',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={profile.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png'}
+                    alt={profile.displayName || profile.username}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border-color)', objectFit: 'cover' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '2px',
+                      right: '2px',
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      backgroundColor: '#10B981',
+                      border: '2px solid #fff',
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {profile.displayName || profile.username}
+                    {profile.isVerified && (
+                      <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '14px' }}></i>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>@{profile.username} · 활동 중</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
+
+            {/* DM Messages Container */}
+            <div
+              id="chat-messages-container"
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '20px',
+                background: '#f8fafc',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              {chatMessages.map((msg) => {
+                const isMe = msg.senderId === currentUserKey;
+                return (
+                  <div
+                    key={msg.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: isMe ? 'flex-end' : 'flex-start',
+                      maxWidth: '80%',
+                      alignSelf: isMe ? 'flex-end' : 'flex-start',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexDirection: isMe ? 'row-reverse' : 'row' }}>
+                      {!isMe && (
+                        <img
+                          src={msg.senderAvatar || 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png'}
+                          alt={msg.senderName}
+                          style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                      )}
+                      <div
+                        style={{
+                          background: isMe ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#ffffff',
+                          color: isMe ? '#ffffff' : '#1f2937',
+                          padding: '10px 16px',
+                          borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          whiteSpace: 'pre-wrap',
+                          border: isMe ? 'none' : '1px solid #e2e8f0',
+                        }}
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: '#94a3b8',
+                        marginTop: '4px',
+                        marginLeft: isMe ? '0' : '36px',
+                        marginRight: isMe ? '4px' : '0',
+                      }}
+                    >
+                      {new Date(msg.timestamp).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* DM Input Footer */}
+            <div
+              style={{
+                padding: '16px 20px',
+                borderTop: '1px solid #f1f5f9',
+                background: '#ffffff',
+                display: 'flex',
+                gap: '10px',
+                alignItems: 'center',
+              }}
+            >
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSendMessage();
+                }}
+                placeholder="메시지 보내기..."
+                style={{
+                  flex: 1,
+                  padding: '12px 18px',
+                  borderRadius: '24px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '14px',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  color: '#1f2937',
+                }}
+              />
+              <button
+                onClick={handleSendMessage}
+                style={{
+                  background: 'var(--primary-color)',
+                  color: '#fff',
+                  border: 'none',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+              >
+                <i className="fas fa-paper-plane" style={{ fontSize: '14px' }} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }

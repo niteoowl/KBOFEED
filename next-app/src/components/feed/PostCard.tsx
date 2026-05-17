@@ -79,6 +79,8 @@ const PostCard = ({
   const [shareOpen, setShareOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [rtMenuOpen, setRtMenuOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content || '');
@@ -106,13 +108,10 @@ const PostCard = ({
     await toggleLike(post.id);
   };
 
-  const handleRetweet = async (e: React.MouseEvent) => {
+  const handleRetweetClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isProcessing) return;
-    const newRetweeted = !isRetweeted;
-    setIsRetweeted(newRetweeted);
-    setRetweetsCount((prev) => (newRetweeted ? prev + 1 : Math.max(0, prev - 1)));
-    await toggleRetweet(post.id);
+    setRtMenuOpen(true);
   };
 
   const handleBookmark = async (e: React.MouseEvent) => {
@@ -148,7 +147,9 @@ const PostCard = ({
     if (!suppressNavigation && !isProcessing) router.push(detailHref);
   };
 
-  const targetPost = post.retweetId && post.originalPost ? post.originalPost : post;
+  const isSimpleRetweet = !!(post.retweetId && post.originalPost && !post.content?.trim());
+  const isQuoteTweet = !!(post.retweetId && post.originalPost && post.content?.trim());
+  const targetPost = isSimpleRetweet ? post.originalPost : post;
   const rawContent = targetPost.content || '';
   const { text: contentWithoutPoll, poll } = parsePoll(rawContent);
   const shouldTruncate =
@@ -206,7 +207,7 @@ const PostCard = ({
 
       {/* 재게시 (RT) */}
       <div
-        onClick={handleRetweet}
+        onClick={handleRetweetClick}
         className="action-item action-retweet"
         style={{
           display: 'flex',
@@ -392,7 +393,7 @@ const PostCard = ({
   return (
     <>
 
-      {post.retweetId && post.originalPost && (
+      {isSimpleRetweet && (
         <div
           style={{
             padding: '12px 16px 0 36px',
@@ -624,6 +625,7 @@ const PostCard = ({
                   className="tweet-media"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setLightboxIndex(activeImageIndex);
                     setIsLightboxOpen(true);
                   }}
                   style={{ cursor: 'zoom-in' }}
@@ -631,7 +633,7 @@ const PostCard = ({
                   <img
                     src={images[activeImageIndex]}
                     alt={`post-media-${activeImageIndex}`}
-                    style={{ borderRadius: 16, width: '100%', display: 'block', maxHeight: '500px', objectFit: 'contain', background: '#000' }}
+                    style={{ borderRadius: 16, maxWidth: '100%', width: 'auto', display: 'block', maxHeight: '500px', objectFit: 'contain' }}
                   />
                 </div>
 
@@ -639,7 +641,7 @@ const PostCard = ({
                   <div
                     style={{
                       display: 'flex',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       gap: 6,
                       marginTop: 8,
                     }}
@@ -656,6 +658,50 @@ const PostCard = ({
                         }}
                       />
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isQuoteTweet && post.originalPost && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(postPermalink(post.originalPost.profiles.username, post.originalPost.id));
+                }}
+                style={{
+                  marginTop: 12,
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 12,
+                  padding: 12,
+                  background: '#f8fafc',
+                  cursor: 'pointer',
+                  borderLeft: '4px solid var(--primary-color)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <img
+                    src={post.originalPost.profiles.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png'}
+                    alt={post.originalPost.profiles.displayName}
+                    style={{ width: 18, height: 18, borderRadius: '50%' }}
+                  />
+                  <span style={{ fontWeight: 'bold', fontSize: 13 }}>{post.originalPost.profiles.displayName}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{post.originalPost.profiles.username}</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                  {parsePoll(post.originalPost.content || '').text}
+                </div>
+                {post.originalPost.imageUrl && (
+                  <div style={{ marginTop: 8 }}>
+                    <img
+                      src={
+                        post.originalPost.imageUrl.startsWith('[')
+                          ? JSON.parse(post.originalPost.imageUrl)[0]
+                          : post.originalPost.imageUrl
+                      }
+                      alt="embedded original post image"
+                      style={{ borderRadius: 8, maxHeight: 150, width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                    />
                   </div>
                 )}
               </div>
@@ -828,6 +874,7 @@ const PostCard = ({
                     className="tweet-media"
                     onClick={(e) => {
                       e.stopPropagation();
+                      setLightboxIndex(activeImageIndex);
                       setIsLightboxOpen(true);
                     }}
                     style={{ cursor: 'zoom-in' }}
@@ -835,7 +882,7 @@ const PostCard = ({
                     <img
                       src={images[activeImageIndex]}
                       alt={`post-media-${activeImageIndex}`}
-                      style={{ borderRadius: 16, width: '100%', display: 'block', maxHeight: '400px', objectFit: 'contain', background: '#000' }}
+                      style={{ borderRadius: 16, maxWidth: '100%', width: 'auto', display: 'block', maxHeight: '400px', objectFit: 'contain' }}
                     />
                   </div>
 
@@ -843,7 +890,7 @@ const PostCard = ({
                     <div
                       style={{
                         display: 'flex',
-                        justifyContent: 'center',
+                        justifyContent: 'flex-start',
                         gap: 6,
                         marginTop: 8,
                       }}
@@ -864,6 +911,50 @@ const PostCard = ({
                   )}
                 </div>
               )}
+
+              {isQuoteTweet && post.originalPost && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(postPermalink(post.originalPost.profiles.username, post.originalPost.id));
+                  }}
+                  style={{
+                    marginTop: 12,
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 12,
+                    padding: 12,
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    borderLeft: '4px solid var(--primary-color)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <img
+                      src={post.originalPost.profiles.avatarUrl || 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png'}
+                      alt={post.originalPost.profiles.displayName}
+                      style={{ width: 18, height: 18, borderRadius: '50%' }}
+                    />
+                    <span style={{ fontWeight: 'bold', fontSize: 13 }}>{post.originalPost.profiles.displayName}</span>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{post.originalPost.profiles.username}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                    {parsePoll(post.originalPost.content || '').text}
+                  </div>
+                  {post.originalPost.imageUrl && (
+                    <div style={{ marginTop: 8 }}>
+                      <img
+                        src={
+                          post.originalPost.imageUrl.startsWith('[')
+                            ? JSON.parse(post.originalPost.imageUrl)[0]
+                            : post.originalPost.imageUrl
+                        }
+                        alt="embedded original post image"
+                        style={{ borderRadius: 8, maxHeight: 150, width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               {renderActions()}
             </div>
           </>
@@ -873,8 +964,131 @@ const PostCard = ({
       {/* ShareMenu */}
       <ShareMenu open={shareOpen} onClose={() => setShareOpen(false)} url={detailHref} postContent={post.content || ''} />
 
-      {/* Lightbox Zoom Overlay */}
-      {isLightboxOpen && images[activeImageIndex] && (
+      {/* Retweet Menu (RtMenu) Bottom Sheet */}
+      {rtMenuOpen && (
+        <>
+          <div
+            className="menu-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 9999,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setRtMenuOpen(false);
+            }}
+          />
+          <div
+            className="post-menu-container"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10000,
+              padding: 8,
+            }}
+          >
+            <div
+              className="post-menu-content"
+              style={{
+                background: '#fff',
+                borderRadius: 16,
+                overflow: 'hidden',
+                maxWidth: 500,
+                margin: '0 auto',
+                boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
+              }}
+            >
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  setRtMenuOpen(false);
+                  const newRetweeted = !isRetweeted;
+                  setIsRetweeted(newRetweeted);
+                  setRetweetsCount((prev) => (newRetweeted ? prev + 1 : Math.max(0, prev - 1)));
+                  await toggleRetweet(post.id);
+                  router.refresh();
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '16px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  borderBottom: '1px solid var(--border-color)',
+                  color: isRetweeted ? '#00ba7c' : 'var(--text-primary)',
+                  textAlign: 'center',
+                }}
+              >
+                <i className="fas fa-retweet" style={{ marginRight: 8 }} />
+                {isRetweeted ? '재게시 취소하기' : '재게시하기'}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRtMenuOpen(false);
+                  const event = new CustomEvent('set-quote-post', { detail: targetPost });
+                  window.dispatchEvent(event);
+                  const composeEl = document.querySelector('.compose-post');
+                  if (composeEl) {
+                    composeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '16px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  borderBottom: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  textAlign: 'center',
+                }}
+              >
+                <i className="fas fa-pencil-alt" style={{ marginRight: 8 }} />
+                덧붙이기
+              </button>
+              <button
+                className="cancel-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRtMenuOpen(false);
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '16px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  color: 'var(--text-secondary)',
+                  textAlign: 'center',
+                }}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Lightbox Zoom Overlay (X-style with animations and controls) */}
+      {isLightboxOpen && images.length > 0 && (
         <div
           className="lightbox-overlay"
           onClick={(e) => {
@@ -887,24 +1101,157 @@ const PostCard = ({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
             zIndex: 10000,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'zoom-out',
+            userSelect: 'none',
           }}
         >
-          <img
-            src={images[activeImageIndex]}
-            alt="Enlarged"
-            style={{
-              maxWidth: '95%',
-              maxHeight: '95%',
-              objectFit: 'contain',
-              borderRadius: '8px',
+          {/* Close button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsLightboxOpen(false);
             }}
-          />
+            style={{
+              position: 'absolute',
+              top: '20px',
+              left: '20px',
+              background: 'rgba(0,0,0,0.5)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10002,
+              transition: 'background 0.2s',
+            }}
+          >
+            <i className="fas fa-times" />
+          </button>
+
+          {/* Navigation Controls inside Lightbox */}
+          {images.length > 1 && (
+            <>
+              {lightboxIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex((prev) => prev - 1);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: '24px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    border: 'none',
+                    color: '#fff',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    zIndex: 10002,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  <i className="fas fa-chevron-left" />
+                </button>
+              )}
+              {lightboxIndex < images.length - 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex((prev) => prev + 1);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '24px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    border: 'none',
+                    color: '#fff',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    zIndex: 10002,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  <i className="fas fa-chevron-right" />
+                </button>
+              )}
+            </>
+          )}
+
+          {/* Image Slider container */}
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: `${images.length * 100}%`,
+                height: '100%',
+                transform: `translateX(-${(lightboxIndex * 100) / images.length}%)`,
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              {images.map((img, idx) => (
+                <div
+                  key={idx}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: `${100 / images.length}%`,
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '40px',
+                  }}
+                >
+                  <img
+                    src={img}
+                    alt={`Enlarged ${idx}`}
+                    style={{
+                      maxWidth: '90%',
+                      maxHeight: '90%',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </>

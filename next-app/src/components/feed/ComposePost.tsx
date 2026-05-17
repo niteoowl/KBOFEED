@@ -36,6 +36,16 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   const { displayName, avatarUrl } = useProfile();
   const [content, setContent] = useState('');
   const [isPending, setIsPending] = useState(false);
+  const [quotePost, setQuotePost] = useState<any | null>(null);
+
+  useEffect(() => {
+    const handleQuote = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setQuotePost(customEvent.detail);
+    };
+    window.addEventListener('set-quote-post', handleQuote);
+    return () => window.removeEventListener('set-quote-post', handleQuote);
+  }, []);
 
   // ─── Image (IMGBB) ───
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,9 +169,12 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
 
     onPosted?.(submittedContent);
 
+    const targetQuoteId = quotePost?.id;
+    setQuotePost(null);
+
     setIsPending(true);
     try {
-      await createPost(submittedContent, finalImgUrl);
+      await createPost(submittedContent, finalImgUrl, targetQuoteId);
     } catch {
       alert('게시글 작성 중 오류가 발생했습니다.');
     } finally {
@@ -191,6 +204,66 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
               fontFamily: 'inherit', color: 'var(--text-primary)', paddingTop: '8px'
             }}
           />
+
+          {/* ─── Quoted Post Preview (X-style) ─── */}
+          {quotePost && (
+            <div
+              style={{
+                position: 'relative',
+                marginTop: '12px',
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                background: '#f8fafc',
+              }}
+              onClick={() => {
+                const detailHref = `/${quotePost.profiles?.username || 'sponsor'}/status/${quotePost.id}`;
+                window.location.href = detailHref;
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuotePost(null);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'rgba(0,0,0,0.6)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '20px',
+                  height: '20px',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <i className="fas fa-times" />
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <img
+                  src={(quotePost.profiles && quotePost.profiles.avatarUrl) || 'https://cdn-icons-png.flaticon.com/512/5482/5482912.png'}
+                  alt={quotePost.profiles?.displayName || 'Sponsor'}
+                  style={{ width: '20px', height: '20px', borderRadius: '50%' }}
+                />
+                <span style={{ fontWeight: 'bold', fontSize: '13px' }}>{quotePost.profiles?.displayName || '스폰서 광고'}</span>
+                {quotePost.profiles && (
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>@{quotePost.profiles.username}</span>
+                )}
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                {quotePost.content}
+              </div>
+            </div>
+          )}
 
           {/* ─── Image Previews (Multiple) ─── */}
           {imageUrls.length > 0 && (
