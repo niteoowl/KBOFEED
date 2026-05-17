@@ -237,12 +237,12 @@ const PostCard = ({
         <i className={`${isBookmarked ? 'fas' : 'far'} fa-bookmark`} style={{ fontSize: '15px' }} />
       </div>
 
-      {/* 공유하기 */}
+      {/* 공유하기 - 점 세개와 동일하게 메뉴가 열리도록 수정 & 버블링 방지 */}
       <div
         className="action-item action-share"
         onClick={(e) => {
-          e.stopPropagation();
-          setShareOpen(true);
+          e.stopPropagation(); // 글 상세 이동 방지
+          setMenuOpen(true);
         }}
         style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
       >
