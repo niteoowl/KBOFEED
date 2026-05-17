@@ -18,7 +18,6 @@ import { getTeamLogo } from '@/lib/constants';
 import FormattedContent from './FormattedContent';
 import PollBlock from './PollBlock';
 import PostMenu from './PostMenu';
-import ShareMenu from './ShareMenu';
 
 interface PostProps {
   suppressNavigation?: boolean;
@@ -76,7 +75,6 @@ const PostCard = ({
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked ?? false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content || '');
@@ -256,7 +254,7 @@ const PostCard = ({
       <button
         type="button"
         onClick={(e) => {
-          e.stopPropagation(); // 글 상세 이동 방지
+          e.stopPropagation();
           setMenuOpen(true);
         }}
         style={{
@@ -266,11 +264,11 @@ const PostCard = ({
           color: 'var(--text-secondary)',
           padding: '4px',
         }}
-        aria-label="Menu"
       >
         <i className="fas fa-ellipsis-h" />
       </button>
 
+      {/* 메뉴 컴포넌트 호출 (포털 없이도 작동하도록 설계됨) */}
       <PostMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -295,19 +293,25 @@ const PostCard = ({
           alert('프로필에 고정되었습니다.');
         }}
         onReport={() => alert('신고가 정상적으로 접수되었습니다.')}
+        url={detailHref}
+        postContent={post.content || ''}
+        isBookmarked={isBookmarked}
+        onBookmark={async () => {
+          if (isProcessing) return;
+          const targetState = !isBookmarked;
+          setIsBookmarked(targetState);
+          try {
+            await toggleBookmark(post.id);
+          } catch {
+            setIsBookmarked(!targetState);
+          }
+        }}
       />
     </div>
   );
 
   return (
     <>
-      {/* 1순위: 기존 컴포넌트 대신 아래에 새로 만들 ShareMenu를 호출합니다 */}
-      <ShareMenu
-        open={shareOpen}
-        onClose={() => setShareOpen(false)}
-        url={`${typeof window !== 'undefined' ? window.location.origin : ''}${detailHref}`}
-        postText={post.content || ''}
-      />
 
       {post.retweetId && post.originalPost && (
         <div

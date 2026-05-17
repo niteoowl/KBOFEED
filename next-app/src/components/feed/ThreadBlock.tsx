@@ -25,7 +25,7 @@ export default function ThreadBlock({ parentPost, comment, onClick }: ThreadBloc
       <PostCard post={parentPost} suppressNavigation hideFollow showMenu={false} />
       <div className="thread-child">
         <div className="thread-connector" aria-hidden />
-        <div className="thread-child-inner">
+        <div className="thread-child-inner" style={{ gap: '8px' }}>
           <div
             className="user-avatar"
             style={{
@@ -33,10 +33,11 @@ export default function ThreadBlock({ parentPost, comment, onClick }: ThreadBloc
                 ? `url(${comment.profiles.avatarUrl})`
                 : `url(https://i.pravatar.cc/150?u=${comment.profiles?.username})`,
               backgroundSize: 'cover',
-              width: 44,
-              height: 44,
-              minWidth: 44,
+              width: 40,
+              height: 40,
+              minWidth: 40,
               borderRadius: '50%',
+              marginRight: 0,
             }}
           />
           <div className="thread-child-content">

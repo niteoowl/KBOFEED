@@ -98,8 +98,8 @@ export default function CommentSection({ postId, initialComments, focusedComment
       {session?.user && (
         <div className="comment-compose" style={{
           display: 'flex',
-          gap: '12px',
-          padding: '16px',
+          gap: '8px',
+          padding: '16px 20px',
           borderBottom: '1px solid var(--border-color)',
           alignItems: 'flex-start',
         }}>
@@ -108,10 +108,11 @@ export default function CommentSection({ postId, initialComments, focusedComment
             style={{
               backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
               backgroundSize: 'cover',
-              width: '36px',
-              height: '36px',
-              minWidth: '36px',
+              width: '40px',
+              height: '40px',
+              minWidth: '40px',
               borderRadius: '50%',
+              marginRight: 0,
             }}
           />
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>

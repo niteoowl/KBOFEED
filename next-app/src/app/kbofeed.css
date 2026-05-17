@@ -2384,17 +2384,24 @@ ul {
 }
 
 /* Post detail padding aligned with feed */
-.post-detail-page .post-detail-inner,
 .post-detail-page .tweet.no-hover {
     padding-left: 20px;
     padding-right: 20px;
 }
 
+.post-detail-page .post-detail-inner {
+    padding-left: 0;
+    padding-right: 0;
+}
+
 @media (max-width: 500px) {
-    .post-detail-page .post-detail-inner,
     .post-detail-page .tweet.no-hover {
         padding-left: 12px;
         padding-right: 12px;
+    }
+    .post-detail-page .post-detail-inner {
+        padding-left: 0;
+        padding-right: 0;
     }
 }
 

@@ -163,10 +163,10 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
 
   return (
     <section className="compose-trigger-section" style={{ padding: '16px 20px', borderBottom: '8px solid var(--divider-color)', backgroundColor: '#fff' }}>
-      <div style={{ display: 'flex', gap: '12px' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
         <div
           className="user-avatar"
-          style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined, backgroundSize: 'cover', width: '44px', height: '44px', minWidth: '44px', borderRadius: '50%' }}
+          style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined, backgroundSize: 'cover', width: '40px', height: '40px', minWidth: '40px', borderRadius: '50%', marginRight: 0 }}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <textarea
