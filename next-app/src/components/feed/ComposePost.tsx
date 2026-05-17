@@ -103,11 +103,25 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   };
 
   const selectGif = (gif: KlipyGif) => {
-    const url = extractGifUrl(gif.file);
+    // 1. 기존 함수로 URL 추출 시도
+    let url = extractGifUrl(gif.file);
+
+    // 2. 만약 반환값이 없거나 객체([object Object]) 형태로 들어왔다면 API 명세서 구조대로 직접 매핑
+    if (!url || typeof url !== 'string' || url.includes('[object')) {
+      // 명세서에 명시된 hd -> md -> sm -> xs 순서대로 gif 또는 webp 주소를 안전하게 탐색합니다.
+      url = (gif.file as any)?.hd?.gif || (gif.file as any)?.hd?.webp ||
+        gif.file?.md?.gif || gif.file?.md?.webp ||
+        gif.file?.sm?.gif || gif.file?.sm?.webp ||
+        gif.file?.xs?.gif || gif.file?.xs?.webp ||
+        '';
+    }
+
+    // 3. 최종 URL 검증 및 상태 반영
     if (!url) {
       alert('GIF URL을 불러올 수 없습니다.');
       return;
     }
+
     setImageUrl(url);
     setGifOpen(false);
     setGifSearch('');
@@ -150,12 +164,12 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   return (
     <section className="compose-trigger-section" style={{ padding: '16px 20px', borderBottom: '8px solid var(--divider-color)', backgroundColor: '#fff' }}>
       <div style={{ display: 'flex', gap: '12px' }}>
-        <div 
+        <div
           className="user-avatar"
           style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined, backgroundSize: 'cover', width: '44px', height: '44px', minWidth: '44px', borderRadius: '50%' }}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <textarea 
+          <textarea
             placeholder="무슨 일이 일어나고 있나요?"
             value={content}
             onChange={(e) => {
@@ -174,7 +188,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
           {imageUrl && (
             <div style={{ position: 'relative', marginTop: '8px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
               <img src={imageUrl} alt="미리보기" style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'cover' }} />
-              <button 
+              <button
                 onClick={() => setImageUrl(null)}
                 style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
@@ -279,11 +293,11 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
           <div className="compose-actions" style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="action-icons" style={{ display: 'flex', gap: '16px', color: 'var(--primary-color)' }}>
               {/* Image Upload (IMGBB) */}
-              <i 
-                className="far fa-image" 
-                title="이미지 업로드" 
-                style={{ cursor: 'pointer', fontSize: '20px', opacity: uploading ? 0.5 : 1 }} 
-                onClick={() => fileInputRef.current?.click()} 
+              <i
+                className="far fa-image"
+                title="이미지 업로드"
+                style={{ cursor: 'pointer', fontSize: '20px', opacity: uploading ? 0.5 : 1 }}
+                onClick={() => fileInputRef.current?.click()}
               />
               <input
                 ref={fileInputRef}
@@ -298,38 +312,38 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
               />
 
               {/* GIF */}
-              <i 
-                className="fas fa-film" 
+              <i
+                className="fas fa-film"
                 title="GIF 추가"
-                style={{ cursor: 'pointer', fontSize: '20px' }} 
+                style={{ cursor: 'pointer', fontSize: '20px' }}
                 onClick={openGifPicker}
               />
 
               {/* Hashtag */}
-              <i 
-                className="fas fa-hashtag" 
-                title="태그 추가" 
-                style={{ cursor: 'pointer', fontSize: '20px' }} 
-                onClick={() => setContent(prev => prev + (prev.endsWith(' ') || !prev ? '#' : ' #'))} 
+              <i
+                className="fas fa-hashtag"
+                title="태그 추가"
+                style={{ cursor: 'pointer', fontSize: '20px' }}
+                onClick={() => setContent(prev => prev + (prev.endsWith(' ') || !prev ? '#' : ' #'))}
               />
 
               {/* Poll */}
-              <i 
-                className="fas fa-poll" 
+              <i
+                className="fas fa-poll"
                 title="투표 만들기"
-                style={{ cursor: 'pointer', fontSize: '20px', color: pollOpen ? 'var(--accent-color)' : undefined }} 
+                style={{ cursor: 'pointer', fontSize: '20px', color: pollOpen ? 'var(--accent-color)' : undefined }}
                 onClick={() => { setPollOpen(!pollOpen); setGifOpen(false); }}
               />
             </div>
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={(!content.trim() && !imageUrl) || isPending}
               className="inline-post-btn"
-              style={{ 
-                padding: '8px 20px', fontSize: '15px', borderRadius: '9999px', border: 'none', 
-                backgroundColor: (content.trim() || imageUrl) ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)', 
-                color: '#fff', fontWeight: 'bold', cursor: (content.trim() || imageUrl) ? 'pointer' : 'default', 
-                opacity: (content.trim() || imageUrl) ? 1 : 0.5, transition: '0.2s' 
+              style={{
+                padding: '8px 20px', fontSize: '15px', borderRadius: '9999px', border: 'none',
+                backgroundColor: (content.trim() || imageUrl) ? 'var(--primary-color)' : 'var(--primary-color-dim, #1d4ed8)',
+                color: '#fff', fontWeight: 'bold', cursor: (content.trim() || imageUrl) ? 'pointer' : 'default',
+                opacity: (content.trim() || imageUrl) ? 1 : 0.5, transition: '0.2s'
               }}
             >
               {isPending ? '게시 중...' : '게시하기'}
