@@ -191,11 +191,11 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
       <section 
         className="profile-container" 
         style={{ 
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-primary)',
           maxWidth: '700px',
           margin: '0 auto',
-          borderLeft: '1px solid #F3F4F6',
-          borderRight: '1px solid #F3F4F6',
+          borderLeft: '1px solid var(--border-color)',
+          borderRight: '1px solid var(--border-color)',
           borderTop: 'none',
           paddingBottom: '24px',
           minHeight: '100vh',
@@ -205,7 +205,7 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
         {profile.coverUrl ? (
           <div style={{ width: '100%', height: '192px', backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
         ) : (
-          <div style={{ width: '100%', height: '192px', backgroundColor: '#F1F5F9' }}></div>
+          <div style={{ width: '100%', height: '192px', backgroundColor: 'var(--divider-color)' }}></div>
         )}
 
         {/* Profile Identity - No overlapping */}
@@ -223,18 +223,18 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', height: '80px', justifyContent: 'space-evenly' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <h1 style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.025em', color: '#111827', margin: 0, lineHeight: 1 }}>
+                    <h1 style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>
                       {profile.displayName || profile.username}
                     </h1>
                     {profile.isVerified && (
                       <i className="fas fa-check-circle" style={{ color: '#3B82F6', fontSize: '20px' }}></i>
                     )}
                   </div>
-                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 500, color: '#6B7280', lineHeight: 1 }}>
+                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1 }}>
                     @{profile.username}
                   </p>
                   {profile.favoriteTeam && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, color: '#6B7280', lineHeight: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1 }}>
                       <img src={getTeamLogo(profile.favoriteTeam)} alt={profile.favoriteTeam} style={{ width: '16px', height: '16px' }} />
                       <span>{profile.favoriteTeam} 팬</span>
                     </div>
@@ -248,7 +248,7 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                       onClick={handleEditProfile}
                       style={{
                         padding: '10px 20px', borderRadius: '9999px',
-                        backgroundColor: '#111827', color: '#FFFFFF',
+                        backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)',
                         fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer'
                       }}
                     >
@@ -267,9 +267,9 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
                         }}
                         style={{
                           padding: '10px 20px', borderRadius: '9999px',
-                          backgroundColor: isFollowing ? 'transparent' : '#111827', 
-                          color: isFollowing ? '#111827' : '#FFFFFF',
-                          border: isFollowing ? '1px solid #D1D5DB' : 'none',
+                          backgroundColor: isFollowing ? 'transparent' : 'var(--text-primary)', 
+                          color: isFollowing ? 'var(--text-primary)' : 'var(--bg-primary)',
+                          border: isFollowing ? '1px solid var(--border-color)' : 'none',
                           fontWeight: 600, fontSize: '14px', cursor: 'pointer'
                         }}
                       >
@@ -298,7 +298,7 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
           
           <div style={{ marginTop: '16px' }}>
             {profile.bio && (
-              <p style={{ margin: '0', fontSize: '16px', lineHeight: 1.625, color: '#111827' }}>
+              <p style={{ margin: '0', fontSize: '16px', lineHeight: 1.625, color: 'var(--text-primary)' }}>
                 {profile.bio}
               </p>
             )}
@@ -306,16 +306,16 @@ export default function ProfilePageContent({ profile, initialPosts }: ProfilePag
             {/* Stats */}
             <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
               <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111827' }}>{profile.followingCount || 0}</span>
-                <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>팔로잉</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{profile.followingCount || 0}</span>
+                <span style={{ fontSize: '15px', fontWeight: 400, color: 'var(--text-secondary)' }}>팔로잉</span>
               </div>
               <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111827' }}>{profile.followersCount || 0}</span>
-                <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>팔로워</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{profile.followersCount || 0}</span>
+                <span style={{ fontSize: '15px', fontWeight: 400, color: 'var(--text-secondary)' }}>팔로워</span>
               </div>
             </div>
             {profile.createdAt && (
-              <p style={{ margin: '12px 0 0', fontSize: 14, color: '#6B7280' }}>
+              <p style={{ margin: '12px 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>
                 {format(parseDate(profile.createdAt), 'yyyy년 M월 d일', { locale: ko })} 가입
               </p>
             )}

@@ -183,7 +183,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
   };
 
   return (
-    <section className="compose-trigger-section" style={{ padding: '16px 20px', borderBottom: '8px solid var(--divider-color)', backgroundColor: '#fff' }}>
+    <section className="compose-trigger-section" style={{ padding: '16px 20px', borderBottom: '8px solid var(--divider-color)', backgroundColor: 'var(--bg-primary)' }}>
       <div style={{ display: 'flex', gap: '8px' }}>
         <div
           className="user-avatar"
@@ -215,7 +215,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
                 border: '1px solid var(--border-color)',
                 borderRadius: '12px',
                 cursor: 'pointer',
-                background: '#f8fafc',
+                background: 'var(--bg-secondary)',
               }}
               onClick={() => {
                 const detailHref = `/${quotePost.profiles?.username || 'sponsor'}/status/${quotePost.id}`;
@@ -359,7 +359,7 @@ const ComposePost = ({ onPosted }: ComposePostProps) => {
                     setPollOptions(next);
                   }}
                   placeholder={`선택지 ${idx + 1}`}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '15px', marginBottom: '6px', background: '#fff', color: 'var(--text-primary)' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '15px', marginBottom: '6px', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
                 />
               ))}
               {pollOptions.length < 4 && (

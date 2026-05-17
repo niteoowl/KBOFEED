@@ -5,6 +5,8 @@
     --primary-color: #0241D3; /* New Vibrant KBO Blue */
     --accent-color: #ff4d6d;  /* Vibrant Modern Red/Pink */
     --background-color: #ffffff;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
     --divider-color: #f7f9fa;
     --border-color: #f0f3f5;
     --text-primary: #1a1c1e;
@@ -25,6 +27,32 @@
     --hanwha-eagles: #ff6600;
     --kiwoom-heroes: #820024;
 }
+
+/* ==========================================
+   DARK THEME (X LIGHTS OUT PITCH BLACK) OVERRIDES
+   ========================================== */
+html[data-theme='dark'] {
+    --primary-color: #1d9bf0; /* X-style Vibrant Blue */
+    --accent-color: #f91880;  /* X-style Red/Pink */
+    --background-color: #000000; /* Pitch Black */
+    --bg-primary: #000000;
+    --bg-secondary: #16181c; /* Deep slate gray/black for boxes/cards */
+    --divider-color: #16181c;
+    --border-color: #2f3336; /* Slate dark border */
+    --text-primary: #e7e9ea; /* High contrast light text */
+    --text-secondary: #71767b; /* Medium gray text */
+    --hover-bg: rgba(29, 155, 240, 0.1);
+    --hover-bg-light: rgba(249, 24, 128, 0.1);
+    --card-shadow: 0 8px 24px rgba(255, 255, 255, 0.02);
+}
+
+/* Automatic logo color inversion for dark mode visibility */
+html[data-theme='dark'] img[alt*="로고"],
+html[data-theme='dark'] img[alt*="Logo"],
+html[data-theme='dark'] img[src*="logo"] {
+    filter: invert(1) brightness(1.5) !important;
+}
+
 
 * {
     margin: 0;

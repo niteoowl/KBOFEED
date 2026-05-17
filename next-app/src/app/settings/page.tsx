@@ -16,6 +16,20 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(true);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
   
   const carouselRef = useRef<HTMLDivElement>(null);
   const username = (session?.user as any)?.username;
@@ -157,6 +171,59 @@ export default function SettingsPage() {
                 </div>
                 <button type="button" className="carousel-nav" onClick={() => scrollCarousel(1)}>
                   <i className="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Theme Settings Selection */}
+            <div style={{ marginBottom: '32px', borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
+              <label style={{ display: 'block', fontSize: '15px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-primary)' }}>화면 테마 설정</label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('light')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: theme === 'light' ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <i className="fas fa-sun" style={{ color: '#eab308', fontSize: '16px' }} />
+                  라이트 모드
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('dark')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: theme === 'dark' ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <i className="fas fa-moon" style={{ color: '#60a5fa', fontSize: '16px' }} />
+                  다크 모드 (X 블랙)
                 </button>
               </div>
             </div>
